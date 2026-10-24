@@ -1,0 +1,57 @@
+{
+  "name": "Trampou — Profissionais Perto de Você",
+  "short_name": "Trampou",
+  "description": "Encontre eletricistas, encanadores, diaristas e profissionais autônomos perto de você em Parauapebas/PA.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFFFFF",
+  "theme_color": "#581C87",
+  "categories": ["business", "utilities", "lifestyle"],
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Explorar Profissionais",
+      "short_name": "Explorar",
+      "description": "Buscar profissionais e serviços em Parauapebas",
+      "url": "./#explore",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Plantão SOS 24h",
+      "short_name": "SOS 24h",
+      "description": "Pedir socorro de emergência imediato",
+      "url": "./#sos",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Antes & Depois",
+      "short_name": "Transformações",
+      "description": "Galeria de resultados reais dos profissionais",
+      "url": "./#showcase",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

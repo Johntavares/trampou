@@ -1,0 +1,2561 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#581C87">
+  <meta name="description" content="Trampou: Encontre eletricistas, encanadores, diaristas e profissionais autônomos perto de você em Parauapebas/PA.">
+  <title>Trampou — Profissionais Perto de Você</title>
+  
+  <!-- PWA Manifest & App Config -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+  <link rel="icon" type="image/png" href="trampou_app_icon.png">
+
+  <!-- iOS / Apple PWA Support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Trampou">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
+
+  <!-- Windows & Android PWA -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="Trampou">
+  <meta name="msapplication-TileColor" content="#581C87">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Controles Superiores de Visualização -->
+  <header class="preview-header">
+    <div class="preview-brand">
+      <img src="trampou_app_icon.png" alt="Trampou Ícone" class="preview-brand-app-icon">
+      <div class="preview-brand-text">
+        <span class="brand-name">Trampou</span>
+        <span class="preview-badge">Profissionais Perto de Você</span>
+      </div>
+    </div>
+    <div class="preview-actions">
+      <button id="btn-quick-welcome" class="ctrl-btn" onclick="openAuthWelcome()" title="Tela Inicial de Acesso">
+        <i class="fa-solid fa-door-open"></i> Acesso
+      </button>
+      <button id="btn-quick-login" class="ctrl-btn" onclick="openLoginModal()" title="Tela de Login">
+        <i class="fa-solid fa-arrow-right-to-bracket"></i> Login
+      </button>
+      <button id="btn-quick-client" class="ctrl-btn" onclick="openClientSignup()" title="Cadastro de Cliente">
+        <i class="fa-solid fa-user-plus"></i> Novo Cliente
+      </button>
+      <button id="btn-quick-pro" class="ctrl-btn" onclick="openProSignup()" title="Cadastro de Profissional em 4 etapas">
+        <i class="fa-solid fa-briefcase"></i> Cadastro Pro
+      </button>
+
+      <button id="btn-quick-showcase" class="ctrl-btn" onclick="openPublishShowcaseModal()" title="Publicar Antes & Depois (Destaque na Home)">
+        <i class="fa-solid fa-camera-retro" style="color: #F59E0B;"></i> Antes & Depois
+      </button>
+      <button id="btn-pwa-install-header" class="ctrl-btn btn-pwa-install" onclick="triggerPWAInstall()" title="Instalar Trampou no Dispositivo">
+        <i class="fa-solid fa-download" style="color: #10B981;"></i> Instalar App
+      </button>
+      <button id="toggle-frame-btn" class="ctrl-btn" title="Alternar formato do aparelho">
+        <i class="fa-solid fa-mobile-screen"></i> Modo Celular
+      </button>
+      <div class="db-status-pill">
+        <span class="status-dot"></span> Supabase Conectado
+      </div>
+    </div>
+  </header>
+
+  <!-- Container Principal -->
+  <main class="viewport-wrapper">
+    <div id="device-container" class="device-mockup">
+      <!-- Barra de Status do Smartphone -->
+      <div class="device-notch">
+        <span class="device-time">09:41</span>
+        <div class="device-camera"></div>
+        <div class="device-icons">
+          <i class="fa-solid fa-signal"></i>
+          <i class="fa-solid fa-wifi"></i>
+          <i class="fa-solid fa-battery-full"></i>
+        </div>
+      </div>
+
+      <!-- Área de Aplicativo -->
+      <div class="app-screen">
+        <!-- TAB 1: INÍCIO (HOME OTIMIZADA) -->
+        <section id="tab-home" class="screen-tab active">
+          <!-- 1. Cabeçalho Compacto Integrado -->
+          <header class="app-header-compact">
+            <div class="header-compact-row">
+              <div class="header-brand-user-wrap">
+                <img src="trampou_app_icon.png" alt="Trampou" class="header-trampou-icon" onclick="openAuthWelcome()" title="Trampou — Profissionais Perto de Você">
+                <div class="header-user-info">
+                  <div class="location-pill" id="home-location">
+                    <i class="fa-solid fa-location-dot loc-icon"></i>
+                    <span>Parauapebas, PA</span>
+                  </div>
+                  <h1 class="greeting-text">Olá, Cliente</h1>
+                </div>
+              </div>
+              <div class="header-compact-actions">
+                <button class="notif-btn-compact" id="notif-btn" onclick="openNotificationsFromHome()" title="Notificações e Mensagens" aria-label="Notificações e Mensagens">
+                  <i class="fa-regular fa-bell" id="home-bell-icon" aria-hidden="true"></i>
+                  <span class="badge-dot" id="home-notif-badge"></span>
+                  <span class="notif-badge-counter" id="home-notif-counter">1</span>
+                </button>
+                <div class="avatar-compact" id="avatar-btn" title="Meu Perfil" role="button" tabindex="0" aria-label="Meu perfil">
+                  <i class="fa-solid fa-user" aria-hidden="true"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Campo de Busca Integrado com Preenchimento Inteligente -->
+            <div class="home-search-wrapper" id="home-search-wrapper">
+              <div class="search-bar-compact" id="home-search-bar">
+                <i class="fa-solid fa-magnifying-glass search-icon" aria-hidden="true"></i>
+                <input 
+                  type="text" 
+                  id="home-search-input" 
+                  class="home-search-input" 
+                  placeholder="Buscar eletricista, encanador, diarista..." 
+                  autocomplete="off" 
+                  spellcheck="false"
+                  aria-label="Buscar profissionais e serviços em Parauapebas"
+                />
+                <button type="button" class="search-clear-btn" id="home-search-clear" title="Limpar busca" aria-label="Limpar busca" style="display: none;">
+                  <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="filter-icon-btn" id="home-filter-btn" title="Filtros" aria-label="Abrir filtros">
+                  <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+                </button>
+              </div>
+
+              <!-- Dropdown Inteligente Flutuante de Sugestões -->
+              <div class="search-suggestions-dropdown" id="search-suggestions-dropdown" style="display: none;" role="listbox" aria-label="Sugestões de profissionais">
+                <!-- Conteúdo dinâmico injetado via JS -->
+              </div>
+            </div>
+          </header>
+
+          <!-- Conteúdo Rolável da Home com Espaçamento Harmonioso -->
+          <div class="scroll-content-home">
+            <!-- Carrossel de Banner para Anúncios (Antes das Categorias) -->
+            <div class="home-ad-carousel-wrap" aria-label="Anúncios patrocinados">
+              <div class="banner-carousel-track" id="home-banner-track">
+                <!-- Slides de Anúncios injetados dinamicamente via JS -->
+              </div>
+              <div class="carousel-dots" id="carousel-dots" role="tablist">
+                <!-- Indicadores injetados via JS -->
+              </div>
+            </div>
+
+            <!-- 3. Categorias Principais (Grade Compacta) -->
+            <div class="home-block">
+              <div class="block-title-row">
+                <h4>Categorias</h4>
+                <a href="#" class="see-all-compact" onclick="switchTab('search'); openAllCategoriesModal();">Ver todas <i class="fa-solid fa-chevron-right"></i></a>
+              </div>
+              <div class="categories-grid-compact" id="categories-container" aria-busy="true">
+                <div class="skeleton cat-skeleton"></div>
+                <div class="skeleton cat-skeleton"></div>
+                <div class="skeleton cat-skeleton"></div>
+                <div class="skeleton cat-skeleton"></div>
+                <div class="skeleton cat-skeleton"></div>
+                <div class="skeleton cat-skeleton"></div>
+                <div class="skeleton cat-skeleton"></div>
+                <div class="skeleton cat-skeleton"></div>
+              </div>
+            </div>
+
+            <!-- 4. Profissionais em Destaque (Cards com Foco em Avaliações) -->
+            <div class="home-block">
+              <div class="block-title-row">
+                <h4>Profissionais em destaque</h4>
+                <a href="#" class="see-all-compact" onclick="switchTab('search')">Ver todos <i class="fa-solid fa-chevron-right"></i></a>
+              </div>
+              <div class="pros-scroll-wrap" id="pros-scroll-wrap">
+                <div class="pros-cards-scroll" id="featured-professionals-container">
+                  <!-- Cards com Destaque para Avaliações -->
+                </div>
+              </div>
+              <div class="pros-scroll-progress" id="pros-scroll-progress" aria-hidden="true"></div>
+            </div>
+
+            <!-- 5. Feed Compacto de Novidades e Dicas da Plataforma -->
+            <div class="home-block">
+              <div class="block-title-row">
+                <h4>Dicas e Novidades</h4>
+              </div>
+              <div class="news-compact-list" id="news-feed-container">
+                <!-- Itens compactos de novidades -->
+              </div>
+            </div>
+
+            <!-- 6. Espaço Reservado para Publicidade Local -->
+            <div class="home-block ad-block">
+              <div class="ad-tag-label">Publicidade</div>
+              <div class="ad-banner-compact">
+                <div class="ad-icon"><i class="fa-solid fa-store"></i></div>
+                <div class="ad-content">
+                  <h5>Anuncie seus serviços em Parauapebas</h5>
+                  <p>Apareça para milhares de moradores buscando autônomos na região.</p>
+                </div>
+                <button class="ad-btn" onclick="openProDashboard()">Anunciar</button>
+              </div>
+            </div>
+
+            <div class="home-bottom-spacer"></div>
+          </div>
+        </section>
+
+        <!-- TAB 2: EXPLORAR PROFISSIONAIS -->
+        <section id="tab-search" class="screen-tab">
+          <!-- Cabeçalho Fixo da Página Explorar -->
+          <div class="explore-top-container">
+            <div class="explore-header-row">
+              <div class="explore-title-wrap">
+                <h3 class="explore-page-title">Explorar Profissionais</h3>
+                <span class="explore-sub">Autônomos verificados em Parauapebas, PA</span>
+              </div>
+              <div class="explore-city-tag">
+                <i class="fa-solid fa-location-dot" aria-hidden="true"></i> Parauapebas
+              </div>
+            </div>
+
+            <!-- Campo de Busca em Tempo Real -->
+            <div class="explore-search-box">
+              <i class="fa-solid fa-magnifying-glass explore-search-icon" aria-hidden="true"></i>
+              <input 
+                type="text" 
+                id="main-search-input" 
+                class="explore-search-input" 
+                placeholder="Buscar por nome ou especialidade..." 
+                autocomplete="off"
+                spellcheck="false"
+                aria-label="Buscar profissionais na página explorar"
+              />
+              <button type="button" id="clear-search-btn" class="explore-clear-btn" style="display: none;" title="Limpar busca" aria-label="Limpar">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+              </button>
+            </div>
+
+            <!-- Carrossel de Categorias com Botão "Todas as Categorias" que abre o modal de opções completas -->
+            <div class="explore-filters-row" id="explore-category-filter" role="tablist" aria-label="Filtrar por categoria">
+              <button type="button" class="explore-chip-btn explore-all-cats-btn active" id="btn-explore-all-cats" data-category="all" onclick="openAllCategoriesModal()" title="Ver todas as opções de categorias">
+                <i class="fa-solid fa-shapes" aria-hidden="true"></i>
+                <span id="all-cats-chip-text">Todas as Categorias</span>
+                <i class="fa-solid fa-chevron-down chip-dropdown-arrow" aria-hidden="true"></i>
+              </button>
+              <div id="dynamic-explore-chips" style="display: contents;">
+                <!-- Chips das categorias carregados dinamicamente via JS -->
+              </div>
+            </div>
+
+            <!-- Botão Discreto de Emergência SOS (Logo abaixo do Menu de Categorias) -->
+            <div class="sos-discreet-bar-wrap">
+              <button type="button" class="btn-sos-discreet" onclick="openSOSRequestModal()">
+                <div class="sos-discreet-left">
+                  <span class="sos-discreet-pulse-icon">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                  </span>
+                  <div class="sos-discreet-text">
+                    <span class="sos-discreet-title">Plantão SOS Emergência</span>
+                    <span class="sos-discreet-sub">Disparar socorro urgente no radar</span>
+                  </div>
+                </div>
+                <div class="sos-discreet-right">
+                  <span class="sos-discreet-badge">Radar 24h</span>
+                  <i class="fa-solid fa-chevron-right"></i>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Conteúdo Rolável da Página Explorar -->
+          <div class="explore-scroll-body">
+            <!-- Barra de Status dos Resultados e Ordenação -->
+            <div class="explore-results-header">
+              <div class="explore-results-info-group">
+                <span class="explore-results-count" id="explore-results-count">Carregando profissionais...</span>
+                <span id="active-category-indicator" class="active-category-pill" style="display: none;" onclick="selectCategoryAndFilter('all')" title="Clique para limpar o filtro e ver todos">
+                  <span id="active-category-text">Categoria</span>
+                  <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </span>
+              </div>
+              <div class="explore-sort-wrap">
+                <label for="explore-sort-select" class="sr-only">Ordenar por</label>
+                <select id="explore-sort-select" class="explore-sort-select" aria-label="Ordenar listagem">
+                  <option value="rating">Melhor avaliação</option>
+                  <option value="reviews">Mais avaliações</option>
+                  <option value="name">Nome (A–Z)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Listagem Compacta de Profissionais (Blocos Horizontais Compactos de 90–115px) -->
+            <div class="compact-pros-list" id="explore-professionals-container" role="feed" aria-busy="false">
+              <!-- Cards compactos injetados via JS -->
+            </div>
+
+            <!-- 2. FEITO EM PARAUAPEBAS — ANTES & DEPOIS SHOWCASE -->
+            <div class="explore-section">
+              <div class="explore-title-row">
+                <h4>📸 Feito em Parauapebas (Antes & Depois)</h4>
+              </div>
+              <p class="explore-desc-text">Veja transformações reais executadas por autônomos nos bairros da cidade</p>
+
+              <div class="showcase-scroll" id="showcase-container">
+                <!-- Injetado dinamicamente via JS -->
+              </div>
+            </div>
+
+
+
+            <div class="home-bottom-spacer"></div>
+          </div>
+        </section>
+
+
+
+        <!-- TAB 4: CONVERSAS / CHAT -->
+        <section id="tab-chat" class="screen-tab">
+          <div class="subpage-header" style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h3 style="margin: 0;">Mensagens & Notificações</h3>
+              <span class="chat-tab-badge" id="chat-tab-badge" style="display: none; background: #EF4444; color: #FFF; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 999px;"></span>
+            </div>
+            <button type="button" class="btn-link-subtle" onclick="markAllNotificationsAsRead()" title="Marcar todas como lidas" style="font-size: 11px;">
+              <i class="fa-solid fa-check-double"></i> Ler todas
+            </button>
+          </div>
+          <div class="conversations-list" id="conversations-container">
+            <!-- Lista de conversas -->
+          </div>
+        </section>
+
+        <!-- TAB 5: PERFIL -->
+        <section id="tab-profile" class="screen-tab">
+          <div class="subpage-header">
+            <h3>Meu Perfil</h3>
+          </div>
+          <div class="profile-scroll">
+            <!-- Card de Perfil Dinâmico -->
+            <div class="profile-card" id="profile-card-container">
+              <div class="profile-avatar-big" id="profile-avatar-wrap">
+                <i class="fa-solid fa-user" id="profile-avatar-icon"></i>
+                <img id="profile-avatar-img" src="" alt="Avatar" style="display:none; width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+              </div>
+              <div class="profile-info">
+                <div class="profile-name-row">
+                  <h4 id="profile-user-name">Visitante</h4>
+                  <span class="user-role-badge" id="profile-user-badge">Visitante</span>
+                </div>
+                <p id="profile-user-email">Toque em entrar para acessar sua conta</p>
+                <span class="user-loc" id="profile-user-loc"><i class="fa-solid fa-location-dot"></i> Parauapebas, PA</span>
+              </div>
+              <button class="edit-profile-btn" onclick="openEditProfileModal()" title="Editar dados"><i class="fa-solid fa-pen"></i></button>
+            </div>
+
+            <!-- Banner Área do Profissional (Dinâmico: Acessar ou Quero me tornar profissional) -->
+            <div class="pro-area-card" id="card-access-pro-area" onclick="handleProAreaClick()" style="cursor: pointer;">
+              <div class="pro-card-content">
+                <i class="fa-solid fa-briefcase pro-badge-icon" id="pro-card-icon"></i>
+                <div>
+                  <h5 id="pro-card-title">Área do Profissional</h5>
+                  <p id="pro-card-desc">Gerencie seus serviços, orçamentos recebidos e vitrine</p>
+                </div>
+              </div>
+              <button type="button" class="pro-access-btn" id="btn-access-pro-area" onclick="handleProAreaClick(); event.stopPropagation();">
+                <span id="pro-btn-text">Acessar</span> <i class="fa-solid fa-chevron-right"></i>
+              </button>
+            </div>
+
+            <!-- Card de Instalação do PWA (Instalar no celular / desktop) -->
+            <div class="pro-area-card pwa-install-card" id="pwa-install-banner" onclick="triggerPWAInstall()" style="cursor: pointer; background: linear-gradient(135deg, #FAF5FF, #F3E8FF); border: 1.5px solid #D8B4FE; margin-top: 10px;">
+              <div class="pro-card-content">
+                <i class="fa-solid fa-mobile-screen-button pro-badge-icon" style="color: #7E22CE; background: #EDE9FE;"></i>
+                <div>
+                  <h5 style="color: #581C87;">Instalar Trampou no Celular</h5>
+                  <p style="color: #6B21A8;">Tenha o app direto na tela inicial com carregamento instantâneo</p>
+                </div>
+              </div>
+              <button type="button" class="pro-access-btn" style="background: #7E22CE; color: #FFF;" onclick="triggerPWAInstall(); event.stopPropagation();">
+                <span>Instalar</span> <i class="fa-solid fa-download"></i>
+              </button>
+            </div>
+
+            <!-- Menu de Opções -->
+            <div class="menu-group">
+              <div class="menu-item" onclick="switchTab('search')">
+                <i class="fa-solid fa-compass icon-purple"></i>
+                <div class="menu-text">
+                  <span>Explorar Profissionais</span>
+                  <small>Encontre os melhores serviços da cidade</small>
+                </div>
+                <i class="fa-solid fa-chevron-right"></i>
+              </div>
+              <div class="menu-item" onclick="openFavoritesModal()">
+                <i class="fa-solid fa-heart icon-purple"></i>
+                <div class="menu-text">
+                  <span>Profissionais Favoritos</span>
+                  <small>Acesse seus prestadores de confiança</small>
+                </div>
+                <i class="fa-solid fa-chevron-right"></i>
+              </div>
+              <div class="menu-item" onclick="openShareAppModal()">
+                <i class="fa-solid fa-share-nodes icon-purple"></i>
+                <div class="menu-text">
+                  <span>Indicar o Trampou</span>
+                  <small>Compartilhe o app com amigos e vizinhos</small>
+                </div>
+                <i class="fa-solid fa-chevron-right"></i>
+              </div>
+              <div class="menu-item" onclick="showToast('Notificações ativadas para Parauapebas')">
+                <i class="fa-solid fa-bell icon-purple"></i>
+                <div class="menu-text">
+                  <span>Notificações</span>
+                </div>
+                <i class="fa-solid fa-chevron-right"></i>
+              </div>
+              <div class="menu-item" onclick="showToast('Termos de Uso e Política de Privacidade do Trampou')">
+                <i class="fa-solid fa-shield-halved icon-purple"></i>
+                <div class="menu-text">
+                  <span>Privacidade e Segurança</span>
+                </div>
+                <i class="fa-solid fa-chevron-right"></i>
+              </div>
+              <div class="menu-item" id="btn-switch-account-item" onclick="openAuthWelcome()">
+                <i class="fa-solid fa-users-viewfinder icon-purple"></i>
+                <div class="menu-text">
+                  <span>Trocar ou Criar Conta</span>
+                  <small>Acesse com outro e-mail ou perfil</small>
+                </div>
+                <i class="fa-solid fa-chevron-right"></i>
+              </div>
+              <div class="menu-item logout-item" id="btn-profile-logout" onclick="handleLogoutClick()">
+                <i class="fa-solid fa-arrow-right-from-bracket icon-red"></i>
+                <div class="menu-text">
+                  <span id="logout-text-label">Sair da conta</span>
+                </div>
+              </div>
+            </div>
+            <div class="app-version-tag">Trampou • v1.0.0 — Profissionais perto de você</div>
+          </div>
+        </section>
+
+        <!-- =========================================================
+             OVERLAY: VITRINE SOCIAL DO PROFISSIONAL (ESTILO INSTAGRAM)
+             ========================================================= -->
+        <div id="pro-vitrine-overlay" class="modal-overlay" style="z-index: 1200;">
+          <div class="modal-content pro-vitrine-content">
+            <!-- Barra Superior do Perfil Social (Exato ao Modelo: Back, Handle Central, Opções ...) -->
+            <div class="vitrine-top-bar">
+              <button class="v-nav-icon-btn" onclick="closeProVitrine()" title="Voltar">
+                <i class="fa-solid fa-arrow-left"></i>
+              </button>
+              <div class="vitrine-top-handle" id="vitrine-handle">carlos.eletricista</div>
+              <div class="vitrine-top-menu-wrap">
+                <button class="v-nav-icon-btn" id="vitrine-menu-trigger" onclick="toggleVitrineMenu()" title="Mais opções">
+                  <i class="fa-solid fa-ellipsis"></i>
+                </button>
+                <!-- Menu flutuante de opções -->
+                <div class="vitrine-dropdown-menu" id="vitrine-dropdown-menu">
+                  <button class="dropdown-item" onclick="toggleVitrineMode()">
+                    <i class="fa-solid fa-repeat"></i>
+                    <span id="menu-mode-label">Alternar para Modo Visitante</span>
+                  </button>
+                  <button class="dropdown-item" onclick="openEditProModal()">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    <span>Editar perfil</span>
+                  </button>
+                  <button class="dropdown-item" onclick="shareProProfile()">
+                    <i class="fa-solid fa-share-nodes"></i>
+                    <span>Compartilhar perfil</span>
+                  </button>
+
+                </div>
+              </div>
+            </div>
+
+            <!-- Corpo Rolável da Vitrine Social -->
+            <div class="vitrine-scroll-body" id="vitrine-scroll-body">
+              
+              <!-- Bloco Superior: Avatar + Nome/Especialidade + Estatísticas (Trabalhos, Avaliações, Nota) -->
+              <div class="vitrine-header-row">
+                <div class="vitrine-avatar-circle">
+                  <img id="vitrine-avatar-img" class="vitrine-avatar-photo" src="trampou_app_icon.png" alt="Profissional" onerror="this.style.display='none'; document.getElementById('vitrine-avatar-fallback').style.display='flex';">
+                  <div id="vitrine-avatar-fallback" class="vitrine-avatar-fallback" style="display: none;">
+                    <i class="fa-solid fa-user-tie"></i>
+                  </div>
+                </div>
+
+                <div class="vitrine-header-right">
+                  <h2 class="vitrine-pro-name" id="vitrine-name">Perfil Profissional</h2>
+                  <div class="vitrine-pro-sub-row">
+                    <div class="vitrine-pro-sub" id="vitrine-specialty">Serviços em Parauapebas</div>
+                    <span class="vitrine-badge-24h" id="vitrine-badge-24h" style="display: none;">
+                      <i class="fa-solid fa-bolt"></i> <span>Plantão 24h</span>
+                    </span>
+                  </div>
+
+                  <!-- Métricas: 32 Trabalhos | 28 Avaliações | ⭐ 4,9 Nota -->
+                  <div class="vitrine-metrics-bar">
+                    <div class="v-metric-item">
+                      <span class="v-metric-num" id="stat-works-count">32</span>
+                      <span class="v-metric-label">Trabalhos</span>
+                    </div>
+                    <div class="v-metric-item" onclick="openReviewsModal()">
+                      <span class="v-metric-num" id="stat-reviews-count">28</span>
+                      <span class="v-metric-label">Avaliações</span>
+                    </div>
+                    <div class="v-metric-item" onclick="openReviewsModal()">
+                      <div class="v-metric-num-rating">
+                        <i class="fa-regular fa-star metric-star-icon"></i>
+                        <span id="stat-rating-val">4,9</span>
+                      </div>
+                      <span class="v-metric-label">Nota</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bloco Bio & Descrição -->
+              <div class="vitrine-bio-container">
+                <div class="vitrine-headline" id="vitrine-headline">
+                  <span class="headline-emoji">⚡</span> <span id="vitrine-headline-text">Instalações e manutenção elétrica</span>
+                </div>
+                <p class="vitrine-description" id="vitrine-bio">
+                  Serviços residenciais e comerciais. Instalações, iluminação, chuveiros e reparos elétricos.
+                </p>
+                <div class="vitrine-city-row" id="vitrine-city-row">
+                  <i class="fa-solid fa-location-dot"></i>
+                  <span id="vitrine-location-text">Parauapebas, PA</span>
+                </div>
+                <button class="vitrine-readmore-btn" id="vitrine-readmore-btn" onclick="toggleBioExpand()">
+                  Ver descrição completa
+                </button>
+                <div class="vitrine-expanded-bio" id="vitrine-expanded-bio" style="display: none;">
+                  <p>Mais de 8 anos de experiência prestando serviços elétricos de excelência em Parauapebas. Atendimento nos bairros Cidade Nova, Rio Verde, União, Nova Carajás, Da Paz e Beira Rio. Instalação e manutenção de quadros de distribuição, disjuntores DIN, DPS, IDR, fiação completa, tomadas 20A, balanceamento de cargas, instalação de chuveiros, lustres, refletores e adequação ao padrão Equatorial Energia com emissão de recibo e garantia formal de 90 dias.</p>
+                </div>
+              </div>
+
+              <!-- Bloco de Botões de Ação (Editar perfil / Compartilhar perfil / Share icon) -->
+              <div class="vitrine-buttons-row" id="vitrine-action-buttons">
+                <!-- Injetado dinamicamente via JS de acordo com Modo Dono vs Modo Visitante -->
+              </div>
+
+              <!-- Card Exclusivo do Dono: Publicar Antes & Depois (Showcase Trampou PRO) -->
+              <div id="vitrine-owner-showcase-box" style="display: none; padding: 0 16px 14px;"></div>
+
+              <!-- Linha divisória sutil -->
+              <div class="vitrine-separator"></div>
+
+              <!-- Card de Disponibilidade: Plantão 24h & Atendimento de Emergência -->
+              <div class="vitrine-emergency-card" id="vitrine-emergency-card">
+                <!-- Injetado dinamicamente via JS -->
+              </div>
+
+              <!-- Card "Meus serviços" -->
+              <div class="vitrine-services-card" id="vitrine-services-card" onclick="openServicesSheet()">
+                <div class="services-card-left">
+                  <div class="services-icon-box">
+                    <i class="fa-solid fa-briefcase"></i>
+                  </div>
+                  <div class="services-card-texts">
+                    <span class="services-card-title">Meus serviços</span>
+                    <span class="services-card-sub">Especialidades e serviços oferecidos</span>
+                  </div>
+                </div>
+                <div class="services-card-right">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </div>
+              </div>
+
+              <!-- Seção "Meus trabalhos" com Grade 3x3 -->
+              <div class="vitrine-works-section">
+                <div class="works-header-row">
+                  <h3 class="works-section-title">Meus trabalhos</h3>
+                </div>
+
+                <!-- Grade com 3 colunas de trabalhos fotográficos -->
+                <div class="vitrine-works-grid" id="vitrine-works-grid">
+                  <!-- Fotos dos trabalhos injetadas dinamicamente via JS -->
+                </div>
+              </div>
+
+              <!-- Espaçador para o FAB não cobrir conteúdo ao rolar -->
+              <div class="vitrine-bottom-spacer"></div>
+            </div>
+
+            <!-- Input invisível para acionar a galeria de fotos nativa imediatamente (estilo Instagram) -->
+            <input type="file" id="portfolio-fab-file-input" accept="image/*" style="display: none;" onchange="handleMediaSelected(event)">
+
+            <!-- Botão Flutuante (FAB) Redondo de Upload no canto inferior direito -->
+            <button class="vitrine-fab-upload" id="vitrine-fab-upload" onclick="triggerAddMediaFlow()" title="Adicionar foto ao portfólio" aria-label="Adicionar foto ao portfólio">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             MODAL / BOTTOM SHEET: MEUS SERVIÇOS DETALHADOS
+             ========================================================= -->
+        <div id="services-sheet-overlay" class="modal-overlay" style="z-index: 1300;">
+          <div class="modal-content services-sheet-content">
+            <div class="modal-header">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="services-icon-box" style="width: 32px; height: 32px; font-size: 14px;">
+                  <i class="fa-solid fa-briefcase"></i>
+                </div>
+                <h4 style="margin: 0; font-size: 15px; font-weight: 800;">Meus Serviços Oferecidos</h4>
+              </div>
+              <button class="close-x-btn" onclick="closeServicesSheet()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" style="padding: 14px;">
+              <div id="services-sheet-list" class="services-sheet-list">
+                <!-- Injetado dinamicamente -->
+              </div>
+              <div id="services-sheet-owner-action" style="margin-top: 14px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             MODAL: AVALIAÇÕES DO PROFISSIONAL
+             ========================================================= -->
+        <div id="reviews-modal-overlay" class="modal-overlay" style="z-index: 1300;">
+          <div class="modal-content reviews-modal-content">
+            <div class="modal-header">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-star" style="color: #F59E0B;"></i>
+                <h4 style="margin: 0; font-size: 15px; font-weight: 800;">Avaliações de Clientes</h4>
+              </div>
+              <button class="close-x-btn" onclick="closeReviewsModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" style="padding: 14px;">
+              <div class="reviews-summary-card" id="modal-reviews-summary"></div>
+              <div class="reviews-feed-list" id="modal-reviews-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             MODAL: VISUALIZAÇÃO INDIVIDUAL DA PUBLICAÇÃO (POST DETAIL)
+             ========================================================= -->
+        <div id="post-detail-overlay" class="modal-overlay" style="z-index: 1300; background: #FFFFFF;">
+          <div class="modal-content post-modal-content">
+            <div class="post-viewer-top-bar">
+              <button class="v-nav-icon-btn" onclick="closePostDetail()" title="Voltar" aria-label="Voltar">
+                <i class="fa-solid fa-arrow-left"></i>
+              </button>
+              <div class="post-viewer-pro-info" id="post-viewer-pro-info">
+                <!-- Injetado dinamicamente -->
+              </div>
+              <div class="post-viewer-top-actions" id="post-owner-actions">
+                <!-- Injetado dinamicamente -->
+              </div>
+            </div>
+            <div class="post-detail-scroll-body" id="post-detail-body">
+              <!-- Conteúdo da publicação -->
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             MODAL: CRIAR NOVA PUBLICAÇÃO (DONO DO PERFIL)
+             ========================================================= -->
+        <div id="create-post-overlay" class="modal-overlay" style="z-index: 1300;">
+          <div class="modal-content create-post-content instagram-post-modal">
+            <div class="modal-header ig-post-header">
+              <button class="ig-btn-back" onclick="closeCreatePostModal()" title="Cancelar">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+              <h4 class="ig-modal-title">Nova Publicação</h4>
+              <button class="ig-btn-publish-header" onclick="submitNewPost()" title="Publicar">
+                Publicar
+              </button>
+            </div>
+            
+            <div class="modal-body ig-post-body">
+              <!-- Palco de Mídia Estilo Instagram: Foto Selecionada em Destaque -->
+              <div class="instagram-media-stage" id="instagram-media-stage">
+                <img id="instagram-post-img" class="instagram-preview-img" src="" alt="Mídia selecionada" style="display: none;">
+                <div id="instagram-post-fallback" class="instagram-preview-fallback">
+                  <i class="fa-solid fa-camera"></i>
+                  <span>Nenhuma foto selecionada</span>
+                </div>
+                <button type="button" class="btn-change-media-pill" onclick="triggerAddMediaFlow()" title="Trocar foto da galeria">
+                  <i class="fa-solid fa-arrows-rotate"></i> Trocar foto
+                </button>
+              </div>
+
+              <!-- Informações da Publicação: Título, Legenda e Bairro -->
+              <div class="ig-form-fields">
+                <div class="ig-field-group">
+                  <label for="new-post-title">Título do trabalho</label>
+                  <input type="text" id="new-post-title" class="ig-input-title" placeholder="Ex: Higienização Completa de Split 18.000">
+                </div>
+
+                <div class="ig-field-group">
+                  <label for="new-post-desc">Descrição / Legenda do serviço</label>
+                  <textarea id="new-post-desc" rows="3" class="ig-textarea-desc" placeholder="Descreva o procedimento técnico, tempo gasto, peças trocadas e o resultado entregue..."></textarea>
+                </div>
+
+                <div class="ig-fields-row">
+                  <div class="ig-field-group half">
+                    <label for="new-post-service-select">Especialidade / Serviço</label>
+                    <select id="new-post-service-select" class="ig-select">
+                      <!-- Opções de serviços do profissional -->
+                    </select>
+                  </div>
+
+                  <div class="ig-field-group half">
+                    <label for="new-post-neighborhood-select">Bairro em Parauapebas</label>
+                    <select id="new-post-neighborhood-select" class="ig-select">
+                      <option value="Cidade Nova">Cidade Nova</option>
+                      <option value="Rio Verde">Rio Verde</option>
+                      <option value="União">União</option>
+                      <option value="Nova Carajás">Nova Carajás</option>
+                      <option value="Beira Rio">Beira Rio</option>
+                      <option value="Da Paz">Da Paz</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-footer ig-modal-footer">
+              <button type="button" class="btn-cancel" onclick="closeCreatePostModal()">Descartar</button>
+              <button type="button" class="btn-submit" onclick="submitNewPost()"><i class="fa-solid fa-paper-plane"></i> Publicar no Portfólio</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             MODAL: EDITAR PERFIL PROFISSIONAL (DONO)
+             ========================================================= -->
+        <div id="edit-pro-overlay" class="modal-overlay" style="z-index: 1300;">
+          <div class="modal-content edit-pro-content">
+            <div class="modal-header">
+              <h4>Editar Perfil Profissional</h4>
+              <button class="close-x-btn" onclick="closeEditProModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+              <label>Nome Profissional</label>
+              <input type="text" id="edit-pro-name">
+
+              <label>Especialidade Principal</label>
+              <input type="text" id="edit-pro-specialty">
+
+              <label>Bairro Base</label>
+              <select id="edit-pro-bairro">
+                <option value="Cidade Nova">Cidade Nova</option>
+                <option value="Rio Verde">Rio Verde</option>
+                <option value="União">União</option>
+                <option value="Nova Carajás">Nova Carajás</option>
+              </select>
+
+              <label>Biografia / Apresentação</label>
+              <textarea id="edit-pro-bio" rows="3"></textarea>
+
+              <label>Bairros Atendidos (separados por vírgula)</label>
+              <input type="text" id="edit-pro-served-bairros" placeholder="Ex: Cidade Nova, Rio Verde, União">
+
+              <!-- Checkbox de Disponibilidade para Plantão SOS Emergência -->
+              <div class="emergency-pro-switch-wrap">
+                <div class="emergency-switch-info">
+                  <div class="emergency-switch-badge"><i class="fa-solid fa-triangle-exclamation"></i> Plantão 24h & Emergência</div>
+                  <label for="edit-pro-emergency-available" class="emergency-switch-title">Disponível para Atendimentos 24h e Emergências</label>
+                  <p class="emergency-switch-desc">Coloque-se à disposição para socorro rápido e chamados urgentes 24 horas em Parauapebas.</p>
+                </div>
+                <label class="custom-switch-label">
+                  <input type="checkbox" id="edit-pro-emergency-available" checked>
+                  <span class="custom-switch-slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn-cancel" onclick="closeEditProModal()">Cancelar</button>
+              <button class="btn-submit" onclick="saveProProfile()">Salvar Alterações</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             MODAL: GERENCIAR SERVIÇOS E CATÁLOGO (DONO)
+             ========================================================= -->
+        <div id="manage-services-overlay" class="modal-overlay" style="z-index: 1300;">
+          <div class="modal-content manage-services-content">
+            <div class="modal-header">
+              <h4>Gerenciar Meus Serviços</h4>
+              <button class="close-x-btn" onclick="closeManageServicesModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+              <div class="add-service-box">
+                <h5>Adicionar Novo Serviço</h5>
+                <input type="text" id="new-service-title" placeholder="Nome do serviço (ex: Carga de Gás R410A)">
+                <div style="display: flex; gap: 8px; margin-top: 6px;">
+                  <input type="text" id="new-service-price" placeholder="Preço (ex: R$ 150,00)">
+                  <button class="btn-submit" style="white-space: nowrap; padding: 0 14px;" onclick="addNewService()"><i class="fa-solid fa-plus"></i> Adicionar</button>
+                </div>
+              </div>
+
+              <h5 style="margin: 16px 0 8px; font-size: 13px;">Serviços Atuais no Catálogo</h5>
+              <div id="manage-services-list" class="manage-services-list">
+                <!-- Injetado dinamicamente -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODAL: SOLICITAR ORÇAMENTO -->
+        <div id="quote-modal-overlay" class="modal-overlay">
+          <div class="modal-content quote-modal-box">
+            <div class="modal-header">
+              <h4>Solicitar Orçamento</h4>
+              <button class="close-x-btn" onclick="closeQuoteModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+              <label>Título do Serviço</label>
+              <input type="text" id="quote-title-input" placeholder="Ex: Instalação de Split ou Troca de Fiação">
+              
+              <label>Bairro de Execução em Parauapebas</label>
+              <select id="quote-bairro-select">
+                <option value="Cidade Nova">Cidade Nova</option>
+                <option value="Rio Verde">Rio Verde</option>
+                <option value="União">União</option>
+                <option value="Nova Carajás">Nova Carajás</option>
+                <option value="Beira Rio">Beira Rio</option>
+                <option value="Da Paz">Da Paz</option>
+                <option value="Outro bairro">Outro bairro</option>
+              </select>
+
+              <label>Detalhes do que precisa</label>
+              <textarea id="quote-desc-input" rows="3" placeholder="Descreva brevemente o problema, prazo desejado ou marca do aparelho..."></textarea>
+            </div>
+            <div class="modal-footer">
+              <button class="btn-cancel" onclick="closeQuoteModal()">Cancelar</button>
+              <button class="btn-submit" onclick="submitQuoteRequest()">Enviar Pedido</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             1. TELA INICIAL DE ACESSO (WELCOME / AUTH HUB)
+             ========================================================= -->
+        <div id="auth-welcome-overlay" class="modal-overlay">
+          <div class="modal-content auth-welcome-content">
+            <div class="auth-welcome-header">
+              <button class="v-nav-icon-btn" onclick="closeAuthModal('auth-welcome-overlay')" title="Fechar">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <div class="auth-welcome-body">
+              <div class="auth-brand-hero">
+                <div class="auth-hero-logo">
+                  <img src="trampou_logo_transparent.png" alt="Trampou — Profissionais Perto de Você" class="auth-trampou-logo-img">
+                </div>
+                <h2>A plataforma de serviços perto de você</h2>
+                <p>Conectamos quem precisa de soluções com os melhores profissionais autônomos em Parauapebas.</p>
+              </div>
+
+              <div class="auth-role-cards">
+                <!-- Opção 1: Quero contratar um profissional -->
+                <div class="auth-role-card" onclick="openClientSignup()" id="btn-choice-client">
+                  <div class="auth-role-icon purple">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                  </div>
+                  <div class="auth-role-text">
+                    <h4>Quero contratar um profissional</h4>
+                    <p>Encontre especialistas, solicite orçamentos e converse sem compromisso.</p>
+                  </div>
+                  <i class="fa-solid fa-chevron-right role-arrow"></i>
+                </div>
+
+                <!-- Opção 2: Sou profissional e quero me cadastrar -->
+                <div class="auth-role-card pro" onclick="openProSignup()" id="btn-choice-pro">
+                  <div class="auth-role-icon dark-purple">
+                    <i class="fa-solid fa-briefcase"></i>
+                  </div>
+                  <div class="auth-role-text">
+                    <h4>Sou profissional e quero me cadastrar</h4>
+                    <p>Crie sua vitrine digital, mostre seus trabalhos e receba clientes da sua região.</p>
+                  </div>
+                  <i class="fa-solid fa-chevron-right role-arrow"></i>
+                </div>
+              </div>
+
+              <div class="auth-welcome-footer">
+                <p>Já tem uma conta? <button type="button" class="btn-link-auth" onclick="openLoginModal()">Entrar</button></p>
+                <button type="button" class="btn-guest-browse" onclick="closeAuthModal('auth-welcome-overlay')">
+                  Continuar explorando como visitante
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             2. MODAL DE LOGIN (CLIENTE OU PROFISSIONAL)
+             ========================================================= -->
+        <div id="auth-login-modal" class="modal-overlay">
+          <div class="modal-content auth-form-content">
+            <div class="auth-modal-header">
+              <button class="v-nav-icon-btn" onclick="openAuthWelcome()" title="Voltar">
+                <i class="fa-solid fa-arrow-left"></i>
+              </button>
+              <h4>Entrar na sua conta</h4>
+              <div style="width: 32px;"></div>
+            </div>
+
+            <div class="auth-form-body">
+              <div class="auth-intro-text">
+                <h3>Bem-vindo de volta!</h3>
+                <p>Acesse seus serviços, orçamentos e mensagens em Parauapebas.</p>
+              </div>
+
+              <!-- Alerta de Erro -->
+              <div id="login-error-alert" class="auth-alert error" style="display: none;">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span id="login-error-text">E-mail ou senha incorretos.</span>
+              </div>
+
+              <form id="form-login" onsubmit="handleLoginSubmit(event)">
+                <div class="auth-input-group">
+                  <label for="login-identifier">E-mail ou Telefone</label>
+                  <div class="input-icon-wrap">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="text" id="login-identifier" placeholder="ex: cliente@email.com ou 94991234567" required autocomplete="username">
+                  </div>
+                </div>
+
+                <div class="auth-input-group">
+                  <div class="label-row-between">
+                    <label for="login-password">Senha</label>
+                    <button type="button" class="btn-link-sm" onclick="openRecoveryModal()">Esqueceu a senha?</button>
+                  </div>
+                  <div class="input-icon-wrap">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="login-password" placeholder="Digite sua senha" required autocomplete="current-password">
+                    <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('login-password', 'eye-login')">
+                      <i class="fa-solid fa-eye" id="eye-login"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <button type="submit" id="btn-login-submit" class="btn-auth-primary">
+                  <span id="btn-login-label">Entrar</span>
+                  <i class="fa-solid fa-arrow-right" id="btn-login-arrow"></i>
+                  <i class="fa-solid fa-circle-notch fa-spin auth-spinner" id="btn-login-spinner" style="display: none;"></i>
+                </button>
+              </form>
+
+
+
+              <div class="auth-bottom-switch">
+                <span>Ainda não possui conta?</span>
+                <button type="button" class="btn-link-auth" onclick="openClientSignup()">Criar conta de cliente</button>
+                <span>ou</span>
+                <button type="button" class="btn-link-auth" onclick="openProSignup()">Cadastrar como profissional</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             3. MODAL DE RECUPERAÇÃO DE SENHA
+             ========================================================= -->
+        <div id="auth-recovery-modal" class="modal-overlay">
+          <div class="modal-content auth-form-content">
+            <div class="auth-modal-header">
+              <button class="v-nav-icon-btn" onclick="openLoginModal()" title="Voltar ao login">
+                <i class="fa-solid fa-arrow-left"></i>
+              </button>
+              <h4>Recuperar Senha</h4>
+              <div style="width: 32px;"></div>
+            </div>
+
+            <div class="auth-form-body">
+              <div class="auth-intro-text">
+                <h3>Esqueceu sua senha?</h3>
+                <p>Não se preocupe! Informe seu e-mail ou telefone cadastrado para enviarmos instruções de recuperação.</p>
+              </div>
+
+              <div id="recovery-alert" class="auth-alert" style="display: none;">
+                <i class="fa-solid fa-circle-check"></i>
+                <span id="recovery-alert-text"></span>
+              </div>
+
+              <form id="form-recovery" onsubmit="handleRecoverySubmit(event)">
+                <div class="auth-input-group">
+                  <label for="recovery-identifier">E-mail ou Telefone</label>
+                  <div class="input-icon-wrap">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="text" id="recovery-identifier" placeholder="Seu e-mail ou WhatsApp cadastrado" required>
+                  </div>
+                </div>
+
+                <button type="submit" id="btn-recovery-submit" class="btn-auth-primary">
+                  <span id="btn-recovery-label">Enviar instruções</span>
+                  <i class="fa-solid fa-paper-plane" id="btn-recovery-icon"></i>
+                  <i class="fa-solid fa-circle-notch fa-spin auth-spinner" id="btn-recovery-spinner" style="display: none;"></i>
+                </button>
+              </form>
+
+              <div class="auth-bottom-switch">
+                <button type="button" class="btn-link-auth" onclick="openLoginModal()">
+                  <i class="fa-solid fa-arrow-left"></i> Voltar para o Login
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             4. MODAL DE CADASTRO DO CLIENTE
+             ========================================================= -->
+        <div id="auth-client-signup-modal" class="modal-overlay">
+          <div class="modal-content auth-form-content">
+            <div class="auth-modal-header">
+              <button class="v-nav-icon-btn" onclick="openAuthWelcome()" title="Voltar">
+                <i class="fa-solid fa-arrow-left"></i>
+              </button>
+              <h4>Cadastro de Cliente</h4>
+              <div style="width: 32px;"></div>
+            </div>
+
+            <div class="auth-form-body">
+              <div class="auth-intro-text">
+                <h3>Crie sua conta</h3>
+                <p>Solicite orçamentos gratuitos e contrate prestadores em Parauapebas.</p>
+              </div>
+
+              <!-- Alerta de Erro -->
+              <div id="client-signup-error" class="auth-alert error" style="display: none;">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span id="client-signup-error-text"></span>
+              </div>
+
+              <form id="form-client-signup" onsubmit="handleClientSignupSubmit(event)">
+                <div class="auth-input-group">
+                  <label for="client-name">Nome Completo</label>
+                  <div class="input-icon-wrap">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="client-name" placeholder="ex: Maria Silva" required minlength="3">
+                  </div>
+                </div>
+
+                <div class="auth-input-group">
+                  <label for="client-email">E-mail</label>
+                  <div class="input-icon-wrap">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" id="client-email" placeholder="seuemail@exemplo.com" required>
+                  </div>
+                </div>
+
+                <div class="auth-input-group">
+                  <label for="client-phone">Telefone / WhatsApp</label>
+                  <div class="input-icon-wrap">
+                    <i class="fa-solid fa-phone"></i>
+                    <input type="tel" id="client-phone" placeholder="(94) 99123-4567" required>
+                  </div>
+                </div>
+
+                <div class="auth-input-group">
+                  <label for="client-password">Senha (mínimo 6 caracteres)</label>
+                  <div class="input-icon-wrap">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="client-password" placeholder="Crie uma senha segura" required minlength="6">
+                    <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('client-password', 'eye-client-pwd')">
+                      <i class="fa-solid fa-eye" id="eye-client-pwd"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="auth-input-group">
+                  <label for="client-password-confirm">Confirme sua Senha</label>
+                  <div class="input-icon-wrap">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="client-password-confirm" placeholder="Repita a senha digitada" required minlength="6">
+                    <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('client-password-confirm', 'eye-client-confirm')">
+                      <i class="fa-solid fa-eye" id="eye-client-confirm"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="auth-terms-box">
+                  <label class="custom-checkbox-label">
+                    <input type="checkbox" id="client-terms-check" required>
+                    <span class="checkbox-indicator"></span>
+                    <span class="terms-text">Li e concordo com os <a href="javascript:void(0)" onclick="showToast('Termos de Uso de Parauapebas')">Termos de Uso</a> e a <a href="javascript:void(0)" onclick="showToast('Política de Privacidade')">Política de Privacidade</a> de Parauapebas.</span>
+                  </label>
+                </div>
+
+                <button type="submit" id="btn-client-signup-submit" class="btn-auth-primary">
+                  <span id="btn-client-signup-label">Criar Conta e Continuar</span>
+                  <i class="fa-solid fa-arrow-right" id="btn-client-signup-arrow"></i>
+                  <i class="fa-solid fa-circle-notch fa-spin auth-spinner" id="btn-client-signup-spinner" style="display: none;"></i>
+                </button>
+              </form>
+
+              <div class="auth-bottom-switch">
+                <span>Já tem conta?</span>
+                <button type="button" class="btn-link-auth" onclick="openLoginModal()">Fazer Login</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             5. MODAL DE CADASTRO PROFISSIONAL EM ETAPAS (WIZARD 4 STEPS)
+             ========================================================= -->
+        <div id="auth-pro-signup-modal" class="modal-overlay">
+          <div class="modal-content auth-wizard-content">
+            <!-- Header do Wizard -->
+            <div class="auth-modal-header">
+              <button class="v-nav-icon-btn" onclick="handleProWizardBack()" title="Voltar">
+                <i class="fa-solid fa-arrow-left"></i>
+              </button>
+              <h4 id="pro-wizard-header-title">Cadastro Profissional</h4>
+              <button class="v-nav-icon-btn" onclick="closeAuthModal('auth-pro-signup-modal')" title="Fechar">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <!-- Stepper Visual de 4 Etapas -->
+            <div class="pro-wizard-stepper">
+              <div class="wizard-step active" id="w-indicator-1">
+                <div class="step-circle">1</div>
+                <span>Conta</span>
+              </div>
+              <div class="wizard-connector" id="w-conn-1"></div>
+              <div class="wizard-step" id="w-indicator-2">
+                <div class="step-circle">2</div>
+                <span>Perfil</span>
+              </div>
+              <div class="wizard-connector" id="w-conn-2"></div>
+              <div class="wizard-step" id="w-indicator-3">
+                <div class="step-circle">3</div>
+                <span>Vitrine</span>
+              </div>
+              <div class="wizard-connector" id="w-conn-3"></div>
+              <div class="wizard-step" id="w-indicator-4">
+                <div class="step-circle">4</div>
+                <span>Revisão</span>
+              </div>
+            </div>
+
+            <!-- Rascunho salvo aviso -->
+            <div id="wizard-draft-toast" class="wizard-draft-pill" style="display: none;">
+              <i class="fa-solid fa-floppy-disk"></i> Progresso salvo automaticamente
+            </div>
+
+            <div class="auth-wizard-body">
+              <!-- ================= ETAPA 1: CONTA ================= -->
+              <div class="wizard-step-pane active" id="step-pane-1">
+                <div class="auth-intro-text">
+                  <h3>Etapa 1: Dados de Acesso</h3>
+                  <p>Crie sua identidade de acesso à plataforma Trampou.</p>
+                </div>
+
+                <!-- Notificação de usuário já conectado (vinculação sem duplicidade) -->
+                <div id="pro-already-logged-banner" class="auth-alert info" style="display: none;">
+                  <i class="fa-solid fa-id-card"></i>
+                  <div>
+                    <strong>Conta identificada:</strong>
+                    <p id="pro-already-logged-desc">Você já está logado como <span id="logged-user-display-name"></span>. Vincularemos sua vitrine profissional à sua conta existente.</p>
+                  </div>
+                </div>
+
+                <div id="pro-account-inputs-wrap">
+                  <div class="auth-input-group">
+                    <label for="pro-name">Nome Completo</label>
+                    <div class="input-icon-wrap">
+                      <i class="fa-solid fa-user"></i>
+                      <input type="text" id="pro-name" placeholder="Seu nome completo">
+                    </div>
+                  </div>
+
+                  <div class="auth-input-group">
+                    <label for="pro-email">E-mail Profissional</label>
+                    <div class="input-icon-wrap">
+                      <i class="fa-solid fa-envelope"></i>
+                      <input type="email" id="pro-email" placeholder="carlos@exemplo.com">
+                    </div>
+                  </div>
+
+                  <div class="auth-input-group">
+                    <label for="pro-phone">WhatsApp / Telefone para Contato</label>
+                    <div class="input-icon-wrap">
+                      <i class="fa-solid fa-phone"></i>
+                      <input type="tel" id="pro-phone" placeholder="(94) 99123-4567">
+                    </div>
+                  </div>
+
+                  <div class="auth-input-group">
+                    <label for="pro-password">Senha de Acesso (mínimo 6 dígitos)</label>
+                    <div class="input-icon-wrap">
+                      <i class="fa-solid fa-lock"></i>
+                      <input type="password" id="pro-password" placeholder="Crie sua senha segura" minlength="6">
+                      <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('pro-password', 'eye-pro-pwd')">
+                        <i class="fa-solid fa-eye" id="eye-pro-pwd"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="auth-input-group">
+                    <label for="pro-password-confirm">Confirme sua Senha</label>
+                    <div class="input-icon-wrap">
+                      <i class="fa-solid fa-lock"></i>
+                      <input type="password" id="pro-password-confirm" placeholder="Confirme a senha" minlength="6">
+                      <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('pro-password-confirm', 'eye-pro-confirm')">
+                        <i class="fa-solid fa-eye" id="eye-pro-confirm"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="auth-terms-box">
+                    <label class="custom-checkbox-label">
+                      <input type="checkbox" id="pro-terms-check">
+                      <span class="checkbox-indicator"></span>
+                      <span class="terms-text">Declaro que li e concordo com os <a href="javascript:void(0)" onclick="showToast('Termos para Prestadores de Serviços')">Termos de Prestação de Serviços</a> e Responsabilidade Técnica.</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="wizard-action-footer">
+                  <button type="button" class="btn-auth-primary" onclick="validateAndGoStep(2)">
+                    <span>Avançar para Perfil Profissional</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- ================= ETAPA 2: PERFIL PROFISSIONAL ================= -->
+              <div class="wizard-step-pane" id="step-pane-2">
+                <div class="auth-intro-text">
+                  <h3>Etapa 2: Especialidade & Região</h3>
+                  <p>Como os clientes vão encontrar você nas buscas de Parauapebas.</p>
+                </div>
+
+                <div class="auth-input-group">
+                  <label for="pro-commercial-name">Nome Comercial / Público</label>
+                  <div class="input-icon-wrap">
+                    <i class="fa-solid fa-signature"></i>
+                    <input type="text" id="pro-commercial-name" placeholder="ex: Carlos Eletricista ou Silva Ar-Condicionado">
+                  </div>
+                  <small class="field-hint">É como seu perfil aparecerá na vitrine social e nos resultados.</small>
+                </div>
+
+                <div class="auth-input-group">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <label for="pro-main-category" style="margin-bottom: 0;">Profissão Principal</label>
+                    <button type="button" class="btn-link-subtle" onclick="toggleNewCategoryField()" title="Cadastrar nova categoria">
+                      <i class="fa-solid fa-plus-circle"></i> Criar nova categoria
+                    </button>
+                  </div>
+                  <div class="input-icon-wrap select-wrap">
+                    <i class="fa-solid fa-screwdriver-wrench"></i>
+                    <select id="pro-main-category" onchange="handleProCategoryChange(this.value)">
+                      <option value="">Selecione sua profissão...</option>
+                      <option value="Eletricista">Eletricista Residencial e Comercial</option>
+                      <option value="Ar-Condicionado">Técnico em Refrigeração & Split</option>
+                      <option value="Encanador">Encanador e Bombeiro Hidráulico</option>
+                      <option value="Pedreiro">Pedreiro e Reformas Gerais</option>
+                      <option value="Pintor">Pintor e Texturas</option>
+                      <option value="Diarista">Diarista e Limpeza Pesada</option>
+                      <option value="Mecânico">Mecânico e Socorro Automotivo</option>
+                      <option value="Marceneiro">Marcenaria e Montagem de Móveis</option>
+                      <option value="Informática">Técnico em Informática e Redes</option>
+                      <option value="Fretes">Fretes e Carretos</option>
+                      <option value="__NEW__">➕ Outra profissão / Criar nova categoria...</option>
+                    </select>
+                  </div>
+
+                  <!-- Caixa de Criação de Nova Categoria -->
+                  <div id="new-category-box" class="new-category-box" style="display: none;">
+                    <label for="new-category-input" class="new-cat-label">Nome da nova profissão ou categoria</label>
+                    <div class="new-cat-input-row">
+                      <div class="input-icon-wrap" style="flex: 1;">
+                        <i class="fa-solid fa-tag"></i>
+                        <input type="text" id="new-category-input" placeholder="Ex: Chaveiro, Tapeceiro, Soldador, Jardineiro..." autocomplete="off">
+                      </div>
+                      <button type="button" class="btn-add-cat-confirm" onclick="confirmAddCustomCategory()">
+                        <i class="fa-solid fa-check"></i> Adicionar
+                      </button>
+                    </div>
+                    <small class="field-hint">Esta nova profissão será salva e adicionada às opções do aplicativo.</small>
+                  </div>
+                </div>
+
+                <div class="auth-input-group">
+                  <label>Especialidades e Serviços Oferecidos</label>
+                  <div class="tags-selector-wrap" id="pro-specialties-chips">
+                    <span class="selectable-chip" onclick="toggleTagChip(this)">Instalações Novas</span>
+                    <span class="selectable-chip" onclick="toggleTagChip(this)">Manutenção Preventiva</span>
+                    <span class="selectable-chip" onclick="toggleTagChip(this)">Atendimento Emergencial 24h</span>
+                    <span class="selectable-chip" onclick="toggleTagChip(this)">Comercial</span>
+                    <span class="selectable-chip" onclick="toggleTagChip(this)">Residencial</span>
+                    <span class="selectable-chip" onclick="toggleTagChip(this)">Orçamento com Laudo</span>
+                  </div>
+                </div>
+
+                <div class="auth-input-group">
+                  <label>Bairros de Atendimento em Parauapebas</label>
+                  <div class="tags-selector-wrap" id="pro-neighborhoods-chips">
+                    <span class="selectable-chip active" onclick="toggleNeighborhoodChip(this)">Cidade Nova</span>
+                    <span class="selectable-chip" onclick="toggleNeighborhoodChip(this)">Rio Verde</span>
+                    <span class="selectable-chip" onclick="toggleNeighborhoodChip(this)">União</span>
+                    <span class="selectable-chip" onclick="toggleNeighborhoodChip(this)">Nova Carajás</span>
+                    <span class="selectable-chip" onclick="toggleNeighborhoodChip(this)">Beira Rio</span>
+                    <span class="selectable-chip" onclick="toggleNeighborhoodChip(this)">Da Paz</span>
+                    <span class="selectable-chip" onclick="toggleNeighborhoodChip(this)">Chácaras do Sol</span>
+                    <span class="selectable-chip" onclick="toggleNeighborhoodChip(this)">Toda a cidade</span>
+                  </div>
+                </div>
+
+                <div class="auth-input-group">
+                  <label for="pro-bio">Descrição Profissional (Bio da Vitrine)</label>
+                  <textarea id="pro-bio" rows="3" placeholder="Apresente sua experiência, garantia dos serviços e qualificações para os clientes..."></textarea>
+                </div>
+
+                <div class="wizard-action-footer split">
+                  <button type="button" class="btn-auth-secondary" onclick="goStep(1)">
+                    <i class="fa-solid fa-arrow-left"></i> Voltar
+                  </button>
+                  <button type="button" class="btn-auth-primary" onclick="validateAndGoStep(3)">
+                    <span>Avançar para Vitrine</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- ================= ETAPA 3: VITRINE SOCIAL ================= -->
+              <div class="wizard-step-pane" id="step-pane-3">
+                <div class="auth-intro-text">
+                  <h3>Etapa 3: Fotos & Vitrine Digital</h3>
+                  <p>Adicione fotos para gerar credibilidade e aumentar o contato de clientes.</p>
+                  <div class="optional-pill-badge"><i class="fa-solid fa-circle-info"></i> Campos opcionais: você pode finalizar e postar mais fotos depois.</div>
+                </div>
+
+                <!-- Foto de Perfil -->
+                <div class="avatar-upload-box">
+                  <label class="section-sub-label">Foto de Perfil ou Logomarca</label>
+                  <div class="avatar-upload-row">
+                    <div class="avatar-upload-preview" id="wizard-avatar-preview">
+                      <i class="fa-solid fa-user-tie" id="wizard-avatar-default-icon"></i>
+                      <img id="wizard-avatar-img" src="" alt="Avatar" style="display:none; width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                    </div>
+                    <div class="avatar-upload-actions">
+                      <label class="btn-file-select" for="wizard-avatar-input">
+                        <i class="fa-solid fa-camera"></i> Escolher Foto
+                      </label>
+                      <input type="file" id="wizard-avatar-input" accept="image/*" style="display:none;" onchange="handleWizardAvatarSelect(this)">
+                      <button type="button" class="btn-remove-sm" id="btn-remove-avatar" style="display: none;" onclick="removeWizardAvatar()">
+                        <i class="fa-solid fa-trash"></i> Remover
+                      </button>
+                      <small>Formatos JPG ou PNG recomendados.</small>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Galeria de Trabalhos Realizados -->
+                <div class="gallery-upload-box">
+                  <div class="gallery-upload-header">
+                    <div>
+                      <label class="section-sub-label">Fotos de Trabalhos Realizados (Até 6 fotos)</label>
+                      <small>Exiba instalações, reformas ou serviços finalizados</small>
+                    </div>
+                    <label class="btn-file-select-sm" for="wizard-gallery-input">
+                      <i class="fa-solid fa-plus"></i> Adicionar
+                    </label>
+                    <input type="file" id="wizard-gallery-input" accept="image/*" multiple style="display:none;" onchange="handleWizardGallerySelect(this)">
+                  </div>
+
+                  <div class="gallery-preview-grid" id="wizard-gallery-grid">
+                    <div class="gallery-empty-tip" id="wizard-gallery-empty">
+                      <i class="fa-regular fa-images"></i>
+                      <span>Nenhuma foto adicionada ainda. Clique em "Adicionar" para selecionar imagens do seu aparelho.</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Descrição Complementar -->
+                <div class="auth-input-group" style="margin-top: 14px;">
+                  <label for="pro-extra-info">Informações Complementares de Atendimento</label>
+                  <input type="text" id="pro-extra-info" placeholder="ex: Aceita cartão/Pix • Orçamento sem taxa de visita">
+                </div>
+
+                <div class="wizard-action-footer split">
+                  <button type="button" class="btn-auth-secondary" onclick="goStep(2)">
+                    <i class="fa-solid fa-arrow-left"></i> Voltar
+                  </button>
+                  <button type="button" class="btn-auth-primary" onclick="validateAndGoStep(4)">
+                    <span>Revisar Cadastro</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- ================= ETAPA 4: REVISÃO & CONFIRMAÇÃO ================= -->
+              <div class="wizard-step-pane" id="step-pane-4">
+                <div class="auth-intro-text">
+                  <h3>Etapa 4: Revisão do Perfil</h3>
+                  <p>Confira os dados antes de publicar sua vitrine no Trampou.</p>
+                </div>
+
+                <div class="review-summary-card">
+                  <!-- Header do resumo -->
+                  <div class="summary-profile-header">
+                    <div class="summary-avatar" id="rev-avatar-preview">
+                      <i class="fa-solid fa-user-tie"></i>
+                    </div>
+                    <div class="summary-header-info">
+                      <h4 id="rev-commercial-name">Nome do Profissional</h4>
+                      <span class="summary-badge" id="rev-main-category">Eletricista</span>
+                      <p id="rev-email-phone">—</p>
+                    </div>
+                    <button type="button" class="btn-edit-step" onclick="goStep(2)" title="Editar dados básicos">
+                      <i class="fa-solid fa-pen"></i>
+                    </button>
+                  </div>
+
+                  <div class="summary-divider"></div>
+
+                  <!-- Detalhes do resumo -->
+                  <div class="summary-detail-row">
+                    <span class="detail-label"><i class="fa-solid fa-location-dot"></i> Bairros atendidos:</span>
+                    <span class="detail-value" id="rev-neighborhoods">Cidade Nova, Rio Verde</span>
+                  </div>
+
+                  <div class="summary-detail-row">
+                    <span class="detail-label"><i class="fa-solid fa-tag"></i> Especialidades:</span>
+                    <span class="detail-value" id="rev-specialties">Residencial, Comercial</span>
+                  </div>
+
+                  <div class="summary-detail-row">
+                    <span class="detail-label"><i class="fa-solid fa-align-left"></i> Biografia:</span>
+                    <p class="detail-bio" id="rev-bio">Sem descrição informada.</p>
+                  </div>
+
+                  <div class="summary-detail-row">
+                    <span class="detail-label"><i class="fa-solid fa-camera"></i> Fotos na Vitrine:</span>
+                    <span class="detail-value" id="rev-photos-count">0 foto(s) anexada(s)</span>
+                  </div>
+
+                  <div class="summary-photos-preview-strip" id="rev-photos-strip"></div>
+                </div>
+
+                <div class="review-assurance-box">
+                  <i class="fa-solid fa-shield-check"></i>
+                  <span>Sua vitrine será ativada imediatamente e poderá ser editada a qualquer momento pela sua Área do Profissional.</span>
+                </div>
+
+                <div class="wizard-action-footer split">
+                  <button type="button" class="btn-auth-secondary" onclick="goStep(3)">
+                    <i class="fa-solid fa-arrow-left"></i> Voltar
+                  </button>
+                  <button type="button" id="btn-pro-confirm-submit" class="btn-auth-primary success-gradient" onclick="handleProSignupFinalSubmit()">
+                    <span id="btn-pro-confirm-label"><i class="fa-solid fa-check"></i> Confirmar e Publicar Vitrine</span>
+                    <i class="fa-solid fa-circle-notch fa-spin auth-spinner" id="btn-pro-confirm-spinner" style="display: none;"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             6. MODAL DE EDIÇÃO DE PERFIL DO CLIENTE
+             ========================================================= -->
+        <div id="edit-profile-modal" class="modal-overlay">
+          <div class="modal-content auth-form-content">
+            <div class="auth-modal-header">
+              <button class="v-nav-icon-btn" onclick="closeAuthModal('edit-profile-modal')" title="Fechar">
+                <i class="fa-solid fa-arrow-left"></i>
+              </button>
+              <h4>Editar Meus Dados</h4>
+              <div style="width: 32px;"></div>
+            </div>
+
+            <div class="auth-form-body">
+              <form id="form-edit-profile" onsubmit="handleProfileEditSubmit(event)">
+                <div class="auth-input-group">
+                  <label for="edit-profile-name">Nome Completo</label>
+                  <div class="input-icon-wrap">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="edit-profile-name" required>
+                  </div>
+                </div>
+
+                <div class="auth-input-group">
+                  <label for="edit-profile-phone">WhatsApp / Telefone</label>
+                  <div class="input-icon-wrap">
+                    <i class="fa-solid fa-phone"></i>
+                    <input type="tel" id="edit-profile-phone">
+                  </div>
+                </div>
+
+                <div class="auth-input-group">
+                  <label for="edit-profile-neighborhood">Seu Bairro em Parauapebas</label>
+                  <div class="input-icon-wrap select-wrap">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <select id="edit-profile-neighborhood">
+                      <option value="Cidade Nova">Cidade Nova</option>
+                      <option value="Rio Verde">Rio Verde</option>
+                      <option value="União">União</option>
+                      <option value="Nova Carajás">Nova Carajás</option>
+                      <option value="Beira Rio">Beira Rio</option>
+                      <option value="Da Paz">Da Paz</option>
+                      <option value="Outro bairro">Outro bairro</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button type="submit" class="btn-auth-primary">
+                  <span>Salvar Alterações</span>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+        <!-- =========================================================
+             7. MODAL / TELA DE LISTA DE PROFISSIONAIS (RESULTADOS DE BUSCA & CATEGORIAS)
+             ========================================================= -->
+        <div id="pro-list-overlay" class="modal-overlay">
+          <div class="modal-content pro-list-content">
+            <!-- Barra Superior com Voltar e Título -->
+            <div class="pro-list-header">
+              <button class="v-nav-icon-btn" onclick="closeProListModal()" title="Voltar" aria-label="Voltar">
+                <i class="fa-solid fa-arrow-left"></i>
+              </button>
+              <div class="pro-list-header-info">
+                <h4 id="pro-list-title">Profissionais</h4>
+                <span id="pro-list-subtitle">Parauapebas, PA</span>
+              </div>
+              <div class="pro-list-count-badge" id="pro-list-count">0 encontrados</div>
+            </div>
+
+            <!-- Barra de Filtro Rápido de Bairros -->
+            <div class="pro-list-filter-bar" id="pro-list-filter-bar">
+              <!-- Chips injetados dinamicamente via JS -->
+            </div>
+
+            <!-- Corpo Rolável com Cards dos Profissionais -->
+            <div class="pro-list-scroll-body" id="pro-list-items-container">
+              <!-- Cards dos profissionais injetados dinamicamente -->
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             MODAL: TODAS AS CATEGORIAS DE PROFISSIONAIS (OPÇÕES COMPLETAS)
+             ========================================================= -->
+        <div id="all-categories-modal-overlay" class="modal-overlay" style="z-index: 1100;">
+          <div class="modal-content all-cats-modal-content">
+            <!-- Barra Superior do Modal de Categorias -->
+            <div class="all-cats-header">
+              <div class="all-cats-header-info">
+                <div class="all-cats-title-row">
+                  <i class="fa-solid fa-shapes icon-brand"></i>
+                  <h4>Todas as Categorias</h4>
+                </div>
+                <span>Selecione uma especialidade para ver os profissionais</span>
+              </div>
+              <button type="button" class="v-nav-icon-btn" onclick="closeAllCategoriesModal()" title="Fechar" aria-label="Fechar">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <!-- Campo de Busca Rápida de Categorias -->
+            <div class="all-cats-search-wrap">
+              <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+              <input 
+                type="text" 
+                id="all-cats-search-input" 
+                class="all-cats-search-input" 
+                placeholder="Buscar categoria (ex: Eletricista, Pintor...)" 
+                oninput="filterCategoriesInModal(this.value)"
+                autocomplete="off"
+              />
+              <button type="button" id="all-cats-clear-btn" class="all-cats-clear-btn" style="display: none;" onclick="clearModalCategorySearch()">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+              </button>
+            </div>
+
+            <!-- Lista Rolável com Todas as Opções de Categorias -->
+            <div class="all-cats-scroll-body" id="all-categories-container">
+              <!-- Renderizado dinamicamente via renderAllCategoriesModal() -->
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             MODAL: LISTA DE PROFISSIONAIS FAVORITOS DO CLIENTE
+             ========================================================= -->
+        <div id="favorites-modal-overlay" class="modal-overlay" style="z-index: 1100;">
+          <div class="modal-content pro-list-content">
+            <!-- Barra Superior com Voltar e Título -->
+            <div class="pro-list-header">
+              <button class="v-nav-icon-btn" onclick="closeFavoritesModal()" title="Voltar" aria-label="Voltar">
+                <i class="fa-solid fa-arrow-left"></i>
+              </button>
+              <div class="pro-list-header-info">
+                <h4>Profissionais Favoritos</h4>
+                <span id="favorites-count-label">0 salvos</span>
+              </div>
+            </div>
+
+            <!-- Corpo Rolável com os Favoritos -->
+            <div class="pro-list-scroll-body" id="favorites-list-container">
+              <!-- Conteúdo injetado via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             8. MODAL DE SOLICITAÇÃO DE EMERGÊNCIA SOS
+             ========================================================= -->
+        <div id="sos-request-modal" class="modal-overlay">
+          <div class="modal-content auth-form-content sos-request-modal-content">
+            <div class="auth-modal-header sos-modal-header">
+              <button type="button" class="v-nav-icon-btn" onclick="closeSOSRequestModal()" title="Fechar">
+                <i class="fa-solid fa-arrow-left"></i>
+              </button>
+              <div class="sos-header-text">
+                <div class="sos-pill-mini"><i class="fa-solid fa-bolt"></i> Plantão SOS 24h</div>
+                <h4>Solicitar Emergência</h4>
+              </div>
+              <div style="width: 32px;"></div>
+            </div>
+
+            <div class="auth-form-body sos-form-body">
+              <!-- Seleção do tipo de profissional com Campo de Busca de Profissional Específico -->
+              <div class="auth-input-group sos-selection-group">
+                <label style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span>Quem você precisa agora?</span>
+                  <span class="sos-search-hint-pill"><i class="fa-solid fa-crosshairs"></i> Alvo Direto ou Categoria</span>
+                </label>
+
+                <!-- Campo de busca de profissional específico ou especialidade -->
+                <div class="sos-search-box-wrap">
+                  <i class="fa-solid fa-magnifying-glass sos-search-icon"></i>
+                  <input type="text" id="sos-search-input" class="sos-search-input" placeholder="Buscar profissional ou serviço (ex: Eletricista, Guincho...)" oninput="handleSOSSearch(this.value)" autocomplete="off">
+                  <button type="button" id="sos-search-clear-btn" class="sos-search-clear-btn" style="display: none;" onclick="clearSOSSearch()" title="Limpar busca">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+
+                <!-- Card de Profissional Específico Selecionado -->
+                <div id="sos-selected-pro-banner" class="sos-selected-pro-card" style="display: none;">
+                  <div class="sos-sel-pro-left">
+                    <div class="sos-sel-avatar-wrap" id="sos-sel-avatar-wrap">
+                      <img id="sos-sel-avatar-img" src="" alt="Avatar" style="display:none; width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                      <div id="sos-sel-avatar-fallback" class="sos-sel-avatar-fallback">P</div>
+                    </div>
+                    <div class="sos-sel-pro-info">
+                      <div class="sos-sel-name-row">
+                        <strong id="sos-sel-pro-name">Profissional</strong>
+                        <span class="sos-sel-badge-direct"><i class="fa-solid fa-bolt"></i> Alerta Direto</span>
+                      </div>
+                      <span class="sos-sel-specialty" id="sos-sel-pro-specialty">Especialidade</span>
+                      <span class="sos-sel-loc" id="sos-sel-pro-loc"><i class="fa-solid fa-location-dot"></i> Parauapebas, PA</span>
+                    </div>
+                  </div>
+                  <button type="button" class="sos-sel-remove-btn" onclick="clearSelectedSpecificPro()" title="Trocar profissional">
+                    <i class="fa-solid fa-xmark"></i> Trocar
+                  </button>
+                </div>
+
+                <!-- Lista de Resultados da Busca (Profissionais e Categorias) -->
+                <div id="sos-search-results-list" class="sos-search-results-list" style="display: none;"></div>
+
+                <!-- Categorias Rápidas / Recomendadas -->
+                <div id="sos-quick-categories-section">
+                  <span class="sos-quick-label">Ou escolha uma categoria recomendada:</span>
+                  <div class="sos-pro-chips-grid" id="sos-pro-chips-grid">
+                    <button type="button" class="sos-choice-chip active" data-pro="Eletricista" onclick="selectSOSProType('Eletricista')">
+                      <i class="fa-solid fa-bolt"></i> <span>Eletricista</span>
+                    </button>
+                    <button type="button" class="sos-choice-chip" data-pro="Encanador" onclick="selectSOSProType('Encanador')">
+                      <i class="fa-solid fa-faucet-drip"></i> <span>Encanador</span>
+                    </button>
+                    <button type="button" class="sos-choice-chip" data-pro="Reboque" onclick="selectSOSProType('Reboque')">
+                      <i class="fa-solid fa-truck-pickup"></i> <span>Reboque / Guincho</span>
+                    </button>
+                    <button type="button" class="sos-choice-chip" data-pro="Chaveiro" onclick="selectSOSProType('Chaveiro')">
+                      <i class="fa-solid fa-key"></i> <span>Chaveiro</span>
+                    </button>
+                    <button type="button" class="sos-choice-chip" data-pro="Mecânico" onclick="selectSOSProType('Mecânico')">
+                      <i class="fa-solid fa-wrench"></i> <span>Mecânico</span>
+                    </button>
+                    <button type="button" class="sos-choice-chip" data-pro="Refrigeração" onclick="selectSOSProType('Refrigeração')">
+                      <i class="fa-solid fa-snowflake"></i> <span>Ar-Condicionado</span>
+                    </button>
+                    <button type="button" class="sos-choice-chip" data-pro="Pedreiro" onclick="selectSOSProType('Pedreiro')">
+                      <i class="fa-solid fa-trowel-bricks"></i> <span>Pedreiro</span>
+                    </button>
+                    <button type="button" class="sos-choice-chip" data-pro="Carpinteiro" onclick="selectSOSProType('Carpinteiro')">
+                      <i class="fa-solid fa-hammer"></i> <span>Carpinteiro</span>
+                    </button>
+                    <button type="button" class="sos-choice-chip" data-pro="Diarista" onclick="selectSOSProType('Diarista')">
+                      <i class="fa-solid fa-broom"></i> <span>Diarista Urgente</span>
+                    </button>
+                    <button type="button" class="sos-choice-chip" data-pro="Pintor" onclick="selectSOSProType('Pintor')">
+                      <i class="fa-solid fa-paint-roller"></i> <span>Pintor</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bairro / Localização -->
+              <div class="auth-input-group">
+                <label for="sos-bairro-select">Seu Bairro em Parauapebas</label>
+                <div class="input-icon-wrap select-wrap">
+                  <i class="fa-solid fa-location-dot"></i>
+                  <select id="sos-bairro-select">
+                    <option value="Cidade Nova">Cidade Nova</option>
+                    <option value="Rio Verde">Rio Verde</option>
+                    <option value="União">União</option>
+                    <option value="Nova Carajás">Nova Carajás</option>
+                    <option value="Beira Rio">Beira Rio</option>
+                    <option value="Da Paz">Da Paz</option>
+                    <option value="Altamira">Altamira</option>
+                    <option value="Chácara do Sol">Chácara do Sol</option>
+                    <option value="Maranhão">Maranhão</option>
+                    <option value="Outro bairro">Outro bairro</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Descrição do Problema -->
+              <div class="auth-input-group">
+                <label for="sos-desc-input">Descrição do problema urgente</label>
+                <textarea id="sos-desc-input" class="auth-textarea" rows="3" placeholder="Ex: Disjuntor explodiu e estou sem luz em casa / Cano principal estourou e está alagando..."></textarea>
+              </div>
+
+              <!-- Telefone de Contato -->
+              <div class="auth-input-group">
+                <label for="sos-phone-input">Seu WhatsApp para contato imediato</label>
+                <div class="input-icon-wrap">
+                  <i class="fa-brands fa-whatsapp"></i>
+                  <input type="tel" id="sos-phone-input" placeholder="(94) 99123-4567">
+                </div>
+              </div>
+
+              <div class="sos-trust-badge">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>Chamado transmitido em tempo real aos profissionais com plantão ativo.</span>
+              </div>
+
+              <button type="button" class="btn-auth-primary btn-sos-disparar" onclick="launchSOSRadar()">
+                <i class="fa-solid fa-satellite-dish"></i>
+                <span id="btn-sos-disparar-label">Disparar Chamado SOS aos Profissionais</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             9. TELA ESTILO APP 99: MAPA COM PROFISSIONAIS ONLINE & RADAR SOS
+             ========================================================= -->
+        <div id="sos-radar-modal" class="modal-overlay sos-radar-overlay">
+          <div class="modal-content sos-radar-content">
+            <!-- Barra Superior do Mapa estilo 99 -->
+            <div class="radar-top-bar">
+              <button type="button" class="radar-top-btn" onclick="cancelSOSRadar()" title="Voltar / Cancelar">
+                <i class="fa-solid fa-arrow-left"></i>
+              </button>
+              <div class="radar-header-pill" id="radar-header-pill">
+                <span class="radar-live-blip"></span>
+                <span id="radar-status-caption">Buscando profissionais de plantão...</span>
+              </div>
+              <button type="button" class="radar-top-btn" onclick="showToast('Plantão SOS: Profissionais no seu raio estão sendo notificados agora!')" title="Informações">
+                <i class="fa-solid fa-info"></i>
+              </button>
+            </div>
+
+            <!-- Mapa Visual Interativo 99/Uber com Ruas de Parauapebas -->
+            <div class="radar-map-viewport" id="radar-map-viewport">
+              <!-- SVG do Mapa Urbano de Parauapebas -->
+              <svg class="radar-map-svg" viewBox="0 0 400 420" preserveAspectRatio="xMidYMid slice">
+                <!-- Fundo do Mapa (Dark Mode Premium) -->
+                <rect width="400" height="420" fill="#0F172A"/>
+                
+                <!-- Bairros / Blocos urbanos -->
+                <rect x="20" y="30" width="160" height="90" rx="8" fill="#1E293B" opacity="0.8"/>
+                <rect x="210" y="40" width="170" height="80" rx="8" fill="#1E293B" opacity="0.8"/>
+                <rect x="30" y="150" width="140" height="110" rx="8" fill="#1E293B" opacity="0.8"/>
+                <rect x="230" y="160" width="150" height="120" rx="8" fill="#1E293B" opacity="0.8"/>
+                <rect x="40" y="290" width="150" height="90" rx="8" fill="#1E293B" opacity="0.8"/>
+                <rect x="220" y="300" width="160" height="80" rx="8" fill="#1E293B" opacity="0.8"/>
+
+                <!-- Rio Parauapebas Curvado -->
+                <path d="M 0,90 Q 90,140 180,80 T 400,110" fill="none" stroke="#0C4A6E" stroke-width="14" opacity="0.5"/>
+                <path d="M 0,90 Q 90,140 180,80 T 400,110" fill="none" stroke="#0284C7" stroke-width="4" opacity="0.7"/>
+
+                <!-- Rodovia PA-275 / Avenidas principais -->
+                <line x1="0" y1="200" x2="400" y2="200" stroke="#334155" stroke-width="10"/>
+                <line x1="0" y1="200" x2="400" y2="200" stroke="#F59E0B" stroke-width="2" stroke-dasharray="8 6" opacity="0.7"/>
+                <line x1="195" y1="0" x2="195" y2="420" stroke="#334155" stroke-width="10"/>
+                <line x1="195" y1="0" x2="195" y2="420" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="6 6" opacity="0.4"/>
+
+                <!-- Ruas secundárias dos bairros -->
+                <path d="M 50,30 L 50,420 M 110,30 L 110,420 M 280,30 L 280,420 M 340,30 L 340,420" stroke="#1E293B" stroke-width="3" opacity="0.9"/>
+                <path d="M 0,70 L 400,70 M 0,270 L 400,270 M 0,350 L 400,350" stroke="#1E293B" stroke-width="3" opacity="0.9"/>
+
+                <!-- Textos discretos dos bairros de Parauapebas -->
+                <text x="35" y="55" fill="#64748B" font-size="9" font-weight="700" letter-spacing="1">CIDADE NOVA</text>
+                <text x="240" y="65" fill="#64748B" font-size="9" font-weight="700" letter-spacing="1">RIO VERDE</text>
+                <text x="45" y="175" fill="#64748B" font-size="9" font-weight="700" letter-spacing="1">UNIÃO</text>
+                <text x="250" y="185" fill="#64748B" font-size="9" font-weight="700" letter-spacing="1">BEIRA RIO</text>
+                <text x="55" y="315" fill="#64748B" font-size="9" font-weight="700" letter-spacing="1">NOVA CARAJÁS</text>
+                <text x="240" y="325" fill="#64748B" font-size="9" font-weight="700" letter-spacing="1">DA PAZ</text>
+
+                <!-- Anéis do Radar Sonar Pulsando ao redor do cliente (centro) -->
+                <circle cx="200" cy="200" r="30" fill="rgba(108, 43, 217, 0.25)" stroke="#A78BFA" stroke-width="1.5" class="radar-sonar-ring ring-1"/>
+                <circle cx="200" cy="200" r="70" fill="rgba(108, 43, 217, 0.15)" stroke="#8B5CF6" stroke-width="1.5" class="radar-sonar-ring ring-2"/>
+                <circle cx="200" cy="200" r="120" fill="rgba(108, 43, 217, 0.08)" stroke="#7C3AED" stroke-width="1.5" stroke-dasharray="5 5" class="radar-sonar-ring ring-3"/>
+                <circle cx="200" cy="200" r="175" fill="none" stroke="#6D28D9" stroke-width="1" stroke-dasharray="3 5" opacity="0.5" class="radar-sonar-ring ring-4"/>
+              </svg>
+
+              <!-- Pin do Cliente no Centro -->
+              <div class="radar-user-pin" style="top: 48%; left: 50%;">
+                <div class="user-pin-pulse"></div>
+                <div class="user-pin-core">
+                  <i class="fa-solid fa-person-circle-exclamation"></i>
+                </div>
+                <div class="user-pin-label">Você</div>
+              </div>
+
+              <!-- Container dinâmico dos Profissionais no Mapa -->
+              <div id="radar-pro-pins-container" class="radar-pro-pins-layer">
+                <!-- Pins dos profissionais online renderizados dinamicamente via JS -->
+              </div>
+            </div>
+
+            <!-- Bottom Sheet deslizante estilo 99/Uber -->
+            <div class="radar-bottom-sheet" id="radar-bottom-sheet">
+              <!-- ESTADO 1: PROCURANDO -->
+              <div id="radar-searching-box" class="radar-box-state">
+                <div class="radar-sheet-top">
+                  <div class="radar-category-pill" id="radar-selected-category-pill">
+                    <i class="fa-solid fa-bolt"></i> <span id="radar-cat-label">Eletricista</span>
+                  </div>
+                  <div class="radar-timer-pill" id="radar-countdown-timer">00:05</div>
+                </div>
+
+                <h3 class="radar-sheet-title" id="radar-sheet-title-text">Buscando profissionais de plantão...</h3>
+                <p class="radar-sheet-subtitle">Notificando prestadores com SOS ativo no bairro <strong id="radar-bairro-name">Cidade Nova</strong>.</p>
+
+                <!-- Barra de progresso animada -->
+                <div class="radar-progress-track">
+                  <div class="radar-progress-bar" id="radar-progress-bar"></div>
+                </div>
+
+                <div class="radar-online-badge-row">
+                  <span class="online-indicator-dot"></span>
+                  <span id="radar-notified-count">Notificando 3 profissionais no seu raio</span>
+                </div>
+
+                <button type="button" class="btn-cancel-radar" onclick="cancelSOSRadar()">
+                  <i class="fa-solid fa-xmark"></i> Cancelar Chamado
+                </button>
+              </div>
+
+              <!-- ESTADO 2: PROFISSIONAL ACEITOU! -->
+              <div id="radar-accepted-box" class="radar-box-state" style="display: none;">
+                <div class="radar-accepted-header">
+                  <div class="radar-accepted-check-icon">
+                    <i class="fa-solid fa-check"></i>
+                  </div>
+                  <div>
+                    <h4 class="radar-accepted-title">Chamado Aceito!</h4>
+                    <span class="radar-accepted-sub">O profissional está pronto para te atender</span>
+                  </div>
+                </div>
+
+                <div class="accepted-pro-profile-card">
+                  <div class="accepted-pro-avatar">
+                    <img id="accepted-pro-photo" src="carlos_avatar.png" alt="Profissional">
+                    <span class="accepted-online-tag"><i class="fa-solid fa-bolt"></i></span>
+                  </div>
+                  <div class="accepted-pro-details">
+                    <div class="accepted-pro-name-badge">
+                      <h4 id="accepted-pro-name-text">Marcos Vinicius Santos</h4>
+                      <i class="fa-solid fa-circle-check accepted-verified-icon"></i>
+                    </div>
+                    <div class="accepted-pro-specialty-text" id="accepted-pro-spec-text">Eletricista Residencial e Predial</div>
+                    <div class="accepted-pro-stats">
+                      <span class="stat-star"><i class="fa-solid fa-star"></i> <strong id="accepted-pro-star-text">4.8</strong></span>
+                      <span class="stat-sep">•</span>
+                      <span class="stat-eta"><i class="fa-solid fa-clock"></i> Chegada em <strong id="accepted-pro-eta-text">~15-20 min</strong></span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="accepted-actions-row">
+                  <button type="button" class="btn-open-chat-negotiate" onclick="goToChatWithAcceptedPro()">
+                    <i class="fa-solid fa-comments"></i>
+                    <span>Ir para o Chat e Negociar</span>
+                  </button>
+                  <button type="button" class="btn-open-whatsapp-direct" onclick="openAcceptedProWhatsApp()" title="Chamar no WhatsApp">
+                    <i class="fa-brands fa-whatsapp"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ==============================================================================
+             MODAL: ALERTA DE NOVO CHAMADO DE EMERGÊNCIA 24h PARA O PROFISSIONAL ACEITAR
+             ============================================================================== -->
+        <div id="pro-sos-incoming-modal" class="modal-overlay pro-sos-incoming-overlay" style="z-index: 1400;">
+          <div class="modal-content pro-sos-incoming-card">
+            <!-- Header de Alerta com Sirene Pulsante -->
+            <div class="pro-sos-header">
+              <div class="pro-sos-siren-box">
+                <span class="pro-sos-pulse-ring"></span>
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+              <div class="pro-sos-title-group">
+                <div class="pro-sos-badge-urgent">
+                  <span class="pro-sos-blip-dot"></span> Plantão 24h • Urgência Imediata
+                </div>
+                <h3>Novo Chamado de Emergência!</h3>
+              </div>
+            </div>
+
+            <!-- Barra de Contagem Regressiva para Resposta -->
+            <div class="pro-sos-timer-wrap">
+              <div class="pro-sos-timer-info">
+                <span>Tempo para responder:</span>
+                <strong id="pro-sos-timer-text">30s</strong>
+              </div>
+              <div class="pro-sos-progress-bar">
+                <div id="pro-sos-progress-fill" class="pro-sos-progress-fill"></div>
+              </div>
+            </div>
+
+            <!-- Detalhes do Chamado -->
+            <div class="pro-sos-body">
+              <div class="pro-sos-info-row">
+                <div class="pro-sos-info-item">
+                  <span class="pro-sos-label">Especialidade</span>
+                  <div class="pro-sos-val-highlight" id="pro-sos-category-val">
+                    <i class="fa-solid fa-bolt"></i> <span>Eletricista</span>
+                  </div>
+                </div>
+                <div class="pro-sos-info-item">
+                  <span class="pro-sos-label">Localização</span>
+                  <div class="pro-sos-val" id="pro-sos-bairro-val">
+                    <i class="fa-solid fa-location-dot"></i> <span>Cidade Nova (~1,5 km)</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card com Perrengue / Problema Relatado -->
+              <div class="pro-sos-problem-card">
+                <div class="pro-sos-problem-label">
+                  <i class="fa-solid fa-circle-exclamation"></i> Relato do Cliente:
+                </div>
+                <p id="pro-sos-desc-val" class="pro-sos-problem-text">
+                  "Chamado urgente enviado pelo cliente."
+                </p>
+                <div class="pro-sos-client-meta">
+                  <span><i class="fa-solid fa-user"></i> <strong id="pro-sos-client-name">Cliente</strong></span>
+                  <span><i class="fa-brands fa-whatsapp"></i> <strong id="pro-sos-client-phone">—</strong></span>
+                </div>
+              </div>
+
+              <!-- Sugestão de Taxa de Socorro Noturno / Emergencial -->
+              <div class="pro-sos-fee-hint">
+                <div class="pro-fee-left">
+                  <i class="fa-solid fa-coins"></i>
+                  <div>
+                    <span class="fee-title">Taxa de deslocamento sugerida</span>
+                    <span class="fee-sub">Combine o valor final diretamente com o cliente</span>
+                  </div>
+                </div>
+                <strong class="fee-amount" id="pro-sos-fee-val">R$ 80 a R$ 130</strong>
+              </div>
+            </div>
+
+            <!-- Botões de Ação do Profissional -->
+            <div class="pro-sos-footer-actions">
+              <button type="button" class="btn-pro-reject-sos" onclick="rejectIncomingSOS()">
+                <i class="fa-solid fa-xmark"></i>
+                <span>Recusar</span>
+              </button>
+              <button type="button" class="btn-pro-accept-sos" onclick="acceptIncomingSOS()">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Aceitar Chamado Agora</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==============================================================================
+             TELA DO CHAT INTERNO COM CONTROLE LEVE DE ATENDIMENTO
+             ============================================================================== -->
+        <div id="chat-overlay" class="modal-overlay" style="z-index: 1050;">
+          <div class="modal-content chat-content" style="height: 100%; max-height: 100%; border-radius: 0; display: flex; flex-direction: column;">
+            <!-- Header do Chat -->
+            <div class="chat-header">
+              <button type="button" class="chat-back-btn" onclick="closeChat()" title="Voltar para conversas">
+                <i class="fa-solid fa-arrow-left"></i>
+              </button>
+              
+              <!-- Perfil clicável do profissional no header do chat -->
+              <div class="chat-user-target" id="chat-user-profile-btn" onclick="openProProfileFromChat()" title="Toque para ver o perfil e os trabalhos do profissional" role="button" tabindex="0">
+                <div class="chat-avatar-header" id="chat-contact-avatar">
+                  <i class="fa-solid fa-user"></i>
+                </div>
+
+                <div class="chat-contact-info">
+                  <div class="chat-contact-title-row">
+                    <h4 id="chat-contact-name">Profissional</h4>
+                    <i class="fa-solid fa-chevron-right chat-view-profile-arrow"></i>
+                  </div>
+                  <span id="chat-contact-service">Negociação de Serviço</span>
+                </div>
+              </div>
+
+              <div class="chat-role-indicator" style="display: none;">
+                <span id="chat-active-role-label"></span>
+              </div>
+            </div>
+
+            <!-- Faixa de Segurança e Transparência -->
+            <div class="chat-safety-banner">
+              <i class="fa-solid fa-shield-halved"></i>
+              <span>Negocie livremente. Registre o serviço combinado para avaliar ao término.</span>
+            </div>
+
+            <!-- CONTAINER CONTEXTUAL DO ATENDIMENTO (Barra ou Cartão de Status) -->
+            <div id="chat-attendance-card-wrapper">
+              <!-- Renderizado dinamicamente via JS (renderAttendanceCard) -->
+            </div>
+
+            <!-- Mensagens do Chat -->
+            <div class="chat-messages" id="chat-messages-container">
+              <!-- Mensagens renderizadas dinamicamente -->
+            </div>
+
+            <!-- Barra de Envio de Mensagem -->
+            <div class="chat-input-bar">
+              <button type="button" class="attach-btn" title="Registrar serviço combinado" onclick="openRegisterAttendanceModal()">
+                <i class="fa-solid fa-handshake" style="color: var(--primary-purple);"></i>
+              </button>
+              <input type="text" id="chat-input" placeholder="Digite uma mensagem..." autocomplete="off">
+              <button type="button" class="send-btn" id="chat-send-btn" title="Enviar mensagem">
+                <i class="fa-solid fa-paper-plane"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODAL: REGISTRAR SERVIÇO COMBINADO -->
+        <div id="modal-register-attendance" class="modal-overlay" style="z-index: 1100;">
+          <div class="modal-content quote-modal-box">
+            <div class="modal-header">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-handshake" style="color: #4F46E5; font-size: 18px;"></i>
+                <h4 style="margin: 0; font-size: 15px;">Registrar Serviço Combinado</h4>
+              </div>
+              <button type="button" class="close-x-btn" onclick="closeRegisterAttendanceModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" style="padding: 16px;">
+              <p style="font-size: 12px; color: #64748B; margin-bottom: 14px; line-height: 1.45;">
+                O registro permite que o cliente avalie com selo verificado após a conclusão. Não exigimos pagamento pelo app nem cadastro de orçamento complexo.
+              </p>
+              
+              <label style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Descrição resumida do serviço (opcional):</label>
+              <input type="text" id="reg-att-title-input" placeholder="Ex: Instalação de Ar Split ou Manutenção Elétrica" style="width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 13px; margin-bottom: 14px;">
+              
+              <div style="background: #F1F5F9; border-radius: 8px; padding: 10px 12px; font-size: 11px; color: #475569;">
+                <i class="fa-solid fa-circle-info" style="color: #4F46E5;"></i> O outro participante receberá a solicitação para confirmar antes de registrar como combinado.
+              </div>
+            </div>
+            <div class="modal-footer" style="padding: 12px 16px; display: flex; justify-content: flex-end; gap: 8px;">
+              <button type="button" class="btn-cancel" onclick="closeRegisterAttendanceModal()">Cancelar</button>
+              <button type="button" class="btn-submit" onclick="submitRegisterAttendanceRequest()" style="background: #4F46E5;">Solicitar Registro</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODAL: CONTESTAR CONCLUSÃO DO SERVIÇO -->
+        <div id="modal-dispute-attendance" class="modal-overlay" style="z-index: 1100;">
+          <div class="modal-content quote-modal-box">
+            <div class="modal-header">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-triangle-exclamation" style="color: #DC2626; font-size: 18px;"></i>
+                <h4 style="margin: 0; font-size: 15px;">Contestar Conclusão do Serviço</h4>
+              </div>
+              <button type="button" class="close-x-btn" onclick="closeDisputeModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" style="padding: 16px;">
+              <p style="font-size: 12px; color: #64748B; margin-bottom: 14px; line-height: 1.45;">
+                Explique o que ficou pendente ou divergente para que o profissional possa resolver antes de concluir.
+              </p>
+              
+              <label style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Motivo da contestação:</label>
+              <textarea id="dispute-reason-input" rows="3" placeholder="Ex: O acabamento da tomada ainda não foi fechado..." style="width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 13px; margin-bottom: 10px;"></textarea>
+            </div>
+            <div class="modal-footer" style="padding: 12px 16px; display: flex; justify-content: flex-end; gap: 8px;">
+              <button type="button" class="btn-cancel" onclick="closeDisputeModal()">Voltar</button>
+              <button type="button" class="btn-att-danger" onclick="submitDisputeAttendance()" style="padding: 8px 14px; border-radius: 8px; font-weight: 700;">Confirmar Contestação</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODAL: AVALIAÇÃO VERIFICADA -->
+        <div id="modal-verified-review" class="modal-overlay" style="z-index: 1100;">
+          <div class="modal-content quote-modal-box">
+            <div class="modal-header">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-star" style="color: #F59E0B; font-size: 18px;"></i>
+                <h4 style="margin: 0; font-size: 15px;">Avaliar Atendimento</h4>
+              </div>
+              <button type="button" class="close-x-btn" onclick="closeVerifiedReviewModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" style="padding: 16px;">
+              <div class="verified-tag-badge">
+                <i class="fa-solid fa-certificate"></i> Avaliação Verificada por Atendimento Confirmado
+              </div>
+
+              <p style="font-size: 12px; color: #475569; margin-bottom: 12px;">
+                Como foi a realização do serviço com <strong id="review-modal-pro-name">o profissional</strong>?
+              </p>
+
+              <!-- Seletor de Estrelas -->
+              <div style="text-align: center;">
+                <label style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748B; display: block; margin-bottom: 4px;">Sua Nota</label>
+                <div class="rating-stars-picker" id="stars-picker-container" style="justify-content: center;">
+                  <i class="fa-solid fa-star selected" data-value="1" onclick="setReviewRating(1)"></i>
+                  <i class="fa-solid fa-star selected" data-value="2" onclick="setReviewRating(2)"></i>
+                  <i class="fa-solid fa-star selected" data-value="3" onclick="setReviewRating(3)"></i>
+                  <i class="fa-solid fa-star selected" data-value="4" onclick="setReviewRating(4)"></i>
+                  <i class="fa-solid fa-star selected" data-value="5" onclick="setReviewRating(5)"></i>
+                </div>
+              </div>
+
+              <label style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Comentário sobre o serviço:</label>
+              <textarea id="review-comment-input" rows="3" placeholder="Pontualidade, qualidade, limpeza do local, postura profissional..." style="width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 13px;"></textarea>
+            </div>
+            <div class="modal-footer" style="padding: 12px 16px; display: flex; justify-content: flex-end; gap: 8px;">
+              <button type="button" class="btn-cancel" onclick="closeVerifiedReviewModal()">Depois</button>
+              <button type="button" class="btn-submit" onclick="submitVerifiedReview()" style="background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none; font-weight: 700;">Publicar Avaliação</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             MODAL: COMPARTILHAMENTO VIRAL / CARTÃO DIGITAL / RECOMENDAÇÃO
+             ========================================================= -->
+        <div id="share-pro-modal-overlay" class="modal-overlay" style="z-index: 1350;" onclick="if(event.target === this) closeShareProModal()">
+          <div class="modal-content share-modal-box">
+            <div class="modal-header">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="share-header-icon-box">
+                  <i class="fa-solid fa-share-nodes"></i>
+                </div>
+                <h4 id="share-modal-title" style="margin: 0; font-size: 15px; font-weight: 800;">Compartilhar</h4>
+              </div>
+              <button type="button" class="close-x-btn" onclick="closeShareProModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="modal-body" style="padding: 16px;">
+              <!-- Banner explicativo contextual (dono vs recomendador vs app) -->
+              <div class="share-context-banner" id="share-context-banner">
+                <i class="fa-solid fa-bullhorn" id="share-banner-icon"></i>
+                <span id="share-banner-text">Envie este perfil para clientes e contatos no WhatsApp.</span>
+              </div>
+
+              <!-- Cartão Digital de Apresentação (Visual Card) -->
+              <div class="digital-pro-card-preview" id="share-card-preview">
+                <div class="digital-card-top">
+                  <div class="digital-card-avatar-wrap" id="share-avatar-wrap">
+                    <img id="share-avatar-img" src="" alt="Profissional" style="display: none; width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                    <div id="share-avatar-fallback" class="digital-card-avatar-fallback">P</div>
+                  </div>
+                  <div class="digital-card-pro-info">
+                    <div class="digital-pro-name-row">
+                      <strong id="share-pro-name">Profissional</strong>
+                      <span class="digital-verified-check" title="Profissional Verificado"><i class="fa-solid fa-circle-check"></i></span>
+                    </div>
+                    <div class="digital-badges-row">
+                      <span class="digital-chip-specialty" id="share-pro-specialty">Especialidade</span>
+                      <span class="digital-chip-24h" id="share-pro-24h-badge" style="display: none;"><i class="fa-solid fa-bolt"></i> 24h</span>
+                    </div>
+                    <div class="digital-meta-line">
+                      <span class="digital-rating-stars"><i class="fa-solid fa-star"></i> <strong id="share-rating-val">5.0</strong> (<span id="share-reviews-cnt">28</span>)</span>
+                      <span class="digital-dot">•</span>
+                      <span class="digital-loc"><i class="fa-solid fa-location-dot"></i> <span id="share-pro-loc">Parauapebas, PA</span></span>
+                    </div>
+                  </div>
+                </div>
+                <div class="digital-card-badge-parauapebas">
+                  <i class="fa-solid fa-award"></i> Perfil Verificado no Trampou
+                </div>
+              </div>
+
+              <!-- Botão Principal: WhatsApp (Alta conversão viral) -->
+              <button type="button" class="btn-share-whatsapp" onclick="shareProViaWhatsApp()">
+                <i class="fa-brands fa-whatsapp"></i>
+                <div class="btn-share-texts">
+                  <span class="btn-share-title" id="share-whatsapp-title">Compartilhar no WhatsApp</span>
+                  <span class="btn-share-sub" id="share-whatsapp-sub">Com mensagem pronta para grupos e vizinhos</span>
+                </div>
+              </button>
+
+              <!-- Caixa de Link com Botão Copiar -->
+              <div class="share-link-group">
+                <label class="share-link-label">Link direto do perfil:</label>
+                <div class="share-link-input-wrap">
+                  <input type="text" id="share-link-input" readonly value="https://trampou.com.br/pro/carlos">
+                  <button type="button" class="btn-copy-link" id="btn-copy-pro-link" onclick="copyProShareLink()">
+                    <i class="fa-regular fa-copy" id="icon-copy-link"></i>
+                    <span id="label-copy-link">Copiar</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Seção do QR Code (para cartões de visita e impressos) -->
+              <div class="share-qrcode-section">
+                <button type="button" class="btn-toggle-qrcode" onclick="toggleShareQrCode()">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-qrcode"></i>
+                    <span>QR Code para Impressão e Cartão</span>
+                  </div>
+                  <i class="fa-solid fa-chevron-down" id="icon-toggle-qrcode"></i>
+                </button>
+                
+                <div class="share-qrcode-body" id="share-qrcode-body" style="display: none;">
+                  <div class="qrcode-wrapper">
+                    <img id="share-qrcode-image" src="" alt="QR Code do Perfil" loading="lazy">
+                  </div>
+                  <p class="qrcode-tip">
+                    <i class="fa-regular fa-lightbulb"></i>
+                    <span>Imprima este QR Code em seus <strong>cartões de visita, panfletos, camisa</strong> ou no <strong>adesivo do carro</strong>. Os clientes apontam a câmera e abrem sua vitrine instantaneamente!</span>
+                  </p>
+                  <button type="button" class="btn-download-qrcode" onclick="downloadProQrCode()">
+                    <i class="fa-solid fa-arrow-down"></i> Salvar Imagem do QR Code
+                  </button>
+                </div>
+              </div>
+
+              <!-- Outras Opções (Nativo navigator.share) -->
+              <div id="share-native-wrap" style="margin-top: 12px; text-align: center;">
+                <button type="button" class="btn-share-more-options" onclick="shareProViaNative()">
+                  <i class="fa-solid fa-arrow-up-from-bracket"></i> Mais opções de compartilhamento
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             MODAL: CELEBRAÇÃO PÓS-AVALIAÇÃO & RECOMENDAÇÃO VIRAL
+             ========================================================= -->
+        <div id="post-review-celebration-modal" class="modal-overlay" style="z-index: 1400;" onclick="if(event.target === this) closePostReviewCelebration()">
+          <div class="modal-content celebration-modal-box">
+            <div class="celebration-hero-art">
+              <div class="celeb-sparkle-circle">
+                <i class="fa-solid fa-star"></i>
+              </div>
+              <div class="celeb-badge-pill">
+                <i class="fa-solid fa-certificate"></i> Avaliação Verificada Publicada!
+              </div>
+            </div>
+
+            <div class="modal-body" style="padding: 0 18px 20px; text-align: center;">
+              <h3 class="celebration-title">Obrigado por apoiar profissionais locais!</h3>
+              <p class="celebration-sub">
+                Em Parauapebas, os melhores profissionais crescem com a indicação de vizinhos satisfeitos. Que tal indicar o trabalho de <strong id="celeb-pro-name">o profissional</strong> no WhatsApp da sua família e condomínio?
+              </p>
+
+              <!-- Mini Card de Citação da Avaliação -->
+              <div class="celeb-review-card-snippet">
+                <div class="celeb-stars-row">
+                  <i class="fa-solid fa-star"></i>
+                  <i class="fa-solid fa-star"></i>
+                  <i class="fa-solid fa-star"></i>
+                  <i class="fa-solid fa-star"></i>
+                  <i class="fa-solid fa-star"></i>
+                </div>
+                <p class="celeb-quote-text" id="celeb-quote-text">"Excelente trabalho realizado em Parauapebas. Super recomendo!"</p>
+                <span class="celeb-quote-author">Sua recomendação verificada</span>
+              </div>
+
+              <!-- Ações de Recomendação -->
+              <div class="celebration-actions-wrap">
+                <button type="button" class="btn-celebration-whatsapp" onclick="recommendPostReviewViaWhatsApp()">
+                  <i class="fa-brands fa-whatsapp"></i>
+                  <span>Recomendar no WhatsApp dos Vizinhos</span>
+                </button>
+
+                <button type="button" class="btn-celebration-copy" onclick="copyPostReviewShareLink()">
+                  <i class="fa-regular fa-copy"></i>
+                  <span id="label-celeb-copy">Copiar Link de Recomendação</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             MODAL: PUBLICAR ANTES & DEPOIS (COM MONETIZAÇÃO TRAMPOU PRO)
+             ========================================================= -->
+        <div id="modal-publish-showcase" class="modal-overlay" style="z-index: 2500;" onclick="if(event.target === this) closePublishShowcaseModal()">
+          <div class="modal-content publish-showcase-content">
+            <div class="auth-modal-header">
+              <button type="button" class="v-nav-icon-btn" onclick="closePublishShowcaseModal()" title="Fechar">
+                <i class="fa-solid fa-arrow-left"></i>
+              </button>
+              <h4>Publicar Antes & Depois</h4>
+              <div style="width: 32px;"></div>
+            </div>
+
+            <div class="publish-showcase-body">
+              <form id="form-publish-showcase" onsubmit="handlePublishShowcaseSubmit(event)">
+                <!-- Banner Promocional de Lançamento / Futuro Trampou PRO -->
+                <div class="launch-promo-card">
+                  <div class="launch-promo-badge-row">
+                    <span class="launch-promo-tag"><i class="fa-solid fa-rocket"></i> FASE DE LANÇAMENTO</span>
+                    <span class="launch-promo-tag-free">100% GRÁTIS</span>
+                  </div>
+                  <h4 class="launch-promo-title">Destaque no Carrossel da Home</h4>
+                  <p class="launch-promo-text">Suas fotos de transformações em destaque para toda Parauapebas. <strong>Em breve exclusivo no plano Trampou PRO.</strong></p>
+                </div>
+
+                <div class="auth-input-group">
+                  <label for="showcase-title">Título do Serviço Realizado</label>
+                  <div class="input-icon-wrap">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <input type="text" id="showcase-title" placeholder="Ex: Banheiro em Porcelanato 84x84 com Nicho LED" required minlength="5">
+                  </div>
+                </div>
+
+                <div class="input-row-split">
+                  <div class="auth-input-group">
+                    <label for="showcase-bairro">Bairro da Execução</label>
+                    <div class="input-icon-wrap select-wrap">
+                      <i class="fa-solid fa-location-dot"></i>
+                      <select id="showcase-bairro" required>
+                        <option value="Cidade Nova">Cidade Nova</option>
+                        <option value="Rio Verde">Rio Verde</option>
+                        <option value="União">União</option>
+                        <option value="Nova Carajás">Nova Carajás</option>
+                        <option value="Beira Rio">Beira Rio</option>
+                        <option value="Da Paz">Da Paz</option>
+                        <option value="Carajás">Carajás</option>
+                        <option value="Outro bairro">Outro bairro</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="auth-input-group">
+                    <label for="showcase-category">Categoria</label>
+                    <div class="input-icon-wrap select-wrap">
+                      <i class="fa-solid fa-briefcase"></i>
+                      <select id="showcase-category" required>
+                        <option value="Pedreiro & Porcelanato">Pedreiro & Porcelanato</option>
+                        <option value="Eletricista Residencial">Eletricista Residencial</option>
+                        <option value="Refrigeração & Ar">Refrigeração & Ar</option>
+                        <option value="Pintor & Grafiato">Pintor & Grafiato</option>
+                        <option value="Diarista & Pós-Obra">Diarista & Pós-Obra</option>
+                        <option value="Mecânica & Auto Socorro">Mecânica & Auto Socorro</option>
+                        <option value="Marcenaria & Móveis">Marcenaria & Móveis</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Bloco Duplo: ANTES e DEPOIS -->
+                <div class="before-after-upload-grid">
+                  <!-- ANTES -->
+                  <div class="upload-side-box before-box">
+                    <div class="upload-side-header">
+                      <span class="badge-side-tag before">1. ANTES</span>
+                    </div>
+                    <label class="upload-dropzone" for="showcase-file-before" id="dropzone-before">
+                      <div class="dropzone-empty" id="dropzone-before-empty">
+                        <i class="fa-solid fa-camera"></i>
+                        <span>Foto do ANTES</span>
+                        <small>Toque para escolher</small>
+                      </div>
+                      <img id="preview-img-before" class="upload-preview-img" style="display: none;" alt="Antes">
+                      <input type="file" id="showcase-file-before" accept="image/*" onchange="handleShowcaseImageSelect(this, 'before')" style="display: none;">
+                    </label>
+                    <input type="text" id="showcase-desc-before" class="input-side-desc" placeholder="Ex: Piso antigo com trinca e umidade" required>
+                  </div>
+
+                  <!-- DEPOIS -->
+                  <div class="upload-side-box after-box">
+                    <div class="upload-side-header">
+                      <span class="badge-side-tag after">2. DEPOIS</span>
+                    </div>
+                    <label class="upload-dropzone" for="showcase-file-after" id="dropzone-after">
+                      <div class="dropzone-empty" id="dropzone-after-empty">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>Foto do DEPOIS</span>
+                        <small>Toque para escolher</small>
+                      </div>
+                      <img id="preview-img-after" class="upload-preview-img" style="display: none;" alt="Depois">
+                      <input type="file" id="showcase-file-after" accept="image/*" onchange="handleShowcaseImageSelect(this, 'after')" style="display: none;">
+                    </label>
+                    <input type="text" id="showcase-desc-after" class="input-side-desc" placeholder="Ex: Porcelanato polido nivelado perfeito" required>
+                  </div>
+                </div>
+
+                <!-- Box de Monetização / Destaque PRO -->
+                <div class="pro-boost-monetization-box">
+                  <div class="boost-header-row">
+                    <div class="boost-icon-badge">
+                      <i class="fa-solid fa-crown"></i>
+                    </div>
+                    <div class="boost-title-wrap">
+                      <h6>Impulsionar no Carrossel da Home de Parauapebas</h6>
+                      <span>Apareça no topo da página inicial para toda a cidade</span>
+                    </div>
+                    <div class="boost-toggle-wrap">
+                      <label class="custom-switch">
+                        <input type="checkbox" id="check-boost-showcase" checked>
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="boost-price-pill-row">
+                    <span class="price-strikethrough">R$ 39,90/mês</span>
+                    <span class="price-free-launch">GRÁTIS NO LANÇAMENTO</span>
+                  </div>
+                  <div class="boost-notice-box">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span><strong>Aviso de Monetização Futura:</strong> Esta publicação ficará em destaque no carrossel da Home gratuitamente durante o lançamento do Trampou. Em breve, novos destaques serão exclusivos do plano <strong>Trampou PRO</strong>.</span>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <!-- Footer Fixo e Visível do Modal -->
+            <div class="publish-actions-footer">
+              <button type="button" class="btn-auth-secondary" onclick="closePublishShowcaseModal()">Cancelar</button>
+              <button type="submit" form="form-publish-showcase" id="btn-submit-publish-showcase" class="btn-auth-primary success-gradient">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span id="btn-publish-label">Publicar e Destacar na Home</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             MODAL: VISUALIZADOR INTERATIVO ANTES & DEPOIS
+             ========================================================= -->
+        <div id="modal-showcase-viewer" class="modal-overlay" style="z-index: 2500;" onclick="if(event.target === this) closeShowcaseViewer()">
+          <div class="modal-content showcase-viewer-content">
+            <div class="auth-modal-header">
+              <button class="v-nav-icon-btn" onclick="closeShowcaseViewer()" title="Fechar">
+                <i class="fa-solid fa-arrow-left"></i>
+              </button>
+              <h4>Transformação Real</h4>
+              <button class="v-nav-icon-btn" onclick="shareCurrentShowcase()" title="Compartilhar">
+                <i class="fa-solid fa-share-nodes"></i>
+              </button>
+            </div>
+
+            <div class="showcase-viewer-body">
+              <div class="viewer-badge-top">
+                <span class="viewer-bairro-pill" id="viewer-bairro"><i class="fa-solid fa-location-dot"></i> Cidade Nova</span>
+                <span class="viewer-pro-pill" id="viewer-pro-badge"><i class="fa-solid fa-certificate"></i> Transformação Verificada</span>
+              </div>
+
+              <h3 class="viewer-title" id="viewer-title">Banheiro em Porcelanato Polido 84x84</h3>
+
+              <!-- Comparador Visual de Antes & Depois Interativo -->
+              <div class="interactive-compare-box" id="viewer-compare-box">
+                <div class="compare-side-card before-card" id="viewer-card-before">
+                  <span class="compare-chip before">ANTES</span>
+                  <div class="compare-img-wrap" id="viewer-img-before-wrap">
+                    <div class="compare-art-gradient" id="viewer-gradient-before"></div>
+                  </div>
+                  <p class="compare-caption" id="viewer-desc-before">Piso antigo solto e infiltração no ralo</p>
+                </div>
+
+                <div class="compare-divider-arrow">
+                  <i class="fa-solid fa-arrow-right"></i>
+                </div>
+
+                <div class="compare-side-card after-card" id="viewer-card-after">
+                  <span class="compare-chip after">DEPOIS</span>
+                  <div class="compare-img-wrap" id="viewer-img-after-wrap">
+                    <div class="compare-art-gradient" id="viewer-gradient-after"></div>
+                  </div>
+                  <p class="compare-caption" id="viewer-desc-after">Porcelanato marmorizado polido com nicho LED</p>
+                </div>
+              </div>
+
+              <!-- Cartão do Profissional que executou -->
+              <div class="viewer-pro-credit-card">
+                <div class="credit-avatar" id="viewer-pro-avatar">
+                  <i class="fa-solid fa-user-tie"></i>
+                </div>
+                <div class="credit-info">
+                  <span class="credit-role">Profissional Responsável</span>
+                  <h5 id="viewer-pro-name">Profissional</h5>
+                  <span class="credit-spec" id="viewer-pro-spec">Serviços em Parauapebas</span>
+                </div>
+                <button type="button" class="btn-credit-profile" onclick="viewProFromShowcase()" title="Ver vitrine completa">
+                  Ver Perfil
+                </button>
+              </div>
+
+              <!-- CTA de Alta Conversão -->
+              <button type="button" class="btn-viewer-hire" id="btn-viewer-hire" onclick="requestQuoteFromViewer()">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Quero um resultado assim (Solicitar Orçamento)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- BARRA DE NAVEGAÇÃO INFERIOR ÚNICA (Início, Buscar, Pedidos, Conversas, Perfil) -->
+      <nav class="app-bottom-nav">
+        <button class="nav-btn active" data-tab="home" onclick="switchTab('home')">
+          <i class="fa-solid fa-house"></i>
+          <span>Início</span>
+        </button>
+        <button class="nav-btn" data-tab="search" onclick="switchTab('search')">
+          <i class="fa-solid fa-compass"></i>
+          <span>Explorar</span>
+        </button>
+
+        <button class="nav-btn" data-tab="chat" onclick="switchTab('chat')">
+          <div class="nav-badge-wrap">
+            <i class="fa-solid fa-comments"></i>
+            <span class="nav-dot"></span>
+          </div>
+          <span>Conversas</span>
+        </button>
+        <button class="nav-btn" data-tab="profile" onclick="switchTab('profile')">
+          <i class="fa-solid fa-user"></i>
+          <span>Perfil</span>
+        </button>
+      </nav>
+    </div>
+  </main>
+
+  <div id="toast-message" class="toast">Mensagem</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
