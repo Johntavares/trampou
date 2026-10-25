@@ -32,58 +32,9 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Controles Superiores de Visualização -->
-  <header class="preview-header">
-    <div class="preview-brand">
-      <img src="trampou_app_icon.png" alt="Trampou Ícone" class="preview-brand-app-icon">
-      <div class="preview-brand-text">
-        <span class="brand-name">Trampou</span>
-        <span class="preview-badge">Profissionais Perto de Você</span>
-      </div>
-    </div>
-    <div class="preview-actions">
-      <button id="btn-quick-welcome" class="ctrl-btn" onclick="openAuthWelcome()" title="Tela Inicial de Acesso">
-        <i class="fa-solid fa-door-open"></i> Acesso
-      </button>
-      <button id="btn-quick-login" class="ctrl-btn" onclick="openLoginModal()" title="Tela de Login">
-        <i class="fa-solid fa-arrow-right-to-bracket"></i> Login
-      </button>
-      <button id="btn-quick-client" class="ctrl-btn" onclick="openClientSignup()" title="Cadastro de Cliente">
-        <i class="fa-solid fa-user-plus"></i> Novo Cliente
-      </button>
-      <button id="btn-quick-pro" class="ctrl-btn" onclick="openProSignup()" title="Cadastro de Profissional em 4 etapas">
-        <i class="fa-solid fa-briefcase"></i> Cadastro Pro
-      </button>
-
-      <button id="btn-quick-showcase" class="ctrl-btn" onclick="openPublishShowcaseModal()" title="Publicar Antes & Depois (Destaque na Home)">
-        <i class="fa-solid fa-camera-retro" style="color: #F59E0B;"></i> Antes & Depois
-      </button>
-      <button id="btn-pwa-install-header" class="ctrl-btn btn-pwa-install" onclick="triggerPWAInstall()" title="Instalar Trampou no Dispositivo">
-        <i class="fa-solid fa-download" style="color: #10B981;"></i> Instalar App
-      </button>
-      <button id="toggle-frame-btn" class="ctrl-btn" title="Alternar formato do aparelho">
-        <i class="fa-solid fa-mobile-screen"></i> Modo Celular
-      </button>
-      <div class="db-status-pill">
-        <span class="status-dot"></span> Supabase Conectado
-      </div>
-    </div>
-  </header>
-
-  <!-- Container Principal -->
+  <!-- Container Principal do Aplicativo Nativo / PWA -->
   <main class="viewport-wrapper">
     <div id="device-container" class="device-mockup">
-      <!-- Barra de Status do Smartphone -->
-      <div class="device-notch">
-        <span class="device-time">09:41</span>
-        <div class="device-camera"></div>
-        <div class="device-icons">
-          <i class="fa-solid fa-signal"></i>
-          <i class="fa-solid fa-wifi"></i>
-          <i class="fa-solid fa-battery-full"></i>
-        </div>
-      </div>
-
       <!-- Área de Aplicativo -->
       <div class="app-screen">
         <!-- TAB 1: INÍCIO (HOME OTIMIZADA) -->
