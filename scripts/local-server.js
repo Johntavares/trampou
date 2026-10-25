@@ -2,8 +2,8 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const PORT = 3000;
-const PUBLIC_DIR = path.join(__dirname, 'web');
+const PORT = process.env.PORT || 3000;
+const PUBLIC_DIR = path.join(__dirname, '..', 'web');
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -54,5 +54,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, '127.0.0.1', () => {
-  console.log(`🚀 GO Parauapebas Web Preview rodando em http://localhost:${PORT}`);
+  console.log(`🚀 Trampou Web Preview rodando em http://localhost:${PORT}`);
 });
