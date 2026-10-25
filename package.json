@@ -10,6 +10,7 @@
     "start": "node server.js",
     "dev": "node server.js",
     "build": "node scripts/build.js",
+    "postinstall": "node scripts/setup-bin.js",
     "vite": "node scripts/build.js",
     "db:migrate": "node scripts/migrate.js"
   },
