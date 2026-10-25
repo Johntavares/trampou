@@ -5441,63 +5441,85 @@ body {
   color: #B45309;
 }
 
-/* 1. TELA INICIAL DE ACESSO (WELCOME HUB) */
+/* 1. TELA INICIAL DE ACESSO (WELCOME HUB / ONBOARDING) */
 .auth-welcome-content {
-  background: linear-gradient(180deg, #F9F7FD 0%, #FFFFFF 100%);
+  background: linear-gradient(180deg, #FAF7FF 0%, #FFFFFF 100%);
   display: flex;
   flex-direction: column;
+  height: 100%;
+  max-height: 100%;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .auth-welcome-header {
-  padding: 14px 16px;
+  padding: 12px 16px;
   display: flex;
   justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 .auth-welcome-body {
-  padding: 10px 22px 30px;
+  padding: 12px 20px 32px;
   display: flex;
   flex-direction: column;
   flex: 1;
-  justify-content: space-between;
+  min-height: min-content;
+  justify-content: flex-start;
+  gap: 18px;
 }
 
 .auth-brand-hero {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.auth-hero-icon-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.auth-trampou-icon-hero {
+  width: 76px;
+  height: 76px;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(108, 43, 217, 0.28);
+  object-fit: cover;
+  transition: transform 0.25s ease;
+}
+
+.auth-trampou-icon-hero:hover {
+  transform: scale(1.05);
 }
 
 .auth-hero-logo {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 14px;
+  justify-content: center;
+  margin-bottom: 10px;
+  width: 100%;
 }
 
-.brand-tag-big {
-  background: var(--primary-purple);
-  color: #fff;
-  font-weight: 900;
-  font-size: 20px;
-  padding: 6px 12px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(108, 43, 217, 0.25);
-}
-
-.brand-name-big {
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--text-primary);
-  letter-spacing: -0.5px;
+.auth-trampou-logo-img {
+  max-width: 190px;
+  height: auto;
+  max-height: 52px;
+  object-fit: contain;
+  display: block;
 }
 
 .auth-brand-hero h2 {
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 800;
   color: var(--text-primary);
-  line-height: 1.3;
-  margin-bottom: 8px;
+  line-height: 1.35;
+  margin: 0 0 8px;
+  padding: 0 8px;
 }
 
 .auth-brand-hero p {
@@ -5506,13 +5528,15 @@ body {
   line-height: 1.45;
   max-width: 320px;
   margin: 0 auto;
+  padding: 0 4px;
 }
 
 .auth-role-cards {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-bottom: 24px;
+  width: 100%;
+  margin-bottom: 12px;
 }
 
 .auth-role-card {
@@ -11114,5 +11138,128 @@ body {
 .btn-viewer-hire:active {
   transform: translateY(0);
 }
+
+/* =========================================================
+   RESPONSIVIDADE TOTAL: ONBOARDING & MODAIS DE AUTH
+   ========================================================= */
+@media (max-width: 640px) {
+  #auth-welcome-overlay,
+  #auth-login-modal,
+  #auth-pro-signup-modal,
+  #auth-client-signup-modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    height: 100dvh !important;
+    z-index: 9999 !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+  }
+
+  .auth-welcome-content,
+  .auth-form-content,
+  .auth-wizard-content {
+    width: 100% !important;
+    height: 100% !important;
+    height: 100dvh !important;
+    border-radius: 0 !important;
+    border: none !important;
+    max-height: 100dvh !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .auth-welcome-body,
+  .auth-form-body,
+  .auth-wizard-body {
+    flex: 1 1 auto !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    padding-bottom: calc(28px + env(safe-area-inset-bottom, 12px)) !important;
+  }
+
+  .auth-modal-header,
+  .auth-welcome-header {
+    padding-top: calc(10px + env(safe-area-inset-top, 0px)) !important;
+  }
+
+  .auth-role-card {
+    padding: 14px 12px !important;
+    gap: 12px !important;
+  }
+
+  .auth-role-icon {
+    width: 42px !important;
+    height: 42px !important;
+    font-size: 17px !important;
+  }
+
+  .auth-role-text h4 {
+    font-size: 13.5px !important;
+  }
+
+  .auth-role-text p {
+    font-size: 11px !important;
+  }
+
+  .pro-wizard-stepper {
+    padding: 10px 12px !important;
+  }
+
+  .step-circle {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 10.5px !important;
+  }
+
+  .wizard-step span {
+    font-size: 9px !important;
+  }
+
+  .wizard-connector {
+    margin: 0 3px 12px !important;
+  }
+}
+
+/* Telas ultra pequenas (menores de 360px de largura) */
+@media (max-width: 360px) {
+  .auth-trampou-icon-hero {
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 16px !important;
+  }
+
+  .auth-trampou-logo-img {
+    max-width: 150px !important;
+  }
+
+  .auth-brand-hero h2 {
+    font-size: 16px !important;
+  }
+
+  .auth-brand-hero p {
+    font-size: 12px !important;
+  }
+
+  .auth-welcome-body {
+    padding: 8px 12px 24px !important;
+    gap: 14px !important;
+  }
+
+  .wizard-step span {
+    display: none; /* Em telas minúsculas oculta os rótulos de texto mantendo os círculos numerados */
+  }
+
+  .wizard-connector {
+    margin: 0 4px 0 !important;
+  }
+}
+
 
 

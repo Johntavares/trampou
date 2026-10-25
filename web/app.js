@@ -2493,10 +2493,12 @@ function openShareProModal(proOrId, mode) {
     if (ratingVal) ratingVal.innerText = '4.9';
     if (reviewsCnt) reviewsCnt.innerText = '1.2k+';
     if (proLoc) proLoc.innerText = 'Parauapebas, PA';
-    if (avatarImg) avatarImg.style.display = 'none';
+    if (avatarImg) {
+      avatarImg.src = 'trampou_app_icon.png';
+      avatarImg.style.display = 'block';
+    }
     if (avatarFallback) {
-      avatarFallback.style.display = 'flex';
-      avatarFallback.innerText = 'GO';
+      avatarFallback.style.display = 'none';
     }
     if (waTitle) waTitle.innerText = 'Compartilhar nos Grupos do WhatsApp';
     if (waSub) waSub.innerText = 'Mensagem pronta para condomínio, vizinhos e amigos';
