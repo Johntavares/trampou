@@ -4026,11 +4026,6 @@ function submitQuoteRequest() {
   }
 }
 
-// Área do Profissional
-function openProDashboard() {
-  openProVitrine('p1', true);
-}
-
 function closeProDashboard() {
   closeProVitrine();
 }
