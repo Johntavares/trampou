@@ -3,10 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "description": "Trampou - Marketplace de Profissionais Autônomos em Parauapebas/PA",
+  "bin": {
+    "vite": "./scripts/build.js"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "build": "echo \"Static PWA ready for deployment\"",
+    "build": "node scripts/build.js",
+    "vite": "node scripts/build.js",
     "db:migrate": "node scripts/migrate.js"
   },
   "dependencies": {
