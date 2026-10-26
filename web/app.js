@@ -116,24 +116,54 @@ document.addEventListener('DOMContentLoaded', () => {
   checkFirstTimeOnboarding();
 });
 
-// Renderiza Carrossel de Anúncios antes das categorias
-// Renderiza Banner Único de Incentivo ao Compartilhamento do Trampou
-function renderAdBannerCarousel() {
+// Renderiza Carrossel de Anúncios antes das categorias (Integrado com Supabase + Painel Admin)
+async function renderAdBannerCarousel() {
   const track = document.getElementById('home-banner-track');
   const dotsContainer = document.getElementById('carousel-dots');
   if (!track) return;
 
-  // Oculta os pontinhos indicadores já que agora é um banner exclusivo
-  if (dotsContainer) {
-    dotsContainer.style.display = 'none';
+  // Banner padrão de fallback imediato (divulgação e compartilhamento do Trampou)
+  const defaultShareBanner = {
+    id: 'default-share',
+    badge_text: 'Divulgue Parauapebas',
+    title: 'Indique o Trampou para amigos e vizinhos!',
+    description: 'Ajude a valorizar os profissionais autônomos da nossa cidade. Compartilhe no WhatsApp!',
+    cta_text: 'Compartilhar App',
+    cta_link: 'share',
+    theme: 'purple-viral'
+  };
+
+  // Renderizador de HTML de um banner
+  function buildBannerHtml(banner, index) {
+    const themeClass = banner.theme ? `theme-${banner.theme.replace('theme-', '')}` : 'theme-purple-viral';
+    const badgeText = banner.badge_text || 'Destaque';
+    const isShare = (banner.cta_link || '').toLowerCase().includes('share');
+    const ctaIcon = isShare ? '<i class="fa-brands fa-whatsapp" style="color: #16A34A; font-size: 14px; margin-right: 4px;"></i>' : '<i class="fa-solid fa-arrow-right" style="margin-left: 4px;"></i>';
+
+    return `
+      <div class="ad-slide-card ${themeClass}" data-slide-index="${index}" data-banner-id="${banner.id || ''}" role="banner" style="cursor: pointer;">
+        <div class="slide-body">
+          <span class="badge-anuncio" style="background: rgba(255, 255, 255, 0.2); color: #FFFFFF; font-weight: 700; border: 1px solid rgba(255, 255, 255, 0.3);">
+            <i class="fa-solid ${isShare ? 'fa-heart' : 'fa-bullhorn'}" style="color: #FDA4AF; margin-right: 4px;"></i> ${escapeHTML(badgeText)}
+          </span>
+          <div class="slide-content">
+            <h5 style="color: #FFFFFF; font-size: 15px; font-weight: 800; line-height: 1.3; margin: 4px 0 2px;">${escapeHTML(banner.title)}</h5>
+            <p style="color: rgba(255, 255, 255, 0.9); font-size: 11.5px; line-height: 1.35; margin-bottom: 8px;">${escapeHTML(banner.description || '')}</p>
+          </div>
+          <button class="btn-slide-cta" type="button" style="background: #FFFFFF; color: #1E1B4B; font-weight: 800; box-shadow: 0 4px 12px rgba(0,0,0,0.18);">
+            ${isShare ? ctaIcon : ''} ${escapeHTML(banner.cta_text || 'Conhecer')} ${!isShare ? ctaIcon : '<i class="fa-solid fa-share-nodes" style="margin-left: 4px;"></i>'}
+          </button>
+        </div>
+        <div class="slide-art" aria-hidden="true" style="opacity: 0.28; font-size: 80px; right: 12px; bottom: 8px; color: #FFFFFF;">
+          <i class="fa-solid ${isShare ? 'fa-share-nodes' : 'fa-rectangle-ad'}"></i>
+        </div>
+      </div>
+    `;
   }
 
-  const shareSlide = {
-    badge: 'Divulgue Parauapebas',
-    title: 'Indique o Trampou para amigos e vizinhos!',
-    desc: 'Ajude a valorizar os profissionais autônomos da nossa cidade. Compartilhe no WhatsApp!',
-    cta: 'Compartilhar App',
-    action: () => {
+  function handleBannerClick(banner) {
+    const link = (banner.cta_link || '').trim();
+    if (!link || link === 'share' || link === '#share') {
       if (typeof openShareAppModal === 'function') {
         openShareAppModal();
       } else if (navigator.share) {
@@ -143,35 +173,67 @@ function renderAdBannerCarousel() {
           url: OFFICIAL_APP_URL
         }).catch(() => {});
       }
+    } else {
+      window.open(link, '_blank', 'noopener,noreferrer');
     }
-  };
+  }
 
-  track.innerHTML = `
-    <div class="ad-slide-card theme-purple-viral" data-slide-index="0" role="banner" style="width: 100%; flex: 1 0 100%; cursor: pointer;">
-      <div class="slide-body">
-        <span class="badge-anuncio" style="background: rgba(255, 255, 255, 0.2); color: #FFFFFF; font-weight: 700; border: 1px solid rgba(255, 255, 255, 0.3);">
-          <i class="fa-solid fa-heart" style="color: #FDA4AF; margin-right: 4px;"></i> ${shareSlide.badge}
-        </span>
-        <div class="slide-content">
-          <h5 style="color: #FFFFFF; font-size: 15px; font-weight: 800; line-height: 1.3; margin: 4px 0 2px;">${shareSlide.title}</h5>
-          <p style="color: rgba(255, 255, 255, 0.9); font-size: 11.5px; line-height: 1.35; margin-bottom: 8px;">${shareSlide.desc}</p>
-        </div>
-        <button class="btn-slide-cta" type="button" style="background: #FFFFFF; color: #581C87; font-weight: 800; box-shadow: 0 4px 12px rgba(0,0,0,0.18);">
-          <i class="fa-brands fa-whatsapp" style="color: #16A34A; font-size: 14px; margin-right: 4px;"></i> ${shareSlide.cta} <i class="fa-solid fa-share-nodes" style="margin-left: 4px;" aria-hidden="true"></i>
-        </button>
-      </div>
-      <div class="slide-art" aria-hidden="true" style="opacity: 0.28; font-size: 80px; right: 12px; bottom: 8px; color: #FFFFFF;">
-        <i class="fa-solid fa-share-nodes"></i>
-      </div>
-    </div>
-  `;
+  function applyBanners(bannersList) {
+    if (!bannersList || bannersList.length === 0) {
+      bannersList = [defaultShareBanner];
+    }
 
-  const card = track.querySelector('.ad-slide-card');
-  if (card) {
-    card.addEventListener('click', (e) => {
-      e.stopPropagation();
-      shareSlide.action();
+    track.innerHTML = bannersList.map((b, idx) => buildBannerHtml(b, idx)).join('');
+
+    // Adiciona listener de clique em cada card
+    const cards = track.querySelectorAll('.ad-slide-card');
+    cards.forEach((card, idx) => {
+      card.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handleBannerClick(bannersList[idx]);
+      });
     });
+
+    // Configuração dos pontinhos (dots) se houver mais de 1 banner
+    if (dotsContainer) {
+      if (bannersList.length > 1) {
+        dotsContainer.style.display = 'flex';
+        dotsContainer.innerHTML = bannersList.map((_, i) => `<span class="carousel-dot ${i === 0 ? 'active' : ''}" data-dot-index="${i}"></span>`).join('');
+
+        track.onscroll = () => {
+          const scrollLeft = track.scrollLeft;
+          const cardWidth = track.offsetWidth || 300;
+          const activeIndex = Math.round(scrollLeft / cardWidth);
+          dotsContainer.querySelectorAll('.carousel-dot').forEach((d, i) => {
+            if (i === activeIndex) d.classList.add('active');
+            else d.classList.remove('active');
+          });
+        };
+      } else {
+        dotsContainer.style.display = 'none';
+      }
+    }
+  }
+
+  // Renderização inicial rápida com fallback
+  applyBanners([defaultShareBanner]);
+
+  // Busca banners ativos em tempo real do Supabase
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/banners?active=eq.true&order=sort_order.asc,created_at.desc`, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    });
+    if (res.ok) {
+      const dbBanners = await res.json();
+      if (Array.isArray(dbBanners) && dbBanners.length > 0) {
+        applyBanners(dbBanners);
+      }
+    }
+  } catch (err) {
+    console.warn('Usando banner padrão local:', err);
   }
 }
 

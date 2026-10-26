@@ -905,6 +905,24 @@ body {
   background: radial-gradient(120% 140% at 100% 0%, rgba(244, 63, 94, 0.35) 0%, rgba(244, 63, 94, 0) 65%);
 }
 
+.ad-slide-card.theme-emerald-pro {
+  background: linear-gradient(135deg, #065F46 0%, #059669 50%, #10B981 100%);
+  box-shadow: 0 8px 24px rgba(5, 150, 105, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.ad-slide-card.theme-amber-deal {
+  background: linear-gradient(135deg, #92400E 0%, #D97706 50%, #F59E0B 100%);
+  box-shadow: 0 8px 24px rgba(217, 119, 6, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.ad-slide-card.theme-dark-gold {
+  background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 60%, #312E81 100%);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.4);
+  border: 1.5px solid #F59E0B;
+}
+
 .slide-body {
   display: flex;
   flex-direction: column;
@@ -11308,6 +11326,400 @@ body {
   .wizard-connector {
     margin: 0 4px 0 !important;
   }
+}
+
+/* =========================================================
+   CONTADOR ESTILO RELÓGIO DO TEMPO — COMUNIDADE TRAMPOU
+   Rumo à marca histórica de 1.000 usuários
+   ========================================================= */
+.community-time-clock-wrap {
+  margin: 0 0 var(--space-6) 0;
+  width: 100%;
+}
+
+.time-clock-card {
+  background: linear-gradient(145deg, #0B0F19 0%, #16122E 50%, #201335 100%);
+  border: 1.5px solid rgba(168, 85, 247, 0.35);
+  border-radius: 18px;
+  padding: 16px 18px;
+  color: #FFFFFF;
+  box-shadow: 0 10px 28px rgba(11, 15, 25, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.time-clock-card::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 130px;
+  height: 130px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.25) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.time-clock-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.time-clock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  color: #E2E8F0;
+  text-transform: uppercase;
+}
+
+.clock-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 8px #10B981;
+  animation: liveDotPulse 1.6s infinite ease-in-out;
+}
+
+@keyframes liveDotPulse {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 12px #34D399; }
+  100% { transform: scale(0.9); opacity: 0.7; }
+}
+
+.time-clock-meta-badge {
+  background: rgba(245, 158, 11, 0.18);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #FBBF24;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.time-clock-sub {
+  font-size: 11.5px;
+  color: #94A3B8;
+  line-height: 1.35;
+  margin-bottom: 10px;
+}
+
+/* Plaquinhas de Dígitos do Relógio Flip / Odômetro */
+.time-clock-digits {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 10px 0 14px;
+}
+
+.flip-digit-box {
+  background: linear-gradient(180deg, #1C2333 0%, #0F1420 50%, #070A10 51%, #151A26 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 8px 6px 5px;
+  min-width: 58px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.45), inset 0 2px 3px rgba(255, 255, 255, 0.1);
+}
+
+.flip-digit-val {
+  font-family: 'Inter', ui-monospace, monospace;
+  font-size: 32px;
+  font-weight: 900;
+  color: #FFFFFF;
+  line-height: 1;
+  letter-spacing: -0.5px;
+  text-shadow: 0 0 12px rgba(192, 132, 252, 0.6);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.flip-digit-line {
+  position: absolute;
+  top: 48%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.85);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.16);
+  pointer-events: none;
+}
+
+.digit-sub-label {
+  display: block;
+  font-size: 8px;
+  color: #64748B;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+/* Barra de Progresso Rumo aos 1.000 */
+.clock-progress-section {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+}
+
+.clock-progress-labels {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #CBD5E1;
+  margin-bottom: 6px;
+}
+
+#clock-percent-text {
+  font-weight: 800;
+  color: #10B981;
+}
+
+.clock-progress-track {
+  height: 7px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.clock-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10B981 0%, #06B6D4 50%, #A855F7 100%);
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+  transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Rodapé do Card do Relógio */
+.time-clock-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 10.5px;
+  color: #94A3B8;
+}
+
+.clock-footer-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.clock-footer-hint i {
+  color: #F59E0B;
+}
+
+.btn-clock-test-celebration {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+}
+
+.btn-clock-test-celebration:hover {
+  background: #A855F7;
+  border-color: #A855F7;
+  color: #FFFFFF;
+}
+
+/* Tema quando o Relógio atinge 1.000 ou no modo comemoração */
+.time-clock-card.celebration-mode {
+  background: linear-gradient(145deg, #1E1B4B 0%, #3B1663 50%, #5B21B6 100%);
+  border-color: #F59E0B;
+  box-shadow: 0 0 32px rgba(245, 158, 11, 0.35);
+}
+
+.time-clock-card.celebration-mode .flip-digit-val {
+  color: #FBBF24;
+  text-shadow: 0 0 16px rgba(245, 158, 11, 0.8);
+}
+
+/* =========================================================
+   MODAL DE COMEMORAÇÃO DOS 1.000 MEMBROS
+   ========================================================= */
+.celebration-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeInCeleb 0.3s ease-out;
+}
+
+@keyframes fadeInCeleb {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.celebration-modal-box {
+  background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 380px;
+  padding: 32px 24px 28px;
+  text-align: center;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+  border: 2px solid #F59E0B;
+  position: relative;
+  animation: scaleUpCeleb 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes scaleUpCeleb {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.celebration-close-x {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #94A3B8;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.celebration-trophy-glow {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 14px;
+  background: radial-gradient(circle, #FEF3C7 0%, #FDE68A 70%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.5);
+  animation: trophyFloat 2.2s infinite ease-in-out;
+}
+
+@keyframes trophyFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.celebration-trophy-icon {
+  font-size: 38px;
+}
+
+.celebration-badge-pill {
+  display: inline-block;
+  background: #FEF3C7;
+  color: #B45309;
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.celebration-modal-box h3 {
+  font-size: 22px;
+  font-weight: 900;
+  color: #1E1B4B;
+  margin-bottom: 4px;
+  letter-spacing: -0.5px;
+}
+
+.celebration-modal-box h4 {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #6825B3;
+  margin-bottom: 12px;
+}
+
+.celebration-modal-box p {
+  font-size: 12.5px;
+  color: #475569;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.celebration-stats-pill {
+  background: #EDE9FE;
+  color: #5B21B6;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.celebration-actions-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-celebration-share {
+  background: linear-gradient(135deg, #16A34A 0%, #15803D 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-size: 13.5px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
+  transition: all 0.2s;
+}
+
+.btn-celebration-share:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(22, 163, 74, 0.45);
+}
+
+.btn-celebration-close {
+  background: #F1F5F9;
+  color: #475569;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-celebration-close:hover {
+  background: #E2E8F0;
 }
 
 

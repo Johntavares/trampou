@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trampou Admin — Painel de Controle & Gestão</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  
+  <!-- Fontes Google & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Estilos do Painel -->
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <!-- =========================================================
+       TELA DE LOGIN DO ADMINISTRADOR (SENHA MESTRE)
+       ========================================================= -->
+  <div id="admin-auth-screen">
+    <div class="admin-login-card">
+      <div class="login-brand-badge">
+        <img src="trampou_app_icon.png" alt="Trampou">
+        <div style="text-align: left;">
+          <div class="login-brand-title">Trampou</div>
+          <span class="login-pill-tag">ACESSO EXCLUSIVO</span>
+        </div>
+      </div>
+
+      <h2>Painel Administrativo</h2>
+      <p>Gerenciamento central do aplicativo Trampou, banners de anúncios, base de usuários e monetização.</p>
+
+      <div class="login-error-toast" id="admin-login-error">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span>Senha de administrador incorreta. Tente novamente.</span>
+      </div>
+
+      <form class="admin-login-form" id="admin-login-form" onsubmit="event.preventDefault(); window.AdminApp.handleLogin();">
+        <div class="admin-input-group">
+          <label for="admin-password-input">Senha Mestre de Administrador</label>
+          <div class="admin-password-wrap">
+            <input 
+              type="password" 
+              id="admin-password-input" 
+              placeholder="Digite sua senha de acesso..." 
+              required 
+              autocomplete="current-password"
+            >
+            <button type="button" class="admin-toggle-pwd" id="btn-toggle-pwd" onclick="window.AdminApp.togglePasswordVisibility()">
+              <i class="fa-regular fa-eye" id="toggle-pwd-icon"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-admin-login" id="admin-login-btn">
+          <span>Entrar no Painel</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       LAYOUT PRINCIPAL DO PAINEL (DESKTOP)
+       ========================================================= -->
+  <div id="admin-app-layout" style="display: none;">
+    
+    <!-- SIDEBAR FIXA -->
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-header">
+        <div class="sidebar-brand">
+          <img src="trampou_app_icon.png" alt="Trampou">
+          <div>
+            <h3>Trampou</h3>
+            <span style="font-size: 11px; color: #64748B; font-weight: 600;">Parauapebas / PA</span>
+          </div>
+        </div>
+        <span class="sidebar-badge">ADMIN</span>
+      </div>
+
+      <ul class="admin-nav-list">
+        <li class="admin-nav-item active" data-tab="dashboard">
+          <div class="nav-item-left">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>Visão Geral</span>
+          </div>
+        </li>
+
+        <li class="admin-nav-item" data-tab="banners">
+          <div class="nav-item-left">
+            <i class="fa-solid fa-rectangle-ad"></i>
+            <span>Banners & Anúncios</span>
+          </div>
+          <span class="nav-counter-pill" id="nav-banners-count">0</span>
+        </li>
+
+        <li class="admin-nav-item" data-tab="professionals">
+          <div class="nav-item-left">
+            <i class="fa-solid fa-user-tie"></i>
+            <span>Profissionais</span>
+          </div>
+          <span class="nav-counter-pill" id="nav-pros-count">0</span>
+        </li>
+
+        <li class="admin-nav-item" data-tab="users">
+          <div class="nav-item-left">
+            <i class="fa-solid fa-users"></i>
+            <span>Usuários Clientes</span>
+          </div>
+          <span class="nav-counter-pill" id="nav-users-count">0</span>
+        </li>
+
+        <li class="admin-nav-item" data-tab="monetization">
+          <div class="nav-item-left">
+            <i class="fa-solid fa-hand-holding-dollar"></i>
+            <span>Monetização & PRO</span>
+          </div>
+          <span class="nav-counter-pill" id="nav-subs-count">0</span>
+        </li>
+
+        <li class="admin-nav-item" data-tab="categories">
+          <div class="nav-item-left">
+            <i class="fa-solid fa-layer-group"></i>
+            <span>Categorias</span>
+          </div>
+          <span class="nav-counter-pill" id="nav-cats-count">0</span>
+        </li>
+      </ul>
+
+      <div class="admin-sidebar-footer">
+        <a href="https://trampou.jw.tec.br/" target="_blank" class="btn-sidebar-app-link">
+          <i class="fa-solid fa-mobile-screen"></i>
+          <span>Abrir App Oficial</span>
+          <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 11px; margin-left: auto;"></i>
+        </a>
+        <button id="btn-admin-logout" class="btn-sidebar-logout" onclick="window.AdminApp.logout()">
+          <i class="fa-solid fa-right-from-bracket"></i>
+          <span>Encerrar Sessão</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <div class="admin-main-wrap">
+      
+      <!-- TOPBAR FIXA -->
+      <header class="admin-topbar">
+        <div class="topbar-page-info">
+          <h2 id="admin-current-page-title">Visão Geral</h2>
+        </div>
+
+        <div class="topbar-right-actions">
+          <div class="system-status-indicator" title="Banco de dados Supabase sincronizado">
+            <span class="status-dot"></span>
+            <span>Supabase Online</span>
+          </div>
+
+          <div class="topbar-time" id="admin-live-time">
+            --:--:--
+          </div>
+
+          <button class="btn-action-icon" title="Recarregar dados do banco" onclick="window.AdminApp.refreshAllData()">
+            <i class="fa-solid fa-rotate"></i>
+          </button>
+
+          <div class="admin-avatar-pill">
+            <div class="admin-avatar-circle">AD</div>
+            <span>Administrador</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- CORPO DE CONTEÚDO COM AS ABAS -->
+      <main class="admin-content-body">
+        
+        <!-- ==========================================
+             ABA 1: VISÃO GERAL (DASHBOARD)
+             ========================================== -->
+        <section class="admin-tab-pane active" id="tab-dashboard">
+          
+          <!-- CONTADOR ESTILO RELÓGIO DO TEMPO — BASE TOTAL (CLIENTES + PROFISSIONAIS) -->
+          <div class="admin-time-clock-banner" id="admin-time-clock-widget">
+            <div class="admin-time-clock-content">
+              <div class="time-clock-info-col">
+                <div class="time-clock-header-row">
+                  <div class="clock-live-pill">
+                    <span class="clock-pulse-dot"></span>
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>RELÓGIO DO TEMPO DA BASE</span>
+                  </div>
+                  <span class="clock-target-pill" id="admin-clock-target-pill">
+                    <i class="fa-solid fa-bullseye"></i> META: 1.000 USUÁRIOS
+                  </span>
+                </div>
+
+                <h3>Odômetro Oficial de Usuários Cadastrados</h3>
+                <p>Contagem contínua somando <strong>todos os clientes cadastrados</strong> e <strong>profissionais autônomos</strong> no banco Supabase.</p>
+
+                <!-- Barra de Progresso Rumo aos 1.000 -->
+                <div class="admin-clock-progress-wrap">
+                  <div class="admin-clock-progress-header">
+                    <span id="admin-clock-progress-label">Calculando meta...</span>
+                    <span id="admin-clock-percent-val" style="font-weight: 800; color: #10B981;">0%</span>
+                  </div>
+                  <div class="admin-clock-progress-bar">
+                    <div class="admin-clock-progress-fill" id="admin-clock-progress-fill" style="width: 0%;"></div>
+                  </div>
+                </div>
+
+                <div class="admin-clock-breakdown-row">
+                  <span id="admin-clock-clients-tag"><i class="fa-solid fa-user"></i> 0 Clientes</span>
+                  <span style="opacity: 0.5;">+</span>
+                  <span id="admin-clock-pros-tag"><i class="fa-solid fa-user-tie"></i> 0 Profissionais</span>
+                  <span style="opacity: 0.5;">=</span>
+                  <strong id="admin-clock-total-tag" style="color: #FBBF24;">Total: 0</strong>
+                </div>
+              </div>
+
+              <!-- Lado dos Dígitos de Relógio Flip / Odômetro -->
+              <div class="time-clock-digits-col">
+                <div class="admin-flip-clock-display" aria-label="Odômetro de usuários">
+                  <div class="admin-flip-box">
+                    <div class="admin-flip-num" id="admin-digit-thousands">0</div>
+                    <div class="admin-flip-crease"></div>
+                    <span class="admin-flip-lbl">MILHAR</span>
+                  </div>
+                  <div class="admin-flip-box">
+                    <div class="admin-flip-num" id="admin-digit-hundreds">0</div>
+                    <div class="admin-flip-crease"></div>
+                    <span class="admin-flip-lbl">CENTENA</span>
+                  </div>
+                  <div class="admin-flip-box">
+                    <div class="admin-flip-num" id="admin-digit-tens">0</div>
+                    <div class="admin-flip-crease"></div>
+                    <span class="admin-flip-lbl">DEZENA</span>
+                  </div>
+                  <div class="admin-flip-box">
+                    <div class="admin-flip-num" id="admin-digit-units">0</div>
+                    <div class="admin-flip-crease"></div>
+                    <span class="admin-flip-lbl">UNIDADE</span>
+                  </div>
+                </div>
+
+                <div class="admin-clock-actions-row">
+                  <button type="button" class="btn-admin-test-milestone" onclick="window.AdminApp.triggerCelebration(true)" title="Visualizar a comemoração oficial da meta de 1.000 usuários">
+                    <i class="fa-solid fa-champagne-glasses"></i>
+                    <span>Simular Comemoração dos 1.000</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARDS DE KPIS -->
+          <div class="kpi-cards-grid">
+            <!-- Total Usuários -->
+            <div class="kpi-stat-card">
+              <div class="kpi-header-row">
+                <span class="kpi-label">Usuários Cadastrados</span>
+                <div class="kpi-icon-box blue">
+                  <i class="fa-solid fa-users"></i>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <h3 id="kpi-total-users">0</h3>
+                <span class="kpi-growth-badge"><i class="fa-solid fa-arrow-trend-up"></i> Ativos</span>
+              </div>
+              <span class="kpi-subtext">Total acumulado na base</span>
+            </div>
+
+            <!-- Total Profissionais -->
+            <div class="kpi-stat-card">
+              <div class="kpi-header-row">
+                <span class="kpi-label">Profissionais Prestadores</span>
+                <div class="kpi-icon-box purple">
+                  <i class="fa-solid fa-user-tie"></i>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <h3 id="kpi-total-pros">0</h3>
+                <span class="kpi-growth-badge"><i class="fa-solid fa-bolt"></i> Parauapebas</span>
+              </div>
+              <span class="kpi-subtext" id="kpi-verified-pros">0 verificados com selo</span>
+            </div>
+
+            <!-- Faturamento Estimado (MRR) -->
+            <div class="kpi-stat-card">
+              <div class="kpi-header-row">
+                <span class="kpi-label">Faturamento Mensal (MRR)</span>
+                <div class="kpi-icon-box emerald">
+                  <i class="fa-solid fa-hand-holding-dollar"></i>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <h3 id="kpi-mrr">R$ 0,00</h3>
+                <span class="kpi-growth-badge"><i class="fa-solid fa-crown"></i> PRO</span>
+              </div>
+              <span class="kpi-subtext" id="kpi-active-subs">0 assinaturas ativas</span>
+            </div>
+
+            <!-- Banners Ativos -->
+            <div class="kpi-stat-card">
+              <div class="kpi-header-row">
+                <span class="kpi-label">Banners Ativos no App</span>
+                <div class="kpi-icon-box amber">
+                  <i class="fa-solid fa-rectangle-ad"></i>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <h3 id="kpi-active-banners">0</h3>
+                <span class="kpi-growth-badge" style="background: #FEF3C7; color: #D97706;"><i class="fa-solid fa-circle-check"></i> Em rotação</span>
+              </div>
+              <span class="kpi-subtext">Exibidos na Home do App</span>
+            </div>
+          </div>
+
+          <!-- SEÇÃO RESUMIDA: BANNERS E ÚLTIMOS PROFISSIONAIS -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+            <!-- Banners em Rotação -->
+            <div class="admin-card-section" style="margin-bottom: 0;">
+              <div class="admin-card-header">
+                <div class="admin-card-title-group">
+                  <h4>Banners em Destaque</h4>
+                  <span>Anúncios rodando atualmente no app</span>
+                </div>
+                <button class="btn-action-primary" onclick="window.AdminApp.switchTab('banners')">
+                  <span>Ver Todos</span>
+                  <i class="fa-solid fa-arrow-right"></i>
+                </button>
+              </div>
+              <div id="dashboard-banners-preview" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+                <!-- Carregado via JS -->
+              </div>
+            </div>
+
+            <!-- Últimos Profissionais Cadastrados -->
+            <div class="admin-card-section" style="margin-bottom: 0;">
+              <div class="admin-card-header">
+                <div class="admin-card-title-group">
+                  <h4>Novos Profissionais</h4>
+                  <span>Últimos prestadores cadastrados</span>
+                </div>
+                <button class="btn-action-primary" onclick="window.AdminApp.switchTab('professionals')">
+                  <span>Ver Lista</span>
+                  <i class="fa-solid fa-arrow-right"></i>
+                </button>
+              </div>
+              <div style="overflow-x: auto;">
+                <table class="admin-data-table">
+                  <thead>
+                    <tr>
+                      <th>Profissional</th>
+                      <th>Especialidade</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashboard-recent-pros">
+                    <!-- Carregado via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             ABA 2: GERENCIADOR DE BANNERS DE ANÚNCIOS
+             ========================================== -->
+        <section class="admin-tab-pane" id="tab-banners">
+          <div class="admin-card-section">
+            <div class="admin-card-header">
+              <div class="admin-card-title-group">
+                <h4>Banners de Anúncios no App</h4>
+                <span>Crie, edite e ative/desative campanhas publicitárias visíveis para todos os clientes</span>
+              </div>
+              <div class="admin-card-actions">
+                <button class="btn-action-primary" onclick="window.AdminApp.openBannerModal()">
+                  <i class="fa-solid fa-plus"></i>
+                  <span>Criar Novo Banner</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Grid de Banners -->
+            <div class="banners-cards-grid" id="banners-grid">
+              <!-- Preenchido dinamicamente via JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             ABA 3: PROFISSIONAIS AUTÔNOMOS
+             ========================================== -->
+        <section class="admin-tab-pane" id="tab-professionals">
+          <div class="admin-card-section">
+            <div class="admin-card-header">
+              <div class="admin-card-title-group">
+                <h4>Base de Profissionais</h4>
+                <span>Controle de prestadores, selo de verificação e planos</span>
+              </div>
+              <div class="admin-card-actions">
+                <div class="admin-search-input-wrap">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input type="text" id="search-pros-input" placeholder="Buscar por nome, fone..." oninput="window.AdminApp.filterProfessionals()">
+                </div>
+                <select id="filter-pro-status" onchange="window.AdminApp.filterProfessionals()" style="padding: 8px 12px; border: 1px solid var(--admin-border); border-radius: 8px; font-size: 12.5px; background: #FFF; outline: none;">
+                  <option value="all">Todos os Status</option>
+                  <option value="verified">Apenas Verificados</option>
+                  <option value="unverified">Não Verificados</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="overflow-x: auto;">
+              <table class="admin-data-table">
+                <thead>
+                  <tr>
+                    <th>Profissional</th>
+                    <th>WhatsApp / Contato</th>
+                    <th>Especialidade</th>
+                    <th>Avaliação</th>
+                    <th>Selo Verificado</th>
+                    <th>Plano PRO</th>
+                    <th>Ações Rápidas</th>
+                  </tr>
+                </thead>
+                <tbody id="pro-table-body">
+                  <!-- Preenchido dinamicamente via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             ABA 4: USUÁRIOS CLIENTES
+             ========================================== -->
+        <section class="admin-tab-pane" id="tab-users">
+          <div class="admin-card-section">
+            <div class="admin-card-header">
+              <div class="admin-card-title-group">
+                <h4>Clientes Cadastrados</h4>
+                <span>Lista completa de usuários que buscam serviços no Trampou</span>
+              </div>
+              <div class="admin-card-actions">
+                <div class="admin-search-input-wrap">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input type="text" id="search-users-input" placeholder="Buscar cliente..." oninput="window.AdminApp.filterUsers()">
+                </div>
+              </div>
+            </div>
+
+            <div style="overflow-x: auto;">
+              <table class="admin-data-table">
+                <thead>
+                  <tr>
+                    <th>Usuário</th>
+                    <th>E-mail</th>
+                    <th>Telefone</th>
+                    <th>Tipo</th>
+                    <th>Data de Cadastro</th>
+                    <th>WhatsApp Direto</th>
+                  </tr>
+                </thead>
+                <tbody id="users-table-body">
+                  <!-- Preenchido dinamicamente via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             ABA 5: MONETIZAÇÃO & PLANOS PRO
+             ========================================== -->
+        <section class="admin-tab-pane" id="tab-monetization">
+          <div class="kpi-cards-grid">
+            <div class="kpi-stat-card">
+              <div class="kpi-header-row">
+                <span class="kpi-label">Faturamento Total do Mês</span>
+                <div class="kpi-icon-box emerald"><i class="fa-solid fa-dollar-sign"></i></div>
+              </div>
+              <div class="kpi-value-row">
+                <h3 id="monetization-mrr-val">R$ 0,00</h3>
+              </div>
+              <span class="kpi-subtext">Planos PRO + Anúncios</span>
+            </div>
+
+            <div class="kpi-stat-card">
+              <div class="kpi-header-row">
+                <span class="kpi-label">Assinaturas Ativas</span>
+                <div class="kpi-icon-box purple"><i class="fa-solid fa-shield-halved"></i></div>
+              </div>
+              <div class="kpi-value-row">
+                <h3 id="monetization-active-count">0</h3>
+              </div>
+              <span class="kpi-subtext">Profissionais pagantes</span>
+            </div>
+
+            <div class="kpi-stat-card">
+              <div class="kpi-header-row">
+                <span class="kpi-label">Ticket Médio</span>
+                <div class="kpi-icon-box blue"><i class="fa-solid fa-tag"></i></div>
+              </div>
+              <div class="kpi-value-row">
+                <h3>R$ 29,90</h3>
+              </div>
+              <span class="kpi-subtext">Plano Mensal sugerido</span>
+            </div>
+          </div>
+
+          <div class="admin-card-section">
+            <div class="admin-card-header">
+              <div class="admin-card-title-group">
+                <h4>Histórico de Assinaturas & Pagamentos</h4>
+                <span>Controle de assinaturas dos profissionais para destaque no app</span>
+              </div>
+              <div class="admin-card-actions">
+                <button class="btn-action-primary" onclick="window.AdminApp.openSubscriptionModal()">
+                  <i class="fa-solid fa-plus"></i>
+                  <span>Registrar Assinatura PRO</span>
+                </button>
+              </div>
+            </div>
+
+            <div style="overflow-x: auto;">
+              <table class="admin-data-table">
+                <thead>
+                  <tr>
+                    <th>Profissional</th>
+                    <th>Plano</th>
+                    <th>Valor</th>
+                    <th>Início</th>
+                    <th>Expiração</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="subs-table-body">
+                  <!-- Preenchido via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             ABA 6: CATEGORIAS
+             ========================================== -->
+        <section class="admin-tab-pane" id="tab-categories">
+          <div class="admin-card-section">
+            <div class="admin-card-header">
+              <div class="admin-card-title-group">
+                <h4>Categorias de Serviços</h4>
+                <span>Distribuição de categorias cadastradas e densidade de profissionais</span>
+              </div>
+            </div>
+
+            <div style="overflow-x: auto;">
+              <table class="admin-data-table">
+                <thead>
+                  <tr>
+                    <th>Ícone</th>
+                    <th>Categoria</th>
+                    <th>Slug</th>
+                    <th>Profissionais Cadastrados</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="categories-table-body">
+                  <!-- Preenchido via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL: CRIAR / EDITAR BANNER DE ANÚNCIO
+       ========================================================= -->
+  <div class="admin-modal-overlay" id="modal-banner">
+    <div class="admin-modal-box">
+      <div class="admin-modal-header">
+        <h4 id="modal-banner-title">Criar Novo Banner</h4>
+        <button class="admin-modal-close" onclick="window.AdminApp.closeBannerModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <form id="form-banner" onsubmit="event.preventDefault(); window.AdminApp.saveBanner();">
+        <input type="hidden" id="banner-id">
+        <div class="admin-modal-body">
+          <div class="admin-input-group">
+            <label for="banner-title">Título do Banner *</label>
+            <input type="text" id="banner-title" required placeholder="Ex: Anuncie seu Comércio Aqui!">
+          </div>
+
+          <div class="admin-input-group">
+            <label for="banner-description">Descrição Breve *</label>
+            <textarea id="banner-description" rows="2" required placeholder="Ex: Alcance milhares de clientes em Parauapebas todos os dias."></textarea>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="admin-input-group">
+              <label for="banner-badge">Badge / Etiqueta</label>
+              <input type="text" id="banner-badge" placeholder="Ex: PROMOÇÃO, DESTAQUE, PARCEIRO">
+            </div>
+
+            <div class="admin-input-group">
+              <label for="banner-theme">Tema Visual *</label>
+              <select id="banner-theme">
+                <option value="purple-viral">Roxo Neon Trampou</option>
+                <option value="emerald-pro">Verde Esmeralda Pro</option>
+                <option value="amber-deal">Dourado / Oferta Ouro</option>
+                <option value="dark-gold">Dark Enterprise Luxo</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="admin-input-group">
+              <label for="banner-cta-text">Texto do Botão *</label>
+              <input type="text" id="banner-cta-text" required placeholder="Ex: Saiba Mais, Chamar no Zap">
+            </div>
+
+            <div class="admin-input-group">
+              <label for="banner-cta-link">Link de Destino (URL / WhatsApp) *</label>
+              <input type="text" id="banner-cta-link" required placeholder="Ex: https://wa.me/55949... ou link">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: center;">
+            <div class="admin-input-group">
+              <label for="banner-sort-order">Ordem de Exibição</label>
+              <input type="number" id="banner-sort-order" value="10" min="1">
+            </div>
+
+            <div style="margin-top: 18px;">
+              <label class="switch-toggle-label">
+                <input type="checkbox" id="banner-active" checked>
+                <span>Ativo no App imediatamente</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-admin-secondary" onclick="window.AdminApp.closeBannerModal()">Cancelar</button>
+          <button type="submit" class="btn-action-primary" id="btn-save-banner">
+            <i class="fa-solid fa-check"></i>
+            <span>Salvar Banner</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL: REGISTRAR ASSINATURA PRO (MONETIZAÇÃO)
+       ========================================================= -->
+  <div class="admin-modal-overlay" id="modal-subscription">
+    <div class="admin-modal-box">
+      <div class="admin-modal-header">
+        <h4>Registrar Assinatura PRO</h4>
+        <button class="admin-modal-close" onclick="window.AdminApp.closeSubscriptionModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <form id="form-subscription" onsubmit="event.preventDefault(); window.AdminApp.saveSubscription();">
+        <div class="admin-modal-body">
+          <div class="admin-input-group">
+            <label for="sub-pro-id">Selecionar Profissional *</label>
+            <select id="sub-pro-id" required>
+              <option value="">Carregando profissionais...</option>
+            </select>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="admin-input-group">
+              <label for="sub-plan-name">Nome do Plano *</label>
+              <select id="sub-plan-name">
+                <option value="PRO Mensal">PRO Mensal</option>
+                <option value="PRO Trimestral">PRO Trimestral</option>
+                <option value="PRO Anual">PRO Anual</option>
+                <option value="Destaque VIP">Destaque VIP Patrocinado</option>
+              </select>
+            </div>
+
+            <div class="admin-input-group">
+              <label for="sub-amount">Valor (R$) *</label>
+              <input type="number" id="sub-amount" step="0.01" value="29.90" required>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="admin-input-group">
+              <label for="sub-expires-at">Válido até (Expiração) *</label>
+              <input type="date" id="sub-expires-at" required>
+            </div>
+
+            <div class="admin-input-group">
+              <label for="sub-payment-method">Forma de Pagamento</label>
+              <select id="sub-payment-method">
+                <option value="pix">Pix Direto</option>
+                <option value="credit_card">Cartão de Crédito</option>
+                <option value="cash">Dinheiro / Transferência</option>
+                <option value="bonus">Cortesia / Parceria</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-admin-secondary" onclick="window.AdminApp.closeSubscriptionModal()">Cancelar</button>
+          <button type="submit" class="btn-action-primary">
+            <i class="fa-solid fa-check"></i>
+            <span>Confirmar Assinatura</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL FESTIVO DO ADMIN: COMEMORAÇÃO DOS 1.000 USUÁRIOS
+       ========================================================= -->
+  <div class="admin-celebration-overlay" id="admin-celebration-modal" style="display: none;" onclick="window.AdminApp.closeCelebration()">
+    <div class="admin-celebration-card" onclick="event.stopPropagation();">
+      <button class="admin-celebration-x" onclick="window.AdminApp.closeCelebration()">&times;</button>
+      <div class="admin-celebration-trophy-wrap">
+        <div class="admin-celebration-trophy">🏆</div>
+      </div>
+      <span class="admin-celebration-badge">MARCA HISTÓRICA DO TRAMPOU</span>
+      <h3>🎉 1.000 USUÁRIOS ALCANÇADOS! 🎉</h3>
+      <h4>PARABÉNS PELA CONQUISTA DA PLATAFORMA!</h4>
+      <p>O <strong>Trampou</strong> atingiu oficialmente <strong>1.000 membros conectados</strong> entre clientes e profissionais autônomos em Parauapebas!</p>
+
+      <div class="admin-celebration-stats">
+        <div>
+          <strong id="celeb-clients-count">0</strong>
+          <span>Clientes Ativos</span>
+        </div>
+        <div style="width: 1px; background: rgba(0,0,0,0.1);"></div>
+        <div>
+          <strong id="celeb-pros-count">0</strong>
+          <span>Profissionais</span>
+        </div>
+        <div style="width: 1px; background: rgba(0,0,0,0.1);"></div>
+        <div>
+          <strong style="color: #059669;">1.000+</strong>
+          <span>Total Acumulado</span>
+        </div>
+      </div>
+
+      <div class="admin-celebration-buttons">
+        <button class="btn-admin-celeb-whatsapp" onclick="window.AdminApp.shareMilestoneOnWhatsapp()">
+          <i class="fa-brands fa-whatsapp"></i>
+          <span>Compartilhar Notícia no WhatsApp</span>
+        </button>
+        <button class="btn-admin-celeb-close" onclick="window.AdminApp.closeCelebration()">
+          Fechar Notificação
+        </button>
+      </div>
+    </div>
+  </div>
+  <canvas id="admin-confetti-canvas" style="position: fixed; inset: 0; pointer-events: none; z-index: 999999; display: none;"></canvas>
+
+  <!-- Script da Lógica Administrativa -->
+  <script src="admin.js"></script>
+</body>
+</html>
