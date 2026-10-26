@@ -1,6 +1,7 @@
 // Configurações do Supabase
 const SUPABASE_URL = 'https://txcmnqisfwekmhihdutt.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR4Y21ucWlzZndla21oaWhkdXR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMjQ3ODMsImV4cCI6MjEwNzkwMDc4M30.VF7amv-LqsCMw1pvGAU7_tesjjPxenVQMMHt8tk2P7E';
+const OFFICIAL_APP_URL = 'https://trampou.jw.tec.br';
 
 // Dados em memória de Profissionais (carregados em tempo real do Supabase ou cadastro local)
 let PROFESSIONALS = [];
@@ -139,7 +140,7 @@ function renderAdBannerCarousel() {
         navigator.share({
           title: 'Trampou — Profissionais Perto de Você',
           text: 'Conheça o Trampou: encontre eletricistas, encanadores, pintores e diaristas de confiança em Parauapebas!',
-          url: window.location.origin
+          url: OFFICIAL_APP_URL
         }).catch(() => {});
       }
     }
@@ -2533,13 +2534,13 @@ function openShareProModal(proOrId, mode) {
   const linkInput = document.getElementById('share-link-input');
   const qrImage = document.getElementById('share-qrcode-image');
 
-  let handle = p ? (p.handle || (p.name ? p.name.toLowerCase().replace(/\s+/g, '.') : 'pro')) : 'goparauapebas';
-  let targetUrl = `https://trampou.com.br/pro/${handle}`;
+  let handle = p ? (p.handle || (p.name ? p.name.toLowerCase().replace(/\s+/g, '.') : 'pro')) : 'trampou';
+  let targetUrl = `${OFFICIAL_APP_URL}/#pro/${p ? (p.id || handle) : handle}`;
   let shareTitle = '';
   let shareMsg = '';
 
   if (shareMode === 'app') {
-    targetUrl = 'https://trampou.com.br';
+    targetUrl = `${OFFICIAL_APP_URL}/`;
     shareTitle = 'Indicar o Trampou';
     shareMsg = `Vizinhos e amigos de Parauapebas, estou usando o Trampou para encontrar os melhores profissionais e serviços de confiança da nossa cidade (eletricistas, encanadores, pintores, diaristas e plantão 24h). Vale muito a pena conhecer: ${targetUrl}`;
     
@@ -2757,7 +2758,7 @@ function openPostReviewShare(proName, specialty, proId, comment, rating) {
   const targetProName = proName || 'o profissional';
   const targetSpec = specialty || 'Serviços';
   const handle = targetProName.toLowerCase().replace(/\s+/g, '.');
-  const proUrl = `https://trampou.com.br/pro/${handle}`;
+  const proUrl = `${OFFICIAL_APP_URL}/#pro/${proId || handle}`;
 
   const quoteElem = document.getElementById('celeb-quote-text');
   if (quoteElem) {
@@ -2913,7 +2914,7 @@ function shareServicePost(postId) {
   if (!currentVitrinePro) return;
   const post = currentVitrinePro.posts.find(p => p.id === postId);
   const title = post ? post.title : 'Serviço';
-  const url = `https://trampou.com.br/pro/${currentVitrinePro.handle || 'carlos.eletricista'}#${postId}`;
+  const url = `${OFFICIAL_APP_URL}/#post/${postId}`;
   
   if (navigator.clipboard) {
     navigator.clipboard.writeText(url);
