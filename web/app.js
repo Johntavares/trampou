@@ -112,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderExploreCategoryChips();
   renderSearchResults();
   setupEvents();
+  checkFirstTimeOnboarding();
 });
 
 // Renderiza Carrossel de Anúncios antes das categorias
@@ -5352,6 +5353,40 @@ function handleProAreaClick() {
   }
 }
 
+// Marcação de Onboarding visto no primeiro acesso
+function markOnboardingAsSeen() {
+  try {
+    localStorage.setItem('trampou_has_seen_onboarding', 'true');
+  } catch (e) {
+    console.warn('Erro ao salvar status de onboarding:', e);
+  }
+}
+window.markOnboardingAsSeen = markOnboardingAsSeen;
+
+// Verifica se é o primeiro acesso para exibir o Onboarding automaticamente
+function checkFirstTimeOnboarding() {
+  try {
+    const hasSeen = localStorage.getItem('trampou_has_seen_onboarding');
+    const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+    
+    // Se ainda não viu o onboarding e não tem sessão ativa, exibe o onboarding de boas-vindas
+    if (!hasSeen && !user) {
+      setTimeout(() => {
+        openAuthWelcome();
+      }, 350);
+    }
+  } catch (e) {
+    console.warn('Erro ao checar primeiro acesso:', e);
+  }
+}
+window.checkFirstTimeOnboarding = checkFirstTimeOnboarding;
+
+// Reset para testes rápidos no console: resetOnboardingTest()
+window.resetOnboardingTest = function() {
+  localStorage.removeItem('trampou_has_seen_onboarding');
+  window.location.reload();
+};
+
 // Abertura e Fechamento de Modais de Auth
 function openAuthWelcome() {
   closeAllAuthModals();
@@ -5362,6 +5397,9 @@ function openAuthWelcome() {
 function closeAuthModal(modalId) {
   const modal = document.getElementById(modalId);
   if (modal) modal.classList.remove('active');
+  if (modalId === 'auth-welcome-overlay') {
+    markOnboardingAsSeen();
+  }
 }
 
 function closeAllAuthModals() {
@@ -5380,6 +5418,7 @@ function closeAllAuthModals() {
 }
 
 function openLoginModal() {
+  markOnboardingAsSeen();
   closeAllAuthModals();
   const modal = document.getElementById('auth-login-modal');
   if (modal) {
@@ -5400,6 +5439,7 @@ function openRecoveryModal() {
 }
 
 function openClientSignup() {
+  markOnboardingAsSeen();
   closeAllAuthModals();
   const modal = document.getElementById('auth-client-signup-modal');
   if (modal) {
@@ -5410,6 +5450,7 @@ function openClientSignup() {
 }
 
 function openProSignup() {
+  markOnboardingAsSeen();
   closeAllAuthModals();
   initProWizard();
   const modal = document.getElementById('auth-pro-signup-modal');
