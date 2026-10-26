@@ -213,7 +213,7 @@ async function fetchCategories() {
   renderCategories([...baseCats, ...customList]);
 }
 
-function getIconClass(slugOrIcon) {
+function getIconClass(slugOrIcon, slug = '', name = '') {
   const map = {
     // Supabase DB icons
     'Wind': 'fa-snowflake',
@@ -228,6 +228,24 @@ function getIconClass(slugOrIcon) {
     'Sparkles': 'fa-broom',
     'TreePine': 'fa-tree',
     'Hammer': 'fa-hammer',
+    'Shovel': 'fa-seedling',
+    'yard': 'fa-seedling',
+    'Box': 'fa-couch',
+    'Boxes': 'fa-boxes-stacked',
+    // Slugs / Tags
+    'jardinagem': 'fa-seedling',
+    'marceneiro': 'fa-couch',
+    'marcenaria': 'fa-couch',
+    'diarista': 'fa-broom',
+    'eletricista': 'fa-bolt',
+    'encanador': 'fa-faucet-drip',
+    'fretes': 'fa-truck',
+    'mecanico': 'fa-wrench',
+    'pedreiro': 'fa-hammer',
+    'pintor': 'fa-paint-roller',
+    'ar-condicionado': 'fa-snowflake',
+    'informatica': 'fa-laptop',
+    'beleza-estetica': 'fa-scissors',
     // Legacy / Material map
     'ac_unit': 'fa-snowflake',
     'bolt': 'fa-bolt',
@@ -240,11 +258,49 @@ function getIconClass(slugOrIcon) {
     'local_shipping': 'fa-truck',
     'handyman': 'fa-hammer'
   };
-  return map[slugOrIcon] || slugOrIcon || 'fa-screwdriver-wrench';
+
+  if (slugOrIcon && map[slugOrIcon]) return map[slugOrIcon];
+  if (slug && map[slug]) return map[slug];
+
+  // Identificação inteligente por palavras-chave no nome da categoria
+  const lowerName = String(name || slugOrIcon || '').toLowerCase();
+  if (lowerName.includes('jardim') || lowerName.includes('lote') || lowerName.includes('planta') || lowerName.includes('poda')) return 'fa-seedling';
+  if (lowerName.includes('marcen') || lowerName.includes('móve') || lowerName.includes('move')) return 'fa-couch';
+  if (lowerName.includes('faxina') || lowerName.includes('diarista') || lowerName.includes('limpeza')) return 'fa-broom';
+  if (lowerName.includes('eletric')) return 'fa-bolt';
+  if (lowerName.includes('encanad') || lowerName.includes('hidrául') || lowerName.includes('hidraul')) return 'fa-faucet-drip';
+  if (lowerName.includes('ar-cond') || lowerName.includes('refrig')) return 'fa-snowflake';
+  if (lowerName.includes('manicure') || lowerName.includes('cabelo') || lowerName.includes('estét') || lowerName.includes('estet') || lowerName.includes('beleza')) return 'fa-scissors';
+  if (lowerName.includes('frete') || lowerName.includes('carreto') || lowerName.includes('mudan')) return 'fa-truck';
+  if (lowerName.includes('mecan') || lowerName.includes('mecân') || lowerName.includes('auto')) return 'fa-wrench';
+  if (lowerName.includes('pedreir') || lowerName.includes('reforma') || lowerName.includes('obra')) return 'fa-hammer';
+  if (lowerName.includes('pint')) return 'fa-paint-roller';
+  if (lowerName.includes('informát') || lowerName.includes('comput') || lowerName.includes('celular') || lowerName.includes('rede')) return 'fa-laptop';
+
+  // Se já for uma classe fa- válida, usa diretamente
+  if (typeof slugOrIcon === 'string' && slugOrIcon.startsWith('fa-')) {
+    return slugOrIcon;
+  }
+
+  return 'fa-screwdriver-wrench';
 }
 
-// Tom visual (fundo suave) por tipo de categoria — roxo é apenas um dos destaques
+// Tom visual (fundo suave) por tipo de categoria — harmonioso com a identidade visual
 function getCategoryTone(iconName, name = '') {
+  const lowerName = String(name || '').toLowerCase();
+  if (lowerName.includes('jardim') || lowerName.includes('lote') || iconName === 'Shovel' || iconName === 'yard' || iconName === 'TreePine') return 'tone-green';
+  if (lowerName.includes('marcen') || lowerName.includes('móve') || lowerName.includes('move') || iconName === 'Box') return 'tone-amber';
+  if (lowerName.includes('manicure') || lowerName.includes('cabelo') || lowerName.includes('estét') || lowerName.includes('estet') || iconName === 'Scissors') return 'tone-rose';
+  if (lowerName.includes('ar-cond') || iconName === 'Wind') return 'tone-blue';
+  if (lowerName.includes('encanad') || iconName === 'Droplets') return 'tone-blue';
+  if (lowerName.includes('eletric') || iconName === 'Zap') return 'tone-amber';
+  if (lowerName.includes('frete') || iconName === 'Truck') return 'tone-amber';
+  if (lowerName.includes('faxina') || lowerName.includes('diarista') || iconName === 'Sparkles') return 'tone-green';
+  if (lowerName.includes('pedreir') || lowerName.includes('reforma') || iconName === 'Hammer' || iconName === 'Home') return 'tone-lavender';
+  if (lowerName.includes('mecan') || iconName === 'Wrench') return 'tone-slate';
+  if (lowerName.includes('pint') || iconName === 'Paintbrush') return 'tone-rose';
+  if (lowerName.includes('informát') || iconName === 'Laptop') return 'tone-lavender';
+
   const byIcon = {
     'Wind': 'tone-blue',
     'Zap': 'tone-amber',
@@ -257,6 +313,9 @@ function getCategoryTone(iconName, name = '') {
     'Laptop': 'tone-lavender',
     'Sparkles': 'tone-green',
     'TreePine': 'tone-green',
+    'Shovel': 'tone-green',
+    'yard': 'tone-green',
+    'Box': 'tone-amber',
     'Hammer': 'tone-lavender',
     'ac_unit': 'tone-blue',
     'bolt': 'tone-amber',
@@ -293,7 +352,7 @@ function renderCategories(list) {
   container.innerHTML = list.map(c => `
     <div class="cat-item-compact" role="button" tabindex="0" title="${c.name}" onclick="filterByCategory('${c.name}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
       <div class="cat-icon-circle ${getCategoryTone(c.icon_name, c.name)}">
-        <i class="fa-solid ${getIconClass(c.icon_name)}" aria-hidden="true"></i>
+        <i class="fa-solid ${getIconClass(c.icon_name, c.slug, c.name)}" aria-hidden="true"></i>
       </div>
       <span class="cat-label-text">${c.name}</span>
     </div>
@@ -4292,11 +4351,13 @@ function getAllCategoriesList() {
     { value: 'Eletricista', label: 'Eletricista Residencial e Predial', icon: 'fa-bolt', tone: 'tone-amber' },
     { value: 'Ar-Condicionado', label: 'Ar-Condicionado e Refrigeração', icon: 'fa-snowflake', tone: 'tone-blue' },
     { value: 'Encanador', label: 'Encanador e Hidráulica', icon: 'fa-faucet-drip', tone: 'tone-blue' },
-    { value: 'Pedreiro', label: 'Pedreiro e Reformas', icon: 'fa-trowel-bricks', tone: 'tone-slate' },
+    { value: 'Pedreiro', label: 'Pedreiro e Reformas', icon: 'fa-hammer', tone: 'tone-slate' },
     { value: 'Pintor', label: 'Pintor e Texturas', icon: 'fa-paint-roller', tone: 'tone-rose' },
-    { value: 'Diarista', label: 'Diarista e Limpeza Residencial', icon: 'fa-broom', tone: 'tone-green' },
-    { value: 'Mecânico', label: 'Mecânico e Auto Socorro', icon: 'fa-wrench', tone: 'tone-slate' },
-    { value: 'Marceneiro', label: 'Marcenaria e Montagem de Móveis', icon: 'fa-hammer', tone: 'tone-amber' },
+    { value: 'Diarista', label: 'Diarista e Faxina Residencial', icon: 'fa-broom', tone: 'tone-green' },
+    { value: 'Jardinagem', label: 'Jardinagem e Limpeza de Lotes', icon: 'fa-seedling', tone: 'tone-green' },
+    { value: 'Marceneiro', label: 'Marceneiro e Móveis Planejados', icon: 'fa-couch', tone: 'tone-amber' },
+    { value: 'Mecânico', label: 'Mecânica e Auto Socorro', icon: 'fa-wrench', tone: 'tone-slate' },
+    { value: 'Estética', label: 'Manicure, Cabelo e Estética', icon: 'fa-scissors', tone: 'tone-rose' },
     { value: 'Informática', label: 'Técnico de Informática e Redes', icon: 'fa-laptop', tone: 'tone-lavender' },
     { value: 'Fretes', label: 'Fretes e Mudanças', icon: 'fa-truck', tone: 'tone-amber' }
   ];
