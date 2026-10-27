@@ -1,5 +1,5 @@
 // Trampou PWA Service Worker
-const CACHE_NAME = 'trampou-pwa-v11';
+const CACHE_NAME = 'trampou-pwa-v12';
 
 const STATIC_SHELL = [
   './',
@@ -44,9 +44,8 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
-  // 1. Ignora requisições de outros esquemas ou métodos não-GET ou painel admin (sempre rede limpa)
+  // 1. Ignora requisições de outros esquemas ou métodos não-GET
   if (req.method !== 'GET') return;
-  if (url.pathname.includes('admin')) return;
 
   // 2. Chamadas de API do Supabase: Sempre Rede Primeiro (Network-First)
   if (url.hostname.includes('supabase.co')) {
