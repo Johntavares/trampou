@@ -11819,8 +11819,29 @@ body {
 }
 
 /* 2. Central de Privacidade & LGPD */
-.privacy-hub-content {
-  max-width: 520px !important;
+#privacy-hub-modal.active,
+#privacy-policy-modal.active,
+#terms-of-use-modal.active,
+#dpo-channel-modal.active {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.privacy-hub-content,
+.legal-text-content {
+  width: 100% !important;
+  max-width: 480px !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  margin: 0 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: #FFFFFF !important;
 }
 
 .privacy-hub-body {
@@ -12192,12 +12213,6 @@ body {
 }
 
 /* 4. Modais de Textos Legais (Política & Termos) */
-.legal-text-content {
-  max-width: 640px !important;
-  display: flex;
-  flex-direction: column;
-  max-height: 88vh !important;
-}
 
 .auth-modal-header.sticky {
   position: sticky;
