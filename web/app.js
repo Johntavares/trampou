@@ -510,30 +510,43 @@ async function renderAdBannerCarousel() {
   const dotsContainer = document.getElementById('carousel-dots');
   if (!track) return;
 
-  // Banner padrão de fallback imediato (divulgação e compartilhamento do Trampou)
-  const defaultShareBanner = {
-    id: 'default-share',
-    image_url: 'banner-share-trampou.webp',
-    image_url_fallback: 'banner-share-trampou.png',
-    badge_text: 'Compartilhe o Trampou',
-    title: 'Indique o Trampou para amigos e vizinhos!',
-    description: 'Ajude a valorizar os profissionais autônomos da nossa cidade. Compartilhe no WhatsApp!',
-    cta_text: 'Compartilhar App',
-    cta_link: 'share',
-    theme: 'purple-viral'
-  };
+  // Banners padrão de exibição imediata
+  const defaultBanners = [
+    {
+      id: 'default-share',
+      image_url: 'banner-share-trampou.webp',
+      image_url_fallback: 'banner-share-trampou.png',
+      badge_text: 'Compartilhe o Trampou',
+      title: 'Indique o Trampou para amigos e vizinhos!',
+      description: 'Ajude a valorizar os profissionais autônomos da nossa cidade. Compartilhe no WhatsApp!',
+      cta_text: 'Compartilhar App',
+      cta_link: 'share',
+      theme: 'purple-viral'
+    },
+    {
+      id: 'default-pwa',
+      image_url: 'banner-home-2.webp',
+      image_url_fallback: 'banner-home-2.jpg',
+      badge_text: 'APP LEVE & RÁPIDO',
+      title: 'O Trampou não consome o seu espaço!',
+      description: 'O app é leve, otimizado e não ocupa armazenamento no seu celular. Mais praticidade para o seu dia a dia!',
+      cta_text: 'Instalar App',
+      cta_link: 'pwa',
+      theme: 'amber-deal'
+    }
+  ];
 
   // Renderizador de HTML de um banner
   function buildBannerHtml(banner, index) {
     // Se o banner possuir imagem dedicada (1080x432 px / 2.5:1)
     if (banner.image_url) {
       const isWebp = banner.image_url.endsWith('.webp');
-      const fallbackUrl = banner.image_url_fallback || (isWebp ? banner.image_url.replace('.webp', '.png') : banner.image_url);
+      const fallbackUrl = banner.image_url_fallback || (isWebp ? banner.image_url.replace('.webp', '.jpg').replace('.webp', '.png') : banner.image_url);
       return `
         <div class="ad-slide-card ad-slide-img-card" data-slide-index="${index}" data-banner-id="${banner.id || ''}" role="banner" style="cursor: pointer;">
           <picture>
             ${isWebp ? `<source srcset="${banner.image_url}" type="image/webp">` : ''}
-            <img src="${fallbackUrl}" alt="${escapeHTML(banner.title || 'Compartilhe o Trampou com Amigos')}" loading="eager">
+            <img src="${fallbackUrl}" alt="${escapeHTML(banner.title || 'Banner Trampou')}" loading="${index === 0 ? 'eager' : 'lazy'}">
           </picture>
         </div>
       `;
@@ -577,14 +590,24 @@ async function renderAdBannerCarousel() {
           url: OFFICIAL_APP_URL
         }).catch(() => {});
       }
+    } else if (link === 'pwa' || link === '#pwa' || link === 'install') {
+      if (typeof triggerPWAInstall === 'function') {
+        triggerPWAInstall();
+      }
     } else {
       window.open(link, '_blank', 'noopener,noreferrer');
     }
   }
 
+  window.goToBannerSlide = function(idx) {
+    if (!track) return;
+    const cardWidth = track.offsetWidth || 300;
+    track.scrollTo({ left: idx * cardWidth, behavior: 'smooth' });
+  };
+
   function applyBanners(bannersList) {
     if (!bannersList || bannersList.length === 0) {
-      bannersList = [defaultShareBanner];
+      bannersList = defaultBanners;
     }
 
     track.innerHTML = bannersList.map((b, idx) => buildBannerHtml(b, idx)).join('');
@@ -602,7 +625,7 @@ async function renderAdBannerCarousel() {
     if (dotsContainer) {
       if (bannersList.length > 1) {
         dotsContainer.style.display = 'flex';
-        dotsContainer.innerHTML = bannersList.map((_, i) => `<span class="carousel-dot ${i === 0 ? 'active' : ''}" data-dot-index="${i}"></span>`).join('');
+        dotsContainer.innerHTML = bannersList.map((_, i) => `<span class="carousel-dot ${i === 0 ? 'active' : ''}" data-dot-index="${i}" onclick="goToBannerSlide(${i})"></span>`).join('');
 
         track.onscroll = () => {
           const scrollLeft = track.scrollLeft;
@@ -613,14 +636,28 @@ async function renderAdBannerCarousel() {
             else d.classList.remove('active');
           });
         };
+
+        // Rotação automática a cada 6 segundos
+        if (window._bannerCarouselInterval) clearInterval(window._bannerCarouselInterval);
+        window._bannerCarouselInterval = setInterval(() => {
+          const cardWidth = track.offsetWidth || 300;
+          const maxScroll = track.scrollWidth - track.clientWidth;
+          if (track.scrollLeft >= maxScroll - 10) {
+            track.scrollTo({ left: 0, behavior: 'smooth' });
+          } else {
+            track.scrollBy({ left: cardWidth, behavior: 'smooth' });
+          }
+        }, 6000);
+
       } else {
         dotsContainer.style.display = 'none';
+        if (window._bannerCarouselInterval) clearInterval(window._bannerCarouselInterval);
       }
     }
   }
 
   // Renderização inicial rápida com fallback
-  applyBanners([defaultShareBanner]);
+  applyBanners(defaultBanners);
 
   // Busca banners ativos em tempo real do Supabase
   try {
@@ -637,7 +674,7 @@ async function renderAdBannerCarousel() {
       }
     }
   } catch (err) {
-    console.warn('Usando banner padrão local:', err);
+    console.warn('Usando banners padrão locais:', err);
   }
 }
 

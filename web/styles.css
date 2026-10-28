@@ -1070,7 +1070,8 @@ body {
   margin-top: 10px;
 }
 
-.carousel-dots .dot {
+.carousel-dots .dot,
+.carousel-dot {
   width: 6px;
   height: 6px;
   padding: 0;
@@ -1081,7 +1082,8 @@ body {
   transition: width var(--dur-base) var(--ease-standard), background var(--dur-base) var(--ease-standard);
 }
 
-.carousel-dots .dot.active {
+.carousel-dots .dot.active,
+.carousel-dot.active {
   width: 18px;
   background: var(--color-brand);
 }

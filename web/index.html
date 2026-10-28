@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=20">
+  <link rel="stylesheet" href="styles.css?v=21">
 </head>
 <body>
   <!-- Container Principal do Aplicativo Nativo / PWA -->
@@ -98,15 +98,24 @@
             <!-- Carrossel de Banner para Anúncios (Antes das Categorias) -->
             <div class="home-ad-carousel-wrap" aria-label="Anúncios patrocinados">
               <div class="banner-carousel-track" id="home-banner-track">
+                <!-- Slide 1: Compartilhe o Trampou -->
                 <div class="ad-slide-card ad-slide-img-card" data-slide-index="0" data-banner-id="default-share" role="banner" style="cursor: pointer;" onclick="if(typeof openShareAppModal === 'function') openShareAppModal();">
                   <picture>
                     <source srcset="banner-share-trampou.webp" type="image/webp">
                     <img src="banner-share-trampou.png" alt="Compartilhe o Trampou com Amigos" loading="eager">
                   </picture>
                 </div>
+                <!-- Slide 2: App Leve e Otimizado -->
+                <div class="ad-slide-card ad-slide-img-card" data-slide-index="1" data-banner-id="default-pwa" role="banner" style="cursor: pointer;" onclick="if(typeof triggerPWAInstall === 'function') triggerPWAInstall();">
+                  <picture>
+                    <source srcset="banner-home-2.webp" type="image/webp">
+                    <img src="banner-home-2.jpg" alt="O Trampou não consome o seu espaço! Aplicativo leve e rápido" loading="lazy">
+                  </picture>
+                </div>
               </div>
-              <div class="carousel-dots" id="carousel-dots" role="tablist" style="display: none;">
-                <!-- Indicadores injetados via JS -->
+              <div class="carousel-dots" id="carousel-dots" role="tablist" style="display: flex;">
+                <span class="carousel-dot active" data-dot-index="0" onclick="if(typeof goToBannerSlide === 'function') goToBannerSlide(0)"></span>
+                <span class="carousel-dot" data-dot-index="1" onclick="if(typeof goToBannerSlide === 'function') goToBannerSlide(1)"></span>
               </div>
             </div>
 
@@ -3215,6 +3224,6 @@
     </div>
   </aside>
 
-  <script src="app.js?v=20"></script>
+  <script src="app.js?v=21"></script>
 </body>
 </html>
