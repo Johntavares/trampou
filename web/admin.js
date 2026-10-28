@@ -388,17 +388,23 @@
       return `
         <div class="banner-item-card ${b.active ? '' : 'inactive'}" id="banner-card-${b.id}">
           <!-- Prévia ao Vivo do Banner -->
-          <div class="banner-live-preview ${b.theme || 'purple-viral'}">
-            <span class="preview-badge-pill">${escapeHTML(b.badge_text || 'PARCEIRO')}</span>
-            <div class="preview-texts">
-              <h5>${escapeHTML(b.title)}</h5>
-              <p>${escapeHTML(b.description || '')}</p>
+          ${b.image_url ? `
+            <div style="border-radius: 12px; overflow: hidden; aspect-ratio: 2.5 / 1; position: relative; background: #0F172A; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+              <img src="${b.image_url}" alt="${escapeHTML(b.title)}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
             </div>
-            <div class="preview-cta-btn">
-              <span>${escapeHTML(b.cta_text || 'Conhecer')}</span>
-              <i class="fa-solid fa-arrow-right"></i>
+          ` : `
+            <div class="banner-live-preview ${b.theme || 'purple-viral'}">
+              <span class="preview-badge-pill">${escapeHTML(b.badge_text || 'PARCEIRO')}</span>
+              <div class="preview-texts">
+                <h5>${escapeHTML(b.title)}</h5>
+                <p>${escapeHTML(b.description || '')}</p>
+              </div>
+              <div class="preview-cta-btn">
+                <span>${escapeHTML(b.cta_text || 'Conhecer')}</span>
+                <i class="fa-solid fa-arrow-right"></i>
+              </div>
             </div>
-          </div>
+          `}
 
           <!-- Informações e Destino -->
           <div style="font-size: 12px; color: #64748B; display: flex; flex-direction: column; gap: 4px;">
@@ -723,11 +729,15 @@
       document.getElementById('banner-theme').value = bannerData.theme || 'purple-viral';
       document.getElementById('banner-cta-text').value = bannerData.cta_text || '';
       document.getElementById('banner-cta-link').value = bannerData.cta_link || '';
+      const imgInput = document.getElementById('banner-image-url');
+      if (imgInput) imgInput.value = bannerData.image_url || '';
       document.getElementById('banner-sort-order').value = bannerData.sort_order || 10;
       document.getElementById('banner-active').checked = bannerData.active !== false;
     } else {
       titleEl.textContent = 'Criar Novo Banner de Anúncio';
       document.getElementById('banner-id').value = '';
+      const imgInput = document.getElementById('banner-image-url');
+      if (imgInput) imgInput.value = '';
       document.getElementById('banner-theme').value = 'purple-viral';
       document.getElementById('banner-sort-order').value = 10;
       document.getElementById('banner-active').checked = true;
@@ -750,6 +760,7 @@
 
   async function saveBanner() {
     const id = document.getElementById('banner-id').value;
+    const imgUrl = (document.getElementById('banner-image-url')?.value || '').trim();
     const payload = {
       title: document.getElementById('banner-title').value.trim(),
       description: document.getElementById('banner-description').value.trim(),
@@ -757,6 +768,7 @@
       theme: document.getElementById('banner-theme').value,
       cta_text: document.getElementById('banner-cta-text').value.trim() || 'Saiba Mais',
       cta_link: document.getElementById('banner-cta-link').value.trim(),
+      image_url: imgUrl || null,
       sort_order: parseInt(document.getElementById('banner-sort-order').value, 10) || 10,
       active: document.getElementById('banner-active').checked,
       updated_at: new Date().toISOString()

@@ -513,7 +513,9 @@ async function renderAdBannerCarousel() {
   // Banner padrão de fallback imediato (divulgação e compartilhamento do Trampou)
   const defaultShareBanner = {
     id: 'default-share',
-    badge_text: 'Divulgue Parauapebas',
+    image_url: 'banner-share-trampou.webp',
+    image_url_fallback: 'banner-share-trampou.png',
+    badge_text: 'Compartilhe o Trampou',
     title: 'Indique o Trampou para amigos e vizinhos!',
     description: 'Ajude a valorizar os profissionais autônomos da nossa cidade. Compartilhe no WhatsApp!',
     cta_text: 'Compartilhar App',
@@ -523,6 +525,20 @@ async function renderAdBannerCarousel() {
 
   // Renderizador de HTML de um banner
   function buildBannerHtml(banner, index) {
+    // Se o banner possuir imagem dedicada (1080x432 px / 2.5:1)
+    if (banner.image_url) {
+      const fallbackUrl = banner.image_url_fallback || banner.image_url;
+      const isWebp = banner.image_url.endsWith('.webp');
+      return `
+        <div class="ad-slide-card ad-slide-img-card" data-slide-index="${index}" data-banner-id="${banner.id || ''}" role="banner" style="cursor: pointer;">
+          <picture>
+            ${isWebp ? `<source srcset="${banner.image_url}" type="image/webp">` : ''}
+            <img src="${fallbackUrl}" alt="${escapeHTML(banner.title || 'Compartilhe o Trampou com Amigos')}" loading="eager">
+          </picture>
+        </div>
+      `;
+    }
+
     const themeClass = banner.theme ? `theme-${banner.theme.replace('theme-', '')}` : 'theme-purple-viral';
     const badgeText = banner.badge_text || 'Destaque';
     const isShare = (banner.cta_link || '').toLowerCase().includes('share');
