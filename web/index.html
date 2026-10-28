@@ -381,6 +381,14 @@
                 </div>
                 <i class="fa-solid fa-chevron-right"></i>
               </div>
+              <div class="menu-item" onclick="openAppFeedbackModal()">
+                <i class="fa-solid fa-lightbulb icon-purple"></i>
+                <div class="menu-text">
+                  <span>Enviar Sugestão ou Feedback</span>
+                  <small>Ideias, elogios ou relatos para a equipe</small>
+                </div>
+                <i class="fa-solid fa-chevron-right"></i>
+              </div>
               <div class="menu-item" id="btn-switch-account-item" onclick="openAuthWelcome()">
                 <i class="fa-solid fa-users-viewfinder icon-purple"></i>
                 <div class="menu-text">
@@ -2663,6 +2671,116 @@
                   <button type="button" class="loc-chip" onclick="selectCityOption('Campinas', 'SP')">Campinas, SP</button>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             MODAL: ENVIAR SUGESTÕES & FEEDBACK SOBRE O APP
+             ========================================================= -->
+        <div id="modal-app-feedback" class="modal-overlay">
+          <div class="modal-content auth-form-content feedback-modal-content" style="margin: 0 auto !important; max-width: 480px !important;">
+            <div class="auth-modal-header">
+              <button class="v-nav-icon-btn" onclick="closeAppFeedbackModal()" title="Fechar">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+              <h4>Sugestões & Feedback</h4>
+              <div style="width: 32px;"></div>
+            </div>
+
+            <div class="feedback-modal-body">
+              <div class="feedback-header-card">
+                <div class="feedback-header-icon">
+                  <i class="fa-solid fa-lightbulb"></i>
+                </div>
+                <div class="feedback-header-info">
+                  <strong>Sua opinião molda o Trampou!</strong>
+                  <p>Envie ideias de melhorias, elogios ou relate problemas para nossa equipe de desenvolvimento.</p>
+                </div>
+              </div>
+
+              <form id="form-app-feedback" onsubmit="handleFeedbackSubmit(event)">
+                <!-- 1. Tipo de Feedback -->
+                <div class="feedback-group">
+                  <label class="feedback-field-label">Tipo de Mensagem</label>
+                  <div class="feedback-type-chips">
+                    <button type="button" class="fb-type-chip active" data-type="sugestao" onclick="setFeedbackType('sugestao')">
+                      <i class="fa-solid fa-lightbulb"></i> Sugestão
+                    </button>
+                    <button type="button" class="fb-type-chip" data-type="elogio" onclick="setFeedbackType('elogio')">
+                      <i class="fa-solid fa-star"></i> Elogio
+                    </button>
+                    <button type="button" class="fb-type-chip" data-type="problema" onclick="setFeedbackType('problema')">
+                      <i class="fa-solid fa-triangle-exclamation"></i> Problema
+                    </button>
+                    <button type="button" class="fb-type-chip" data-type="outro" onclick="setFeedbackType('outro')">
+                      <i class="fa-solid fa-comment-dots"></i> Outro
+                    </button>
+                  </div>
+                  <input type="hidden" id="feedback-type-val" value="sugestao">
+                </div>
+
+                <!-- 2. Avaliação de Experiência com Estrelas -->
+                <div class="feedback-group">
+                  <label class="feedback-field-label">Como avalia sua experiência com o app?</label>
+                  <div class="feedback-rating-box">
+                    <div class="feedback-stars-row" id="fb-stars-container">
+                      <button type="button" class="fb-star active" data-star="1" onclick="setFeedbackRating(1)"><i class="fa-solid fa-star"></i></button>
+                      <button type="button" class="fb-star active" data-star="2" onclick="setFeedbackRating(2)"><i class="fa-solid fa-star"></i></button>
+                      <button type="button" class="fb-star active" data-star="3" onclick="setFeedbackRating(3)"><i class="fa-solid fa-star"></i></button>
+                      <button type="button" class="fb-star active" data-star="4" onclick="setFeedbackRating(4)"><i class="fa-solid fa-star"></i></button>
+                      <button type="button" class="fb-star active" data-star="5" onclick="setFeedbackRating(5)"><i class="fa-solid fa-star"></i></button>
+                    </div>
+                    <span class="fb-rating-text" id="fb-rating-text">Excelente (5/5) ⭐</span>
+                    <input type="hidden" id="feedback-rating-val" value="5">
+                  </div>
+                </div>
+
+                <!-- 3. Título / Assunto -->
+                <div class="feedback-group">
+                  <label class="feedback-field-label" for="feedback-title-input">Título da Sugestão ou Assunto</label>
+                  <div class="input-icon-wrap">
+                    <i class="fa-solid fa-heading"></i>
+                    <input type="text" id="feedback-title-input" placeholder="Ex: Adicionar pagamento Pix direto no app">
+                  </div>
+                </div>
+
+                <!-- 4. Mensagem detalhada -->
+                <div class="feedback-group">
+                  <label class="feedback-field-label" for="feedback-message-input">Mensagem / Ideia *</label>
+                  <textarea id="feedback-message-input" class="feedback-textarea" rows="4" required placeholder="Conte-nos em detalhes o que você gostaria de ver no Trampou ou o que podemos aprimorar..."></textarea>
+                </div>
+
+                <!-- 5. Dados do Usuário -->
+                <div class="feedback-row-inputs">
+                  <div class="feedback-group" style="flex: 1;">
+                    <label class="feedback-field-label" for="feedback-user-name">Seu Nome *</label>
+                    <div class="input-icon-wrap">
+                      <i class="fa-solid fa-user"></i>
+                      <input type="text" id="feedback-user-name" required placeholder="Como podemos te chamar?">
+                    </div>
+                  </div>
+                  <div class="feedback-group" style="flex: 1;">
+                    <label class="feedback-field-label" for="feedback-user-contact">Contato (WhatsApp / E-mail)</label>
+                    <div class="input-icon-wrap">
+                      <i class="fa-solid fa-phone"></i>
+                      <input type="text" id="feedback-user-contact" placeholder="(DDD) ou e-mail">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Feedback Alert Status -->
+                <div id="feedback-submit-alert" class="auth-error-alert" style="display: none; margin-bottom: 12px;">
+                  <i class="fa-solid fa-circle-info"></i>
+                  <span id="feedback-submit-alert-text"></span>
+                </div>
+
+                <!-- Botão Enviar -->
+                <button type="submit" class="btn-auth-submit" id="btn-submit-feedback">
+                  <span id="btn-feedback-text"><i class="fa-solid fa-paper-plane" style="margin-right: 6px;"></i> Enviar para a Equipe</span>
+                  <i class="fa-solid fa-circle-notch fa-spin" id="btn-feedback-spinner" style="display: none;"></i>
+                </button>
+              </form>
             </div>
           </div>
         </div>

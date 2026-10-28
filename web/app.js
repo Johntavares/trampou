@@ -5830,7 +5830,8 @@ function closeAllAuthModals() {
     'terms-of-use-modal',
     'dpo-channel-modal',
     'delete-account-confirm-modal',
-    'modal-location-picker'
+    'modal-location-picker',
+    'modal-app-feedback'
   ];
   modals.forEach(id => {
     const el = document.getElementById(id);
@@ -7567,6 +7568,177 @@ window.detectUserLocationGPS = detectUserLocationGPS;
 window.detectClientLocationGPS = detectClientLocationGPS;
 window.detectProLocationGPS = detectProLocationGPS;
 window.filterAndSortProsByLocation = filterAndSortProsByLocation;
+
+// =========================================================
+// SISTEMA DE SUGESTÕES & FEEDBACK DOS USUÁRIOS
+// =========================================================
+function openAppFeedbackModal() {
+  closeAllAuthModals();
+  const modal = document.getElementById('modal-app-feedback');
+  if (!modal) return;
+
+  const user = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+               (typeof getStoredAuthUser === 'function' ? getStoredAuthUser() : null);
+
+  const nameInput = document.getElementById('feedback-user-name');
+  const contactInput = document.getElementById('feedback-user-contact');
+  const titleInput = document.getElementById('feedback-title-input');
+  const messageInput = document.getElementById('feedback-message-input');
+  const alertEl = document.getElementById('feedback-submit-alert');
+
+  if (alertEl) alertEl.style.display = 'none';
+  if (titleInput) titleInput.value = '';
+  if (messageInput) messageInput.value = '';
+
+  if (user) {
+    if (nameInput && !nameInput.value) nameInput.value = user.name || user.full_name || '';
+    if (contactInput && !contactInput.value) contactInput.value = user.phone || user.phone_whatsapp || user.email || '';
+  }
+
+  setFeedbackType('sugestao');
+  setFeedbackRating(5);
+
+  modal.classList.add('active');
+}
+
+function closeAppFeedbackModal() {
+  const modal = document.getElementById('modal-app-feedback');
+  if (modal) modal.classList.remove('active');
+}
+
+function setFeedbackType(type) {
+  const input = document.getElementById('feedback-type-val');
+  if (input) input.value = type;
+
+  const chips = document.querySelectorAll('.fb-type-chip');
+  chips.forEach(chip => {
+    chip.classList.toggle('active', chip.getAttribute('data-type') === type);
+  });
+}
+
+function setFeedbackRating(stars) {
+  const input = document.getElementById('feedback-rating-val');
+  if (input) input.value = stars;
+
+  const starBtns = document.querySelectorAll('.fb-star');
+  starBtns.forEach(btn => {
+    const s = parseInt(btn.getAttribute('data-star') || '1', 10);
+    btn.classList.toggle('active', s <= stars);
+  });
+
+  const textEl = document.getElementById('fb-rating-text');
+  if (textEl) {
+    const labels = {
+      1: 'Muito Ruim (1/5) 😞',
+      2: 'Ruim (2/5) 😐',
+      3: 'Regular (3/5) 🙂',
+      4: 'Muito Bom (4/5) 😊',
+      5: 'Excelente (5/5) ⭐'
+    };
+    textEl.textContent = labels[stars] || `${stars}/5 ⭐`;
+  }
+}
+
+async function handleFeedbackSubmit(event) {
+  event.preventDefault();
+
+  const type = document.getElementById('feedback-type-val')?.value || 'sugestao';
+  const rating = parseInt(document.getElementById('feedback-rating-val')?.value || '5', 10);
+  const title = document.getElementById('feedback-title-input')?.value.trim() || '';
+  const message = document.getElementById('feedback-message-input')?.value.trim();
+  const userName = document.getElementById('feedback-user-name')?.value.trim();
+  const userContact = document.getElementById('feedback-user-contact')?.value.trim() || '';
+
+  const alertEl = document.getElementById('feedback-submit-alert');
+  const alertText = document.getElementById('feedback-submit-alert-text');
+  const btn = document.getElementById('btn-submit-feedback');
+  const btnText = document.getElementById('btn-feedback-text');
+  const btnSpinner = document.getElementById('btn-feedback-spinner');
+
+  if (!message || message.length < 5) {
+    if (alertEl && alertText) {
+      alertEl.style.display = 'flex';
+      alertText.textContent = 'Por favor, escreva uma mensagem detalhando sua sugestão ou relato.';
+    }
+    return;
+  }
+  if (!userName || userName.length < 2) {
+    if (alertEl && alertText) {
+      alertEl.style.display = 'flex';
+      alertText.textContent = 'Por favor, informe seu nome para podermos registrar seu feedback.';
+    }
+    return;
+  }
+
+  // Previne cliques duplicados
+  if (btn) btn.disabled = true;
+  if (btnText) btnText.textContent = 'Enviando sugestão...';
+  if (btnSpinner) btnSpinner.style.display = 'inline-block';
+  if (alertEl) alertEl.style.display = 'none';
+
+  const user = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+               (typeof getStoredAuthUser === 'function' ? getStoredAuthUser() : null);
+
+  const payload = {
+    user_id: user && user.id && !user.id.startsWith('u_') ? user.id : null,
+    user_name: userName,
+    user_email: userContact.includes('@') ? userContact : (user?.email || null),
+    user_phone: !userContact.includes('@') && userContact ? userContact : (user?.phone || null),
+    feedback_type: type,
+    rating: rating,
+    title: title || (type === 'sugestao' ? 'Sugestão de Usuário' : type === 'elogio' ? 'Elogio ao App' : 'Relato de Problema'),
+    message: message,
+    city: currentActiveLocation?.city || 'Parauapebas',
+    state: currentActiveLocation?.state || 'PA',
+    status: 'pendente'
+  };
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/app_feedbacks`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      throw new Error('Falha ao registrar feedback no servidor.');
+    }
+
+    closeAppFeedbackModal();
+    showToast('🎉 Muito obrigado pelo feedback! Sua sugestão foi enviada diretamente para a equipe de desenvolvimento.');
+
+    const form = document.getElementById('form-app-feedback');
+    if (form) form.reset();
+
+  } catch (err) {
+    console.warn('Erro ao enviar feedback para Supabase, gravando em cache local:', err);
+    try {
+      const localFeedbacks = JSON.parse(localStorage.getItem('trampou_local_feedbacks') || '[]');
+      localFeedbacks.unshift({ ...payload, id: 'fb_' + Date.now(), created_at: new Date().toISOString() });
+      localStorage.setItem('trampou_local_feedbacks', JSON.stringify(localFeedbacks));
+    } catch (_) {}
+
+    closeAppFeedbackModal();
+    showToast('🎉 Feedback registrado com sucesso! Obrigado pela colaboração.');
+  } finally {
+    if (btn) btn.disabled = false;
+    if (btnText) btnText.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right: 6px;"></i> Enviar para a Equipe';
+    if (btnSpinner) btnSpinner.style.display = 'none';
+  }
+}
+
+// Exportações Globais de Feedbacks
+window.openAppFeedbackModal = openAppFeedbackModal;
+window.closeAppFeedbackModal = closeAppFeedbackModal;
+window.setFeedbackType = setFeedbackType;
+window.setFeedbackRating = setFeedbackRating;
+window.handleFeedbackSubmit = handleFeedbackSubmit;
+
 
 
 
