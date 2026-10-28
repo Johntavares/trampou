@@ -103,12 +103,119 @@ function calculateDistanceKm(lat1, lon1, lat2, lon2) {
 
 function updateLocationDisplay() {
   const el = document.getElementById('home-location-text');
-  if (el) {
-    const gpsIcon = currentActiveLocation.isGps
-      ? '<i class="fa-solid fa-location-crosshairs" style="color: #6366F1; margin-right: 4px;" title="Localização via GPS"></i>'
-      : '<i class="fa-solid fa-location-dot" style="color: #6366F1; margin-right: 4px;"></i>';
-    el.innerHTML = `${gpsIcon}${currentActiveLocation.city}, ${currentActiveLocation.state}`;
+  const icon = document.querySelector('#home-location .loc-icon');
+  if (icon) {
+    if (currentActiveLocation.isGps) {
+      icon.className = 'fa-solid fa-location-crosshairs loc-icon';
+      icon.title = 'Localização via GPS';
+    } else {
+      icon.className = 'fa-solid fa-location-dot loc-icon';
+      icon.title = 'Localização definida';
+    }
   }
+  if (el) {
+    // Apenas o texto limpo da cidade e UF, sem duplicar o ícone
+    el.textContent = `${currentActiveLocation.city}, ${currentActiveLocation.state}`;
+  }
+}
+
+// Mapeamento das capitais e principais cidades de cada estado brasileiro
+const STATE_DEFAULT_CITIES = {
+  AC: ['Rio Branco', 'Cruzeiro do Sul', 'Sena Madureira'],
+  AL: ['Maceió', 'Arapiraca', 'Palmeira dos Índios'],
+  AP: ['Macapá', 'Santana', 'Laranjal do Jari'],
+  AM: ['Manaus', 'Parintins', 'Itacoatiara'],
+  BA: ['Salvador', 'Feira de Santana', 'Vitória da Conquista', 'Camaçari'],
+  CE: ['Fortaleza', 'Caucaia', 'Juazeiro do Norte', 'Sobral'],
+  DF: ['Brasília', 'Ceilândia', 'Taguatinga', 'Samambaia'],
+  ES: ['Vitória', 'Vila Velha', 'Serra', 'Cariacica'],
+  GO: ['Goiânia', 'Aparecida de Goiânia', 'Anápolis', 'Rio Verde'],
+  MA: ['São Luís', 'Imperatriz', 'Caxias', 'Timon'],
+  MT: ['Cuiabá', 'Várzea Grande', 'Rondonópolis', 'Sinop', 'Sorriso'],
+  MS: ['Campo Grande', 'Dourados', 'Três Lagoas', 'Corumbá'],
+  MG: ['Belo Horizonte', 'Uberlândia', 'Contagem', 'Juiz de Fora', 'Betim'],
+  PA: ['Parauapebas', 'Belém', 'Marabá', 'Ananindeua', 'Santarém', 'Canaã dos Carajás', 'Castanhal'],
+  PB: ['João Pessoa', 'Campina Grande', 'Santa Rita', 'Patos'],
+  PR: ['Curitiba', 'Londrina', 'Maringá', 'Ponta Grossa', 'Cascavel'],
+  PE: ['Recife', 'Jaboatão dos Guararapes', 'Olinda', 'Caruaru', 'Petrolina'],
+  PI: ['Teresina', 'Parnaíba', 'Picos', 'Floriano'],
+  RJ: ['Rio de Janeiro', 'São Gonçalo', 'Duque de Caxias', 'Nova Iguaçu', 'Niterói'],
+  RN: ['Natal', 'Mossoró', 'Parnamirim', 'São Gonçalo do Amarante'],
+  RS: ['Porto Alegre', 'Caxias do Sul', 'Canoas', 'Pelotas', 'Santa Maria'],
+  RO: ['Porto Velho', 'Ji-Paraná', 'Ariquemes', 'Vilhena'],
+  RR: ['Boa Vista', 'Rorainópolis'],
+  SC: ['Florianópolis', 'Joinville', 'Blumenau', 'São José', 'Chapecó'],
+  SP: ['São Paulo', 'Campinas', 'Guarulhos', 'São Bernardo do Campo', 'Ribeirão Preto', 'Santos'],
+  SE: ['Aracaju', 'Nossa Senhora do Socorro', 'Lagarto', 'Itabaiana'],
+  TO: ['Palmas', 'Araguaína', 'Gurupi', 'Porto Nacional']
+};
+
+function handleStateSelectChange(uf) {
+  const cityInput = document.getElementById('picker-manual-city') || document.getElementById('user-city-input');
+  const cities = STATE_DEFAULT_CITIES[uf] || [];
+
+  // Atualiza datalist de sugestões
+  let datalist = document.getElementById('city-picker-datalist');
+  if (!datalist) {
+    datalist = document.createElement('datalist');
+    datalist.id = 'city-picker-datalist';
+    document.body.appendChild(datalist);
+  }
+  if (cityInput) {
+    cityInput.setAttribute('list', 'city-picker-datalist');
+  }
+  datalist.innerHTML = cities.map(c => `<option value="${c}">`).join('');
+
+  // Ao trocar de estado, preenche com a principal cidade/capital do estado selecionado
+  if (cityInput && cities.length > 0) {
+    cityInput.value = cities[0];
+    cityInput.focus();
+    cityInput.select();
+  }
+
+  // Atualiza os chips de cidades populares abaixo
+  updatePopularCitiesChips(uf);
+}
+
+function updatePopularCitiesChips(uf) {
+  const chipsContainer = document.getElementById('popular-cities-chips');
+  if (!chipsContainer) return;
+
+  const currentUf = uf || currentActiveLocation.state || 'PA';
+  const stateCities = STATE_DEFAULT_CITIES[currentUf] || [];
+
+  const nationalHighlights = [
+    { city: 'Parauapebas', state: 'PA' },
+    { city: 'São Paulo', state: 'SP' },
+    { city: 'Rio de Janeiro', state: 'RJ' },
+    { city: 'Belo Horizonte', state: 'MG' },
+    { city: 'Brasília', state: 'DF' },
+    { city: 'Goiânia', state: 'GO' },
+    { city: 'Curitiba', state: 'PR' }
+  ];
+
+  const renderedList = [];
+
+  // Primeiro as cidades do estado selecionado
+  stateCities.forEach(c => {
+    renderedList.push({ city: c, state: currentUf });
+  });
+
+  // Em seguida as principais nacionais (sem duplicatas)
+  nationalHighlights.forEach(h => {
+    if (!renderedList.some(r => r.city.toLowerCase() === h.city.toLowerCase() && r.state === h.state)) {
+      renderedList.push(h);
+    }
+  });
+
+  chipsContainer.innerHTML = renderedList.slice(0, 10).map(item => {
+    const isActive = (item.city.toLowerCase() === currentActiveLocation.city.toLowerCase() && item.state === currentActiveLocation.state);
+    return `
+      <button type="button" class="loc-chip ${isActive ? 'active' : ''}" onclick="selectCityOption('${item.city}', '${item.state}')">
+        ${item.city}, ${item.state}
+      </button>
+    `;
+  }).join('');
 }
 
 function initLocationManager() {
@@ -144,10 +251,11 @@ function openLocationPickerModal() {
   const modal = document.getElementById('modal-location-picker');
   if (modal) {
     modal.classList.add('active');
-    const uState = document.getElementById('user-state-select');
-    const uCity = document.getElementById('user-city-input');
+    const uState = document.getElementById('picker-manual-uf') || document.getElementById('user-state-select');
+    const uCity = document.getElementById('picker-manual-city') || document.getElementById('user-city-input');
     if (uState && currentActiveLocation.state) uState.value = currentActiveLocation.state;
     if (uCity && currentActiveLocation.city) uCity.value = currentActiveLocation.city;
+    updatePopularCitiesChips(currentActiveLocation.state);
   }
 }
 
@@ -163,10 +271,12 @@ function selectCityOption(city, state) {
 }
 
 function applyManualCityChoice() {
-  const stateSelect = document.getElementById('user-state-select');
-  const cityInput = document.getElementById('user-city-input');
-  const state = stateSelect ? stateSelect.value : 'PA';
-  const city = cityInput && cityInput.value.trim() ? cityInput.value.trim() : 'Parauapebas';
+  const stateSelect = document.getElementById('picker-manual-uf') || document.getElementById('user-state-select');
+  const cityInput = document.getElementById('picker-manual-city') || document.getElementById('user-city-input');
+  const state = stateSelect ? stateSelect.value : (currentActiveLocation.state || 'PA');
+  const city = cityInput && cityInput.value.trim()
+    ? cityInput.value.trim()
+    : (STATE_DEFAULT_CITIES[state] ? STATE_DEFAULT_CITIES[state][0] : 'Parauapebas');
 
   setActiveLocation(city, state, null, null, false);
   closeLocationPickerModal();
@@ -7738,6 +7848,12 @@ window.closeAppFeedbackModal = closeAppFeedbackModal;
 window.setFeedbackType = setFeedbackType;
 window.setFeedbackRating = setFeedbackRating;
 window.handleFeedbackSubmit = handleFeedbackSubmit;
+
+// Exportações Globais de Navegação por Estado e Cidades
+window.STATE_DEFAULT_CITIES = STATE_DEFAULT_CITIES;
+window.handleStateSelectChange = handleStateSelectChange;
+window.updatePopularCitiesChips = updatePopularCitiesChips;
+
 
 
 

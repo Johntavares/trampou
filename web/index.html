@@ -2612,7 +2612,7 @@
                 <h6><i class="fa-solid fa-map-location-dot icon-purple"></i> Escolher Outra Cidade</h6>
                 <div class="location-manual-row">
                   <div class="input-icon-wrap select-wrap uf-picker-wrap">
-                    <select id="picker-manual-uf">
+                    <select id="picker-manual-uf" onchange="handleStateSelectChange(this.value)">
                       <option value="PA">PA</option>
                       <option value="SP">SP</option>
                       <option value="RJ">RJ</option>
@@ -2644,7 +2644,8 @@
                   </div>
                   <div class="input-icon-wrap city-picker-input-wrap">
                     <i class="fa-solid fa-city"></i>
-                    <input type="text" id="picker-manual-city" placeholder="Digite o nome da cidade...">
+                    <input type="text" id="picker-manual-city" placeholder="Digite o nome da cidade..." list="city-picker-datalist" onkeydown="if(event.key==='Enter'){event.preventDefault();applyManualCityChoice();}">
+                    <datalist id="city-picker-datalist"></datalist>
                   </div>
                   <button type="button" class="btn-apply-city" onclick="applyManualCityChoice()">
                     Buscar
