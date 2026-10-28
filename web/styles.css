@@ -1072,20 +1072,21 @@ body {
 
 .carousel-dots .dot,
 .carousel-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   padding: 0;
   border: none;
-  background: var(--color-border-strong);
+  background: #CBD5E1;
   border-radius: var(--radius-pill);
   cursor: pointer;
-  transition: width var(--dur-base) var(--ease-standard), background var(--dur-base) var(--ease-standard);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .carousel-dots .dot.active,
 .carousel-dot.active {
-  width: 18px;
+  width: 22px;
   background: var(--color-brand);
+  box-shadow: 0 2px 8px rgba(108, 43, 217, 0.4);
 }
 
 /* TÍTULOS DE BLOCO */

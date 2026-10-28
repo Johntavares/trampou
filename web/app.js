@@ -599,11 +599,34 @@ async function renderAdBannerCarousel() {
     }
   }
 
+  let currentBannerIdx = 0;
   window.goToBannerSlide = function(idx) {
     if (!track) return;
-    const cardWidth = track.offsetWidth || 300;
-    track.scrollTo({ left: idx * cardWidth, behavior: 'smooth' });
+    const slides = track.querySelectorAll('.ad-slide-card');
+    if (!slides.length) return;
+    currentBannerIdx = ((idx % slides.length) + slides.length) % slides.length;
+    const targetSlide = slides[currentBannerIdx];
+    if (targetSlide) {
+      track.scrollTo({ left: targetSlide.offsetLeft, behavior: 'smooth' });
+    }
+    if (dotsContainer) {
+      dotsContainer.querySelectorAll('.carousel-dot').forEach((d, i) => {
+        d.classList.toggle('active', i === currentBannerIdx);
+      });
+    }
   };
+
+  function startBannerAutoPlay(totalSlides) {
+    if (window._bannerCarouselInterval) clearInterval(window._bannerCarouselInterval);
+    if (totalSlides <= 1) return;
+
+    window._bannerCarouselInterval = setInterval(() => {
+      const slides = track.querySelectorAll('.ad-slide-card');
+      if (slides.length <= 1) return;
+      currentBannerIdx = (currentBannerIdx + 1) % slides.length;
+      goToBannerSlide(currentBannerIdx);
+    }, 3000); // Rotação a cada 3 segundos
+  }
 
   function applyBanners(bannersList) {
     if (!bannersList || bannersList.length === 0) {
@@ -629,25 +652,25 @@ async function renderAdBannerCarousel() {
 
         track.onscroll = () => {
           const scrollLeft = track.scrollLeft;
-          const cardWidth = track.offsetWidth || 300;
-          const activeIndex = Math.round(scrollLeft / cardWidth);
-          dotsContainer.querySelectorAll('.carousel-dot').forEach((d, i) => {
-            if (i === activeIndex) d.classList.add('active');
-            else d.classList.remove('active');
+          const slides = track.querySelectorAll('.ad-slide-card');
+          slides.forEach((slide, i) => {
+            if (Math.abs(slide.offsetLeft - scrollLeft) < 40) {
+              currentBannerIdx = i;
+              dotsContainer.querySelectorAll('.carousel-dot').forEach((d, idx) => {
+                d.classList.toggle('active', idx === i);
+              });
+            }
           });
         };
 
-        // Rotação automática a cada 6 segundos
-        if (window._bannerCarouselInterval) clearInterval(window._bannerCarouselInterval);
-        window._bannerCarouselInterval = setInterval(() => {
-          const cardWidth = track.offsetWidth || 300;
-          const maxScroll = track.scrollWidth - track.clientWidth;
-          if (track.scrollLeft >= maxScroll - 10) {
-            track.scrollTo({ left: 0, behavior: 'smooth' });
-          } else {
-            track.scrollBy({ left: cardWidth, behavior: 'smooth' });
-          }
-        }, 6000);
+        // Pausa ao interagir (touch ou hover) e retoma após soltar
+        track.onmouseenter = () => { if (window._bannerCarouselInterval) clearInterval(window._bannerCarouselInterval); };
+        track.onmouseleave = () => { startBannerAutoPlay(bannersList.length); };
+        track.ontouchstart = () => { if (window._bannerCarouselInterval) clearInterval(window._bannerCarouselInterval); };
+        track.ontouchend = () => { startBannerAutoPlay(bannersList.length); };
+
+        // Inicia a rotação automática a cada 3 segundos
+        startBannerAutoPlay(bannersList.length);
 
       } else {
         dotsContainer.style.display = 'none';
