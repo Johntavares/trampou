@@ -12983,8 +12983,241 @@ body {
   gap: 10px;
 }
 
+/* =========================================================
+   MODAL DE INCENTIVO DE CADASTRO (AUTH GATE / EXCLUSIVE FEATURES)
+   ========================================================= */
+#auth-gate-modal.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 2100;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
 
+#auth-gate-modal.modal-overlay.active {
+  display: flex !important;
+}
 
+.auth-gate-content {
+  background: #FFFFFF;
+  width: 100%;
+  max-width: 400px;
+  border-radius: 24px;
+  padding: 24px 20px 20px;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.28);
+  position: relative;
+  text-align: center;
+  overflow: hidden;
+  box-sizing: border-box;
+  animation: authGateModalEntry 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
 
+@keyframes authGateModalEntry {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
 
+.auth-gate-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
 
+.auth-gate-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  background: #F3E8FF;
+  color: #7E22CE;
+}
+
+.auth-gate-close-btn {
+  background: #F1F5F9;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.15s ease;
+}
+
+.auth-gate-close-btn:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+}
+
+.auth-gate-icon-wrapper {
+  width: 72px;
+  height: 72px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px auto 14px;
+  font-size: 30px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.auth-gate-title {
+  margin: 0 0 8px;
+  font-size: 19px;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.25;
+}
+
+.auth-gate-description {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: #64748B;
+  line-height: 1.5;
+  padding: 0 6px;
+}
+
+.auth-gate-benefit-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.auth-gate-benefit-box i {
+  font-size: 18px;
+  color: #10B981;
+  flex-shrink: 0;
+}
+
+.auth-gate-benefit-box span {
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  line-height: 1.35;
+}
+
+.auth-gate-perks-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.auth-gate-perk {
+  background: #FAFAFA;
+  border: 1px solid #F1F5F9;
+  border-radius: 10px;
+  padding: 8px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.auth-gate-perk i {
+  font-size: 14px;
+  color: #6825B3;
+}
+
+.auth-gate-perk span {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.auth-gate-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-auth-gate-primary {
+  width: 100%;
+  height: 48px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #7E22CE 0%, #581C87 100%);
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(126, 34, 206, 0.28);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-auth-gate-primary:active {
+  transform: scale(0.98);
+  box-shadow: 0 4px 12px rgba(126, 34, 206, 0.2);
+}
+
+.btn-auth-gate-secondary {
+  width: 100%;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  background: #F8FAFC;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-auth-gate-secondary:hover,
+.btn-auth-gate-secondary:active {
+  background: #F1F5F9;
+  color: #0F172A;
+}
+
+.btn-auth-gate-ghost {
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 0 0;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.btn-auth-gate-ghost:hover {
+  color: #64748B;
+  text-decoration: underline;
+}

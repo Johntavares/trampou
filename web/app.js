@@ -1382,6 +1382,7 @@ const SOS_CATEGORY_MAP = {
 
 // Abre o modal de solicitação de emergência
 function openSOSRequestModal(initialProType, specificProId) {
+  if (typeof requireUserAuth === 'function' && !requireUserAuth('sos')) return;
   clearSelectedSpecificPro();
 
   if (specificProId) {
@@ -2893,6 +2894,7 @@ function isProFavorited(proId) {
 }
 
 function toggleProFavorite(proId) {
+  if (typeof requireUserAuth === 'function' && !requireUserAuth('favorite')) return false;
   if (!proId) return false;
   let favs = getFavorites();
   const index = favs.indexOf(proId);
@@ -3391,6 +3393,7 @@ function isPostLiked(postId) {
 }
 
 function togglePostLike(postId) {
+  if (typeof requireUserAuth === 'function' && !requireUserAuth('like')) return;
   if (!postId || !currentVitrinePro) return;
   const post = currentVitrinePro.posts.find(p => p.id === postId);
   if (!post) return;
@@ -4327,6 +4330,7 @@ function renderAttendanceCard() {
 // ==============================================================================
 
 function openRegisterAttendanceModal() {
+  if (typeof requireUserAuth === 'function' && !requireUserAuth('deal')) return;
   if (!activeChat) return;
   const input = document.getElementById('reg-att-title-input');
   if (input) {
@@ -4387,6 +4391,7 @@ function cancelAttendanceRequest() {
 
 // Resposta à solicitação: Aceitar ou Recusar
 function handleRespondAttendance(accept) {
+  if (accept && typeof requireUserAuth === 'function' && !requireUserAuth('deal')) return;
   if (!activeChat || !activeChat.attendance) return;
 
   if (accept) {
@@ -4485,6 +4490,7 @@ function submitDisputeAttendance() {
 
 // Modal de Avaliação Verificada
 function openVerifiedReviewModal() {
+  if (typeof requireUserAuth === 'function' && !requireUserAuth('review')) return;
   if (!activeChat || !activeChat.attendance) return;
 
   if (activeChat.attendance.status !== 'completed') {
@@ -5979,6 +5985,135 @@ window.resetOnboardingTest = function() {
   window.location.reload();
 };
 
+// ==============================================================================
+// SISTEMA DE REGRAS DE ACESSO & INCENTIVO DE CADASTRO (AUTH GATE)
+// Permite navegação livre ao visitante, mas bloqueia ações restritas com modal educativo
+// ==============================================================================
+
+const AUTH_GATED_FEATURES = {
+  sos: {
+    icon: 'fa-solid fa-truck-medical',
+    iconColor: '#DC2626',
+    iconBg: '#FEE2E2',
+    badge: 'Segurança & Emergência',
+    title: 'SOS Exclusivo para Cadastrados',
+    description: 'Para o acionamento de emergência com envio rápido de profissionais ao seu local em Parauapebas, é necessário ter um perfil ativo.',
+    benefit: 'Seus dados e telefone ficam seguros e prontos para socorro rápido.'
+  },
+  deal: {
+    icon: 'fa-solid fa-handshake',
+    iconColor: '#4F46E5',
+    iconBg: '#EEF2FF',
+    badge: 'Negociação Protegida',
+    title: 'Feche Acordos com Garantia',
+    description: 'Registrar o serviço combinado no chat garante os detalhes acordados e habilita a avaliação verificada ao término do trabalho.',
+    benefit: 'Atendimento protegido e histórico de serviços no seu perfil.'
+  },
+  review: {
+    icon: 'fa-solid fa-star',
+    iconColor: '#D97706',
+    iconBg: '#FEF3C7',
+    badge: 'Comunidade Confiável',
+    title: 'Avalie com Perfil Verificado',
+    description: 'No Trampou, cada nota vem de uma pessoa real! Crie sua conta para compartilhar sua experiência e fortalecer os melhores profissionais.',
+    benefit: 'Sua nota ganha o selo de Cliente Verificado de Parauapebas.'
+  },
+  like: {
+    icon: 'fa-solid fa-heart',
+    iconColor: '#E11D48',
+    iconBg: '#FFE4E6',
+    badge: 'Apoie o Profissional',
+    title: 'Curta Fotos e Trabalhos',
+    description: 'Crie seu perfil gratuito para curtir as fotos dos serviços concluídos e valorizar a dedicação dos trabalhadores da cidade.',
+    benefit: 'Interaja e acompanhe as novidades dos profissionais favoritos.'
+  },
+  favorite: {
+    icon: 'fa-solid fa-bookmark',
+    iconColor: '#7C3AED',
+    iconBg: '#F3E8FF',
+    badge: 'Sua Lista Pessoal',
+    title: 'Salve nos seus Favoritos',
+    description: 'Crie sua conta para salvar profissionais de confiança e encontrá-los sempre que precisar de reparos ou manutenções.',
+    benefit: 'Seus prestadores prediletos guardados e acessíveis a 1 toque.'
+  },
+  feedback: {
+    icon: 'fa-solid fa-lightbulb',
+    iconColor: '#9333EA',
+    iconBg: '#FAF5FF',
+    badge: 'Construa Conosco',
+    title: 'Envie sua Sugestão',
+    description: 'Crie sua conta para nos enviar ideias, sugestões de melhorias ou elogios e receber a resposta da nossa equipe.',
+    benefit: 'Participe diretamente das novidades e atualizações do Trampou.'
+  }
+};
+
+let currentGatedFeature = 'deal';
+
+function requireUserAuth(featureKey) {
+  const user = (typeof getCurrentUser === 'function' ? getCurrentUser() : null);
+  if (user && user.id) {
+    return true; // Usuário autenticado, libera o recurso!
+  }
+  openAuthGateModal(featureKey || 'deal');
+  return false; // Visitante bloqueado, abre modal persuasivo
+}
+window.requireUserAuth = requireUserAuth;
+
+function openAuthGateModal(featureKey) {
+  currentGatedFeature = featureKey || 'deal';
+  const config = AUTH_GATED_FEATURES[featureKey] || AUTH_GATED_FEATURES.deal;
+
+  const modal = document.getElementById('auth-gate-modal');
+  const badgeEl = document.getElementById('auth-gate-badge');
+  const iconWrap = document.getElementById('auth-gate-icon-wrapper');
+  const iconEl = document.getElementById('auth-gate-icon');
+  const titleEl = document.getElementById('auth-gate-title');
+  const descEl = document.getElementById('auth-gate-description');
+  const benefitEl = document.getElementById('auth-gate-benefit-text');
+
+  if (badgeEl) badgeEl.innerHTML = `<i class="fa-solid fa-sparkles"></i> ${config.badge}`;
+  if (iconWrap) {
+    iconWrap.style.background = config.iconBg;
+    iconWrap.style.color = config.iconColor;
+    iconWrap.style.boxShadow = `0 12px 24px -6px ${config.iconBg}`;
+  }
+  if (iconEl) {
+    iconEl.className = config.icon;
+    iconEl.style.color = config.iconColor;
+  }
+  if (titleEl) titleEl.textContent = config.title;
+  if (descEl) descEl.textContent = config.description;
+  if (benefitEl) benefitEl.textContent = config.benefit;
+
+  if (modal) modal.classList.add('active');
+}
+window.openAuthGateModal = openAuthGateModal;
+
+function closeAuthGateModal() {
+  const modal = document.getElementById('auth-gate-modal');
+  if (modal) modal.classList.remove('active');
+}
+window.closeAuthGateModal = closeAuthGateModal;
+
+function proceedToSignupFromGate() {
+  closeAuthGateModal();
+  openClientSignup();
+}
+window.proceedToSignupFromGate = proceedToSignupFromGate;
+
+function proceedToLoginFromGate() {
+  closeAuthGateModal();
+  openLoginModal();
+}
+window.proceedToLoginFromGate = proceedToLoginFromGate;
+
+function triggerProReviewFromModal() {
+  closeReviewsModal();
+  if (!requireUserAuth('review')) return;
+  showToast('Para avaliar, finalize e confirme um atendimento pelo chat.');
+}
+window.triggerProReviewFromModal = triggerProReviewFromModal;
+
 // Abertura e Fechamento de Modais de Auth & Sistema
 function openAuthModal(modalId) {
   const modal = document.getElementById(modalId);
@@ -6006,6 +6141,7 @@ function closeAuthModal(modalId) {
 function closeAllAuthModals() {
   const modals = [
     'auth-welcome-overlay',
+    'auth-gate-modal',
     'auth-login-modal',
     'auth-recovery-modal',
     'auth-client-signup-modal',
@@ -7759,6 +7895,7 @@ window.filterAndSortProsByLocation = filterAndSortProsByLocation;
 // SISTEMA DE SUGESTÕES & FEEDBACK DOS USUÁRIOS
 // =========================================================
 function openAppFeedbackModal() {
+  if (typeof requireUserAuth === 'function' && !requireUserAuth('feedback')) return;
   closeAllAuthModals();
   const modal = document.getElementById('modal-app-feedback');
   if (!modal) return;

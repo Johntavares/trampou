@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=23">
+  <link rel="stylesheet" href="styles.css?v=24">
 </head>
 <body>
   <!-- Container Principal do Aplicativo Nativo / PWA -->
@@ -615,6 +615,12 @@
               <div class="reviews-summary-card" id="modal-reviews-summary"></div>
               <div class="reviews-feed-list" id="modal-reviews-list"></div>
             </div>
+            <div class="modal-footer" style="padding: 10px 14px; border-top: 1px solid #F1F5F9; display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 11px; color: #64748B;"><i class="fa-solid fa-certificate" style="color: #4F46E5;"></i> Avaliações verificadas</span>
+              <button type="button" class="btn-att-action btn-att-review" style="font-size: 12px; padding: 7px 14px; border-radius: 8px;" onclick="triggerProReviewFromModal()">
+                <i class="fa-solid fa-star"></i> Avaliar Profissional
+              </button>
+            </div>
           </div>
         </div>
 
@@ -815,6 +821,65 @@
             <div class="modal-footer">
               <button class="btn-cancel" onclick="closeQuoteModal()">Cancelar</button>
               <button class="btn-submit" onclick="submitQuoteRequest()">Enviar Pedido</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             0. MODAL DE INCENTIVO DE CADASTRO (AUTH GATE / EXCLUSIVE FEATURES)
+             ========================================================= -->
+        <div id="auth-gate-modal" class="modal-overlay" style="z-index: 1500;" onclick="if(event.target === this) closeAuthGateModal()">
+          <div class="modal-content auth-gate-content">
+            <div class="auth-gate-header">
+              <div class="auth-gate-badge" id="auth-gate-badge">
+                <i class="fa-solid fa-sparkles"></i> Recurso Exclusivo
+              </div>
+              <button type="button" class="auth-gate-close-btn" onclick="closeAuthGateModal()" title="Continuar explorando">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <div class="auth-gate-body">
+              <div class="auth-gate-icon-wrapper" id="auth-gate-icon-wrapper">
+                <i class="fa-solid fa-star" id="auth-gate-icon"></i>
+              </div>
+
+              <h3 class="auth-gate-title" id="auth-gate-title">Crie sua Conta no Trampou</h3>
+              <p class="auth-gate-description" id="auth-gate-description">
+                Cadastre-se gratuitamente para desbloquear este recurso e aproveitar tudo o que o Trampou oferece.
+              </p>
+
+              <div class="auth-gate-benefit-box" id="auth-gate-benefit-box">
+                <i class="fa-solid fa-circle-check auth-gate-check-icon"></i>
+                <span id="auth-gate-benefit-text">Leva menos de 1 minuto e é 100% grátis.</span>
+              </div>
+
+              <div class="auth-gate-perks-row">
+                <div class="auth-gate-perk">
+                  <i class="fa-solid fa-bolt"></i>
+                  <span>Cadastro Rápido</span>
+                </div>
+                <div class="auth-gate-perk">
+                  <i class="fa-solid fa-shield-halved"></i>
+                  <span>100% Seguro</span>
+                </div>
+                <div class="auth-gate-perk">
+                  <i class="fa-solid fa-gift"></i>
+                  <span>Totalmente Grátis</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="auth-gate-footer">
+              <button type="button" class="btn-auth-gate-primary" onclick="proceedToSignupFromGate()">
+                <i class="fa-solid fa-user-plus"></i> Criar Conta Gratuita
+              </button>
+              <button type="button" class="btn-auth-gate-secondary" onclick="proceedToLoginFromGate()">
+                Já tenho conta • Entrar
+              </button>
+              <button type="button" class="btn-auth-gate-ghost" onclick="closeAuthGateModal()">
+                Continuar explorando como Visitante
+              </button>
             </div>
           </div>
         </div>
@@ -3224,6 +3289,6 @@
     </div>
   </aside>
 
-  <script src="app.js?v=23"></script>
+  <script src="app.js?v=24"></script>
 </body>
 </html>
