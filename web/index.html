@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=14">
+  <link rel="stylesheet" href="styles.css?v=15">
 </head>
 <body>
   <!-- Container Principal do Aplicativo Nativo / PWA -->
@@ -45,9 +45,10 @@
               <div class="header-brand-user-wrap">
                 <img src="trampou_app_icon.png" alt="Trampou" class="header-trampou-icon" onclick="openAuthWelcome()" title="Trampou — Profissionais Perto de Você">
                 <div class="header-user-info">
-                  <div class="location-pill" id="home-location">
+                  <div class="location-pill clickable" id="home-location" onclick="openLocationPickerModal()" title="Toque para mudar sua cidade ou ativar GPS">
                     <i class="fa-solid fa-location-dot loc-icon"></i>
-                    <span>Parauapebas, PA</span>
+                    <span id="home-location-text">Parauapebas, PA</span>
+                    <i class="fa-solid fa-chevron-down loc-caret"></i>
                   </div>
                   <h1 class="greeting-text">Olá, Cliente</h1>
                 </div>
@@ -1014,6 +1015,59 @@
                   </div>
                 </div>
 
+                <!-- Cidade & Estado do Usuário (Expansão Nacional) -->
+                <div class="auth-input-group">
+                  <div class="auth-label-row">
+                    <label>Sua Cidade e Estado</label>
+                    <button type="button" class="btn-geo-detect" onclick="detectClientLocationGPS()" title="Preencher com GPS atual">
+                      <i class="fa-solid fa-location-crosshairs"></i> Usar GPS
+                    </button>
+                  </div>
+                  <div class="location-select-grid">
+                    <div class="input-icon-wrap select-wrap uf-wrap">
+                      <select id="client-state">
+                        <option value="PA">PA</option>
+                        <option value="SP">SP</option>
+                        <option value="RJ">RJ</option>
+                        <option value="MG">MG</option>
+                        <option value="BA">BA</option>
+                        <option value="CE">CE</option>
+                        <option value="DF">DF</option>
+                        <option value="ES">ES</option>
+                        <option value="GO">GO</option>
+                        <option value="MA">MA</option>
+                        <option value="MT">MT</option>
+                        <option value="MS">MS</option>
+                        <option value="AM">AM</option>
+                        <option value="PR">PR</option>
+                        <option value="PE">PE</option>
+                        <option value="PI">PI</option>
+                        <option value="RN">RN</option>
+                        <option value="RS">RS</option>
+                        <option value="RO">RO</option>
+                        <option value="RR">RR</option>
+                        <option value="SC">SC</option>
+                        <option value="SE">SE</option>
+                        <option value="TO">TO</option>
+                        <option value="AC">AC</option>
+                        <option value="AL">AL</option>
+                        <option value="AP">AP</option>
+                        <option value="PB">PB</option>
+                      </select>
+                    </div>
+                    <div class="input-icon-wrap city-wrap">
+                      <i class="fa-solid fa-city"></i>
+                      <input type="text" id="client-city" placeholder="Sua cidade (ex: Parauapebas)" value="Parauapebas" required>
+                    </div>
+                  </div>
+                  <div class="input-icon-wrap" style="margin-top: 8px;">
+                    <i class="fa-solid fa-map-pin"></i>
+                    <input type="text" id="client-neighborhood" placeholder="Bairro (opcional, ex: Cidade Nova)">
+                  </div>
+                  <input type="hidden" id="client-lat" value="">
+                  <input type="hidden" id="client-lng" value="">
+                </div>
+
                 <div class="auth-input-group">
                   <label for="client-password">Senha (mínimo 6 caracteres)</label>
                   <div class="input-icon-wrap">
@@ -1253,18 +1307,62 @@
                   </div>
                 </div>
 
+                <!-- Cidade e Estado de Atuação do Profissional (Nacional) -->
                 <div class="auth-input-group">
-                  <label>Bairros de Atendimento em Parauapebas</label>
-                  <div class="tags-selector-wrap" id="pro-neighborhoods-chips">
-                    <span class="selectable-chip active" onclick="toggleNeighborhoodChip(this)">Cidade Nova</span>
-                    <span class="selectable-chip" onclick="toggleNeighborhoodChip(this)">Rio Verde</span>
-                    <span class="selectable-chip" onclick="toggleNeighborhoodChip(this)">União</span>
-                    <span class="selectable-chip" onclick="toggleNeighborhoodChip(this)">Nova Carajás</span>
-                    <span class="selectable-chip" onclick="toggleNeighborhoodChip(this)">Beira Rio</span>
-                    <span class="selectable-chip" onclick="toggleNeighborhoodChip(this)">Da Paz</span>
-                    <span class="selectable-chip" onclick="toggleNeighborhoodChip(this)">Chácaras do Sol</span>
-                    <span class="selectable-chip" onclick="toggleNeighborhoodChip(this)">Toda a cidade</span>
+                  <div class="auth-label-row">
+                    <label>Sua Cidade e Estado de Atuação</label>
+                    <button type="button" class="btn-geo-detect" onclick="detectProLocationGPS()" title="Detectar cidade via GPS">
+                      <i class="fa-solid fa-location-crosshairs"></i> Usar GPS
+                    </button>
                   </div>
+                  <div class="location-select-grid">
+                    <div class="input-icon-wrap select-wrap uf-wrap">
+                      <select id="pro-state">
+                        <option value="PA">PA</option>
+                        <option value="SP">SP</option>
+                        <option value="RJ">RJ</option>
+                        <option value="MG">MG</option>
+                        <option value="BA">BA</option>
+                        <option value="CE">CE</option>
+                        <option value="DF">DF</option>
+                        <option value="ES">ES</option>
+                        <option value="GO">GO</option>
+                        <option value="MA">MA</option>
+                        <option value="MT">MT</option>
+                        <option value="MS">MS</option>
+                        <option value="AM">AM</option>
+                        <option value="PR">PR</option>
+                        <option value="PE">PE</option>
+                        <option value="PI">PI</option>
+                        <option value="RN">RN</option>
+                        <option value="RS">RS</option>
+                        <option value="RO">RO</option>
+                        <option value="RR">RR</option>
+                        <option value="SC">SC</option>
+                        <option value="SE">SE</option>
+                        <option value="TO">TO</option>
+                        <option value="AC">AC</option>
+                        <option value="AL">AL</option>
+                        <option value="AP">AP</option>
+                        <option value="PB">PB</option>
+                      </select>
+                    </div>
+                    <div class="input-icon-wrap city-wrap">
+                      <i class="fa-solid fa-city"></i>
+                      <input type="text" id="pro-city" placeholder="Cidade de atendimento" value="Parauapebas">
+                    </div>
+                  </div>
+                  <input type="hidden" id="pro-lat" value="">
+                  <input type="hidden" id="pro-lng" value="">
+                </div>
+
+                <div class="auth-input-group">
+                  <label for="pro-neighborhoods-input">Bairros e Regiões Atendidas</label>
+                  <div class="input-icon-wrap">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                    <input type="text" id="pro-neighborhoods-input" placeholder="ex: Toda a cidade, ou Cidade Nova, Centro..." value="Toda a cidade">
+                  </div>
+                  <small class="field-hint">Indique se atende toda a cidade ou liste seus bairros prioritários.</small>
                 </div>
 
                 <div class="auth-input-group">
@@ -2475,10 +2573,104 @@
         </div>
 
       
-<!-- =========================================================
-       1. CENTRAL DE PRIVACIDADE, LGPD E MEUS DADOS
-       ========================================================= -->
-  <div id="privacy-hub-modal" class="modal-overlay">
+        <!-- =========================================================
+             MODAL: SELETOR DE LOCALIZAÇÃO / CIDADE & GPS (EXPANSÃO NACIONAL)
+             ========================================================= -->
+        <div id="modal-location-picker" class="modal-overlay">
+          <div class="modal-content auth-form-content location-picker-content">
+            <div class="auth-modal-header">
+              <button class="v-nav-icon-btn" onclick="closeLocationPickerModal()" title="Fechar">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+              <h4>Onde você procura serviço?</h4>
+              <div style="width: 32px;"></div>
+            </div>
+
+            <div class="location-picker-body">
+              <!-- Botão GPS em destaque -->
+              <div class="location-gps-card" onclick="detectUserLocationGPS()" role="button" tabindex="0">
+                <div class="location-gps-icon">
+                  <i class="fa-solid fa-location-crosshairs" id="picker-gps-icon"></i>
+                </div>
+                <div class="location-gps-text">
+                  <strong>Usar minha localização atual (GPS)</strong>
+                  <span id="picker-gps-status">Detectar cidade e ordenar profissionais por proximidade</span>
+                </div>
+                <i class="fa-solid fa-chevron-right loc-arrow"></i>
+              </div>
+
+              <!-- Seleção Manual de UF + Cidade -->
+              <div class="location-picker-section">
+                <h6><i class="fa-solid fa-map-location-dot icon-purple"></i> Escolher Outra Cidade</h6>
+                <div class="location-manual-row">
+                  <div class="input-icon-wrap select-wrap uf-picker-wrap">
+                    <select id="picker-manual-uf">
+                      <option value="PA">PA</option>
+                      <option value="SP">SP</option>
+                      <option value="RJ">RJ</option>
+                      <option value="MG">MG</option>
+                      <option value="BA">BA</option>
+                      <option value="CE">CE</option>
+                      <option value="DF">DF</option>
+                      <option value="ES">ES</option>
+                      <option value="GO">GO</option>
+                      <option value="MA">MA</option>
+                      <option value="MT">MT</option>
+                      <option value="MS">MS</option>
+                      <option value="AM">AM</option>
+                      <option value="PR">PR</option>
+                      <option value="PE">PE</option>
+                      <option value="PI">PI</option>
+                      <option value="RN">RN</option>
+                      <option value="RS">RS</option>
+                      <option value="RO">RO</option>
+                      <option value="RR">RR</option>
+                      <option value="SC">SC</option>
+                      <option value="SE">SE</option>
+                      <option value="TO">TO</option>
+                      <option value="AC">AC</option>
+                      <option value="AL">AL</option>
+                      <option value="AP">AP</option>
+                      <option value="PB">PB</option>
+                    </select>
+                  </div>
+                  <div class="input-icon-wrap city-picker-input-wrap">
+                    <i class="fa-solid fa-city"></i>
+                    <input type="text" id="picker-manual-city" placeholder="Digite o nome da cidade...">
+                  </div>
+                  <button type="button" class="btn-apply-city" onclick="applyManualCityChoice()">
+                    Buscar
+                  </button>
+                </div>
+              </div>
+
+              <!-- Cidades Populares / Recentes -->
+              <div class="location-popular-section">
+                <h6><i class="fa-solid fa-fire icon-amber"></i> Cidades Populares</h6>
+                <div class="location-chips-grid" id="popular-cities-chips">
+                  <button type="button" class="loc-chip active" onclick="selectCityOption('Parauapebas', 'PA')">Parauapebas, PA</button>
+                  <button type="button" class="loc-chip" onclick="selectCityOption('Belém', 'PA')">Belém, PA</button>
+                  <button type="button" class="loc-chip" onclick="selectCityOption('Marabá', 'PA')">Marabá, PA</button>
+                  <button type="button" class="loc-chip" onclick="selectCityOption('São Paulo', 'SP')">São Paulo, SP</button>
+                  <button type="button" class="loc-chip" onclick="selectCityOption('Rio de Janeiro', 'RJ')">Rio de Janeiro, RJ</button>
+                  <button type="button" class="loc-chip" onclick="selectCityOption('Belo Horizonte', 'MG')">Belo Horizonte, MG</button>
+                  <button type="button" class="loc-chip" onclick="selectCityOption('Brasília', 'DF')">Brasília, DF</button>
+                  <button type="button" class="loc-chip" onclick="selectCityOption('Goiânia', 'GO')">Goiânia, GO</button>
+                  <button type="button" class="loc-chip" onclick="selectCityOption('Curitiba', 'PR')">Curitiba, PR</button>
+                  <button type="button" class="loc-chip" onclick="selectCityOption('Fortaleza', 'CE')">Fortaleza, CE</button>
+                  <button type="button" class="loc-chip" onclick="selectCityOption('Salvador', 'BA')">Salvador, BA</button>
+                  <button type="button" class="loc-chip" onclick="selectCityOption('Manaus', 'AM')">Manaus, AM</button>
+                  <button type="button" class="loc-chip" onclick="selectCityOption('Campinas', 'SP')">Campinas, SP</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             1. CENTRAL DE PRIVACIDADE, LGPD E MEUS DADOS
+             ========================================================= -->
+        <div id="privacy-hub-modal" class="modal-overlay">
     <div class="modal-content auth-form-content privacy-hub-content">
       <div class="auth-modal-header">
         <button class="v-nav-icon-btn" onclick="closeAuthModal('privacy-hub-modal')" title="Voltar">
@@ -2899,6 +3091,6 @@
     </div>
   </aside>
 
-  <script src="app.js?v=14"></script>
+  <script src="app.js?v=15"></script>
 </body>
 </html>

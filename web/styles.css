@@ -12337,6 +12337,265 @@ body {
 .icon-purple { color: #8B5CF6; }
 .icon-amber { color: #F59E0B; }
 
+/* =========================================================
+   SISTEMA DE LOCALIZAÇÃO NACIONAL & GPS
+   Seletor de Cidades, Modal de Localização e Botões GPS
+   ========================================================= */
+
+.location-pill.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.location-pill.clickable:hover {
+  background: rgba(104, 37, 179, 0.12);
+  transform: translateY(-1px);
+}
+
+.loc-caret {
+  font-size: 10px;
+  margin-left: 3px;
+  opacity: 0.7;
+}
+
+.auth-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.btn-geo-detect {
+  background: #FAF5FF;
+  border: 1px solid #D8B4FE;
+  color: #6825B3;
+  border-radius: 8px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s;
+}
+
+.btn-geo-detect:hover {
+  background: #F3E8FF;
+  border-color: #A855F7;
+  transform: scale(1.02);
+}
+
+.location-select-grid {
+  display: grid;
+  grid-template-columns: 85px 1fr;
+  gap: 8px;
+}
+
+.location-select-grid select {
+  font-weight: 700;
+  color: #1E293B;
+  background-color: transparent;
+  width: 100%;
+}
+
+/* Modal Seletor de Cidades (Expansão Nacional) */
+#modal-location-picker.active {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.location-picker-content {
+  width: 100% !important;
+  max-width: 480px !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  margin: 0 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: #FFFFFF !important;
+}
+
+.location-picker-body {
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
+}
+
+.location-gps-card {
+  background: linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%);
+  border: 1.5px solid #D8B4FE;
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.location-gps-card:hover {
+  border-color: #6825B3;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(104, 37, 179, 0.15);
+}
+
+.location-gps-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #6825B3;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.location-gps-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.location-gps-text strong {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #1E1B4B;
+  margin-bottom: 2px;
+}
+
+.location-gps-text span {
+  display: block;
+  font-size: 11px;
+  color: #6B21A8;
+  line-height: 1.35;
+}
+
+.loc-arrow {
+  color: #9333EA;
+  font-size: 13px;
+}
+
+.location-picker-section h6,
+.location-popular-section h6 {
+  font-size: 12px;
+  font-weight: 800;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.location-manual-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.uf-picker-wrap {
+  width: 80px !important;
+  flex-shrink: 0;
+}
+
+.uf-picker-wrap select {
+  font-weight: 700;
+  padding-left: 10px !important;
+}
+
+.city-picker-input-wrap {
+  flex: 1;
+}
+
+.btn-apply-city {
+  background: #6825B3;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 10px;
+  padding: 0 16px;
+  height: 44px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.btn-apply-city:hover {
+  background: #581C87;
+  transform: translateY(-1px);
+}
+
+.location-chips-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.loc-chip {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  color: #334155;
+  border-radius: 20px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.loc-chip:hover {
+  border-color: #6825B3;
+  color: #6825B3;
+  background: #FAF5FF;
+  transform: translateY(-1px);
+}
+
+.loc-chip.active {
+  background: #6825B3;
+  border-color: #6825B3;
+  color: #FFFFFF;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(104, 37, 179, 0.25);
+}
+
+/* Distância em km nos cards de profissionais */
+.pro-distance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  color: #065F46;
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.pro-city-tag {
+  color: #64748B;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+
 
 
 

@@ -37,6 +37,282 @@ let activeChat = null;
 let selectedBairro = 'Todos';
 
 // ==========================================
+// EXPANSÃO NACIONAL: ESTADO & GEOLOCALIZAÇÃO
+// ==========================================
+let currentActiveLocation = {
+  city: localStorage.getItem('trampou_active_city') || 'Parauapebas',
+  state: localStorage.getItem('trampou_active_state') || 'PA',
+  lat: localStorage.getItem('trampou_active_lat') ? parseFloat(localStorage.getItem('trampou_active_lat')) : null,
+  lng: localStorage.getItem('trampou_active_lng') ? parseFloat(localStorage.getItem('trampou_active_lng')) : null,
+  isGps: localStorage.getItem('trampou_active_is_gps') === 'true'
+};
+
+// Geocodificação reversa rápida e gratuita (BigDataCloud com fallback Nominatim)
+async function reverseGeocodeCoords(lat, lng) {
+  try {
+    const bdcRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=pt`);
+    if (bdcRes.ok) {
+      const data = await bdcRes.json();
+      const city = data.city || data.locality || data.principalSubdivision || 'Parauapebas';
+      let state = 'PA';
+      if (data.principalSubdivisionCode) {
+        state = data.principalSubdivisionCode.replace('BR-', '');
+      } else if (data.principalSubdivision) {
+        state = data.principalSubdivision.substring(0, 2).toUpperCase();
+      }
+      return { city, state };
+    }
+  } catch (err) {
+    console.warn('BigDataCloud geocode fallback:', err);
+  }
+
+  try {
+    const osmRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10&addressdetails=1`, {
+      headers: { 'Accept-Language': 'pt-BR' }
+    });
+    if (osmRes.ok) {
+      const data = await osmRes.json();
+      const addr = data.address || {};
+      const city = addr.city || addr.town || addr.municipality || addr.village || 'Parauapebas';
+      const state = addr['ISO3166-2-lvl4'] ? addr['ISO3166-2-lvl4'].replace('BR-', '') : (addr.state ? addr.state.substring(0, 2).toUpperCase() : 'PA');
+      return { city, state };
+    }
+  } catch (err) {
+    console.warn('OSM geocode fallback erro:', err);
+  }
+
+  return { city: 'Parauapebas', state: 'PA' };
+}
+
+// Cálculo geodésico de distância em km (Fórmula de Haversine)
+function calculateDistanceKm(lat1, lon1, lat2, lon2) {
+  if (lat1 === null || lat1 === undefined || lon1 === null || lon1 === undefined ||
+      lat2 === null || lat2 === undefined || lon2 === null || lon2 === undefined) {
+    return null;
+  }
+  const R = 6371; // Raio da Terra em km
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function updateLocationDisplay() {
+  const el = document.getElementById('home-location-text');
+  if (el) {
+    const gpsIcon = currentActiveLocation.isGps
+      ? '<i class="fa-solid fa-location-crosshairs" style="color: #6366F1; margin-right: 4px;" title="Localização via GPS"></i>'
+      : '<i class="fa-solid fa-location-dot" style="color: #6366F1; margin-right: 4px;"></i>';
+    el.innerHTML = `${gpsIcon}${currentActiveLocation.city}, ${currentActiveLocation.state}`;
+  }
+}
+
+function initLocationManager() {
+  updateLocationDisplay();
+}
+
+function setActiveLocation(city, state, lat = null, lng = null, isGps = false) {
+  currentActiveLocation.city = city || 'Parauapebas';
+  currentActiveLocation.state = state || 'PA';
+  currentActiveLocation.lat = lat;
+  currentActiveLocation.lng = lng;
+  currentActiveLocation.isGps = !!isGps;
+
+  localStorage.setItem('trampou_active_city', currentActiveLocation.city);
+  localStorage.setItem('trampou_active_state', currentActiveLocation.state);
+  if (lat && lng) {
+    localStorage.setItem('trampou_active_lat', lat.toString());
+    localStorage.setItem('trampou_active_lng', lng.toString());
+  } else {
+    localStorage.removeItem('trampou_active_lat');
+    localStorage.removeItem('trampou_active_lng');
+  }
+  localStorage.setItem('trampou_active_is_gps', isGps ? 'true' : 'false');
+
+  updateLocationDisplay();
+
+  // Re-renderiza vitrine e busca com a nova cidade ativa
+  if (typeof renderRecommendedProfessionals === 'function') renderRecommendedProfessionals();
+  if (typeof renderSearchResults === 'function') renderSearchResults();
+}
+
+function openLocationPickerModal() {
+  const modal = document.getElementById('modal-location-picker');
+  if (modal) {
+    modal.classList.add('active');
+    const uState = document.getElementById('user-state-select');
+    const uCity = document.getElementById('user-city-input');
+    if (uState && currentActiveLocation.state) uState.value = currentActiveLocation.state;
+    if (uCity && currentActiveLocation.city) uCity.value = currentActiveLocation.city;
+  }
+}
+
+function closeLocationPickerModal() {
+  const modal = document.getElementById('modal-location-picker');
+  if (modal) modal.classList.remove('active');
+}
+
+function selectCityOption(city, state) {
+  setActiveLocation(city, state, null, null, false);
+  closeLocationPickerModal();
+  showToast(`📍 Cidade alterada para ${city}, ${state}`);
+}
+
+function applyManualCityChoice() {
+  const stateSelect = document.getElementById('user-state-select');
+  const cityInput = document.getElementById('user-city-input');
+  const state = stateSelect ? stateSelect.value : 'PA';
+  const city = cityInput && cityInput.value.trim() ? cityInput.value.trim() : 'Parauapebas';
+
+  setActiveLocation(city, state, null, null, false);
+  closeLocationPickerModal();
+  showToast(`📍 Visualizando profissionais de ${city}, ${state}`);
+}
+
+async function detectUserLocationGPS() {
+  const statusEl = document.getElementById('gps-detect-status');
+  if (!navigator.geolocation) {
+    if (statusEl) statusEl.textContent = 'Geolocalização não é suportada pelo seu navegador.';
+    return;
+  }
+
+  if (statusEl) statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Conectando ao GPS do aparelho...';
+
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      if (statusEl) statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Identificando cidade...';
+
+      const geo = await reverseGeocodeCoords(lat, lng);
+      setActiveLocation(geo.city, geo.state, lat, lng, true);
+
+      if (statusEl) statusEl.innerHTML = `<span style="color: #10B981;"><i class="fa-solid fa-check"></i> Você está em ${geo.city}, ${geo.state}</span>`;
+
+      setTimeout(() => {
+        closeLocationPickerModal();
+        showToast(`📍 GPS Conectado: ${geo.city}, ${geo.state}`);
+      }, 700);
+    },
+    (err) => {
+      console.warn('Erro GPS:', err);
+      if (statusEl) {
+        statusEl.innerHTML = '<span style="color: #EF4444;"><i class="fa-solid fa-triangle-exclamation"></i> GPS não disponível. Selecione sua cidade manualmente abaixo.</span>';
+      }
+      showToast('Permissão de GPS indisponível.');
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+  );
+}
+
+// Detecção no formulário de cadastro de cliente
+async function detectClientLocationGPS() {
+  if (!navigator.geolocation) {
+    showToast('Geolocalização não suportada.');
+    return;
+  }
+  showToast('Obtendo sua localização pelo GPS...');
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    const geo = await reverseGeocodeCoords(lat, lng);
+
+    const stateEl = document.getElementById('client-state');
+    const cityEl = document.getElementById('client-city');
+    const latEl = document.getElementById('client-lat');
+    const lngEl = document.getElementById('client-lng');
+
+    if (stateEl) stateEl.value = geo.state;
+    if (cityEl) cityEl.value = geo.city;
+    if (latEl) latEl.value = lat;
+    if (lngEl) lngEl.value = lng;
+
+    showToast(`📍 Localização definida: ${geo.city}, ${geo.state}`);
+  }, () => {
+    showToast('Não foi possível obter localização via GPS.');
+  }, { enableHighAccuracy: true, timeout: 10000 });
+}
+
+// Detecção no formulário de cadastro do profissional (wizard etapa 2)
+async function detectProLocationGPS() {
+  if (!navigator.geolocation) {
+    showToast('Geolocalização não suportada.');
+    return;
+  }
+  showToast('Obtendo base profissional pelo GPS...');
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    const geo = await reverseGeocodeCoords(lat, lng);
+
+    const stateEl = document.getElementById('pro-state');
+    const cityEl = document.getElementById('pro-city');
+    const latEl = document.getElementById('pro-lat');
+    const lngEl = document.getElementById('pro-lng');
+
+    if (stateEl) stateEl.value = geo.state;
+    if (cityEl) cityEl.value = geo.city;
+    if (latEl) latEl.value = lat;
+    if (lngEl) lngEl.value = lng;
+
+    showToast(`📍 Base profissional definida: ${geo.city}, ${geo.state}`);
+  }, () => {
+    showToast('Não foi possível obter localização via GPS.');
+  }, { enableHighAccuracy: true, timeout: 10000 });
+}
+
+// Função utilitária para filtrar e calcular distâncias
+function filterAndSortProsByLocation(prosList) {
+  function norm(str) {
+    return (str || '')
+      .toString()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
+  }
+
+  const activeCityNorm = norm(currentActiveLocation.city);
+  const userLat = currentActiveLocation.lat;
+  const userLng = currentActiveLocation.lng;
+
+  // Filtra por cidade de atuação
+  const filtered = (prosList || []).filter(p => {
+    const pCityNorm = norm(p.city || 'Parauapebas');
+    const serviceCities = (p.serviceCities || []).map(norm);
+    const pNeighNorm = norm(p.neighborhood || '');
+
+    return (pCityNorm === activeCityNorm) ||
+           serviceCities.includes(activeCityNorm) ||
+           pNeighNorm.includes(activeCityNorm);
+  });
+
+  // Calcula distância se houver coordenadas ativas
+  filtered.forEach(p => {
+    if (userLat !== null && userLng !== null && p.latitude && p.longitude) {
+      p._distanceKm = calculateDistanceKm(userLat, userLng, p.latitude, p.longitude);
+    } else {
+      p._distanceKm = null;
+    }
+  });
+
+  // Ordena por proximidade se GPS estiver ativo
+  if (currentActiveLocation.isGps && userLat !== null && userLng !== null) {
+    filtered.sort((a, b) => {
+      const distA = a._distanceKm !== null ? a._distanceKm : 99999;
+      const distB = b._distanceKm !== null ? b._distanceKm : 99999;
+      return distA - distB;
+    });
+  }
+
+  return filtered;
+}
+
+// ==========================================
 // PWA (PROGRESSIVE WEB APP) SERVICE WORKER & INSTALL
 // ==========================================
 let deferredInstallPrompt = null;
@@ -98,6 +374,7 @@ window.triggerPWAInstall = triggerPWAInstall;
 // Inicialização
 document.addEventListener('DOMContentLoaded', () => {
   initPWA();
+  initLocationManager();
   loadStoredConversations();
   loadProfessionalsFromStorage();
   initAuthManager();
@@ -457,27 +734,36 @@ function renderProAvatar(p) {
   return `<div class="pro-card-avatar" aria-hidden="true">${initials}</div>`;
 }
 
-// 4. Renderiza Profissionais em Destaque (Cards com Foco em Avaliações)
+// 4. Renderiza Profissionais em Destaque (Cards com Foco em Avaliações e Proximidade)
 function renderRecommendedProfessionals() {
   const container = document.getElementById('featured-professionals-container');
   if (!container) return;
 
-  if (!PROFESSIONALS || PROFESSIONALS.length === 0) {
+  const filteredPros = filterAndSortProsByLocation(PROFESSIONALS || []);
+
+  if (!filteredPros || filteredPros.length === 0) {
+    const locLabel = `${currentActiveLocation.city}, ${currentActiveLocation.state}`;
     container.innerHTML = `
-      <div class="state-block" style="flex: 1 0 100%;">
-        <div class="state-icon"><i class="fa-solid fa-user-group" aria-hidden="true"></i></div>
-        <h6>Nenhum profissional em destaque</h6>
-        <p>Explore as categorias para encontrar profissionais da sua região.</p>
+      <div class="state-block" style="flex: 1 0 100%; text-align: center; padding: 24px 16px;">
+        <div class="state-icon" style="color: #6366F1; font-size: 32px; margin-bottom: 8px;"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></div>
+        <h6 style="font-size: 15px; font-weight: 700; color: #1E293B;">Nenhum profissional em ${locLabel}</h6>
+        <p style="font-size: 13px; color: #64748B; margin: 4px 0 14px;">Ainda estamos expandindo para esta cidade. Toque abaixo para escolher outra cidade ou pesquisar em todo o Brasil.</p>
+        <button type="button" class="btn-reset-filters" style="margin: 0 auto; display: inline-flex;" onclick="openLocationPickerModal()">
+          <i class="fa-solid fa-map-location-dot"></i> Alterar Cidade
+        </button>
       </div>`;
     setupProsScrollIndicator();
     return;
   }
 
-  container.innerHTML = PROFESSIONALS.map(p => {
+  container.innerHTML = filteredPros.map(p => {
     const hasReviews = Number(p.reviewsCount) > 0;
     const review = p.latestReview && p.latestReview.text ? p.latestReview : null;
     const reviewMeta = review ? [review.author, review.date].filter(Boolean).join(' · ') : '';
     const done = Number(p.completedServices) > 0 ? p.completedServices : null;
+    const distBadge = (p._distanceKm !== null && p._distanceKm !== undefined)
+      ? `<span class="pro-distance-badge"><i class="fa-solid fa-location-crosshairs"></i> ${p._distanceKm < 1 ? Math.round(p._distanceKm * 1000) + ' m' : p._distanceKm.toFixed(1) + ' km'}</span>`
+      : '';
 
     return `
     <article class="pro-review-card" role="button" tabindex="0" aria-label="Ver perfil de ${p.name}" onclick="openProDetail('${p.id}')" onkeydown="if(event.key==='Enter'){openProDetail('${p.id}')}">
@@ -489,7 +775,10 @@ function renderRecommendedProfessionals() {
             ${p.verified ? '<i class="fa-solid fa-circle-check verified-badge" title="Profissional verificado" aria-label="Verificado"></i>' : ''}
           </div>
           ${p.specialty ? `<div class="pro-card-specialty">${p.specialty}</div>` : ''}
-          ${p.neighborhood ? `<div class="pro-card-bairro"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> ${p.neighborhood}</div>` : ''}
+          <div class="pro-card-bairro" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            ${p.neighborhood ? `<span><i class="fa-solid fa-location-dot" aria-hidden="true"></i> ${p.neighborhood}</span>` : ''}
+            ${distBadge}
+          </div>
         </div>
       </div>
 
@@ -500,7 +789,7 @@ function renderRecommendedProfessionals() {
             <div class="rating-stars-gold" aria-label="Nota ${Number(p.rating).toFixed(1)} de 5">${renderStarIcons(p.rating)}</div>
           </div>
           <span class="rating-count-pill">${p.reviewsCount} ${p.reviewsCount === 1 ? 'avaliação' : 'avaliações'}</span>
-        ` : `<span class="rating-new-chip">Novo no GO · sem avaliações</span>`}
+        ` : `<span class="rating-new-chip">Novo no Trampou · sem avaliações</span>`}
       </div>
 
       ${review ? `
@@ -2152,14 +2441,27 @@ async function loadProfessionalsFromSupabase() {
         livePros.forEach(lp => {
           const proDetails = (lp.professional_profiles && lp.professional_profiles[0]) || {};
           const handle = lp.full_name.toLowerCase().replace(/[^a-z0-9]/g, '.');
+          const city = lp.city || 'Parauapebas';
+          const state = lp.state || 'PA';
+          const lat = (lp.latitude !== null && lp.latitude !== undefined) ? Number(lp.latitude) : null;
+          const lng = (lp.longitude !== null && lp.longitude !== undefined) ? Number(lp.longitude) : null;
+          const serviceCities = proDetails.service_cities && proDetails.service_cities.length > 0
+            ? proDetails.service_cities
+            : [city];
+
           PROFESSIONALS.push({
             id: 'db_' + lp.id.slice(0, 8),
             dbId: lp.id,
             handle: handle,
             name: lp.full_name,
             specialty: (proDetails.skills && proDetails.skills[0]) || 'Profissional Autônomo',
-            headline: proDetails.skills ? proDetails.skills.join(' • ') : 'Serviços em Parauapebas',
-            neighborhood: lp.neighborhood || 'Parauapebas, PA',
+            headline: proDetails.skills ? proDetails.skills.join(' • ') : `Serviços em ${city}`,
+            neighborhood: lp.neighborhood || `${city}, ${state}`,
+            city: city,
+            state: state,
+            latitude: lat,
+            longitude: lng,
+            serviceCities: serviceCities,
             rating: Number(lp.rating_average) || 5.0,
             reviewsCount: Number(lp.rating_count) || 0,
             worksCount: 0,
@@ -2167,8 +2469,8 @@ async function loadProfessionalsFromSupabase() {
             verified: lp.is_verified ?? true,
             experience: proDetails.years_experience ? `${proDetails.years_experience} anos` : 'Experiente',
             avatar: lp.avatar_url || 'trampou_app_icon.png',
-            bio: lp.bio || 'Atendimento profissional em Parauapebas.',
-            servedNeighborhoods: proDetails.served_neighborhoods || ['Parauapebas, PA'],
+            bio: lp.bio || `Atendimento profissional em ${city} e região.`,
+            servedNeighborhoods: proDetails.served_neighborhoods || [`${city}, ${state}`],
             posts: []
           });
         });
@@ -4355,6 +4657,9 @@ function renderCompactProCard(p) {
   const ratingVal = (p.rating && !isNaN(p.rating)) ? Number(p.rating).toFixed(1) : null;
   const reviewsCount = (p.reviewsCount && !isNaN(p.reviewsCount) && Number(p.reviewsCount) > 0) ? Number(p.reviewsCount) : null;
   const neighborhood = p.neighborhood ? p.neighborhood.replace(', Parauapebas', '').replace(', PA', '') : null;
+  const distBadge = (p._distanceKm !== null && p._distanceKm !== undefined)
+    ? `<span class="pro-distance-badge"><i class="fa-solid fa-location-crosshairs"></i> ${p._distanceKm < 1 ? Math.round(p._distanceKm * 1000) + ' m' : p._distanceKm.toFixed(1) + ' km'}</span>`
+    : '';
 
   return `
     <article class="pro-compact-card" role="button" tabindex="0" onclick="openProDetail('${p.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openProDetail('${p.id}');}" aria-label="Ver perfil de ${p.name}">
@@ -4374,7 +4679,7 @@ function renderCompactProCard(p) {
         <!-- 2. Categoria ou Especialidade em texto secundário -->
         ${p.specialty ? `<div class="pro-compact-specialty">${p.specialty}</div>` : ''}
 
-        <!-- 3. Avaliação + 4. Localização resumida -->
+        <!-- 3. Avaliação + 4. Localização resumida + Distância -->
         <div class="pro-compact-meta-row">
           ${ratingVal ? `
             <span class="pro-compact-rating">
@@ -4390,6 +4695,7 @@ function renderCompactProCard(p) {
               <span>${neighborhood}</span>
             </span>
           ` : ''}
+          ${distBadge}
         </div>
       </div>
 
@@ -4697,9 +5003,23 @@ function renderSearchResults() {
   const catNorm = exploreCategory === 'all' ? '' : normalize(exploreCategory);
   const stemCat = catNorm.replace(/s$/, '');
   const bairroNorm = exploreBairro === 'all' ? '' : normalize(exploreBairro);
+  const activeCityNorm = normalize(currentActiveLocation.city);
+  const userLat = currentActiveLocation.lat;
+  const userLng = currentActiveLocation.lng;
 
   // Filtragem dos profissionais
   let filtered = (PROFESSIONALS || []).filter(p => {
+    // 0. Filtro Geográfico por Cidade Ativa
+    const pCityNorm = normalize(p.city || 'Parauapebas');
+    const servedCities = (p.serviceCities || []).map(normalize);
+    const pNeighNorm = normalize(p.neighborhood || '');
+
+    const matchCity = !activeCityNorm ||
+                      pCityNorm === activeCityNorm ||
+                      servedCities.includes(activeCityNorm) ||
+                      pNeighNorm.includes(activeCityNorm);
+    if (!matchCity) return false;
+
     // Filtro por texto digitado
     if (qNorm) {
       const nameNorm = normalize(p.name);
@@ -4752,6 +5072,15 @@ function renderSearchResults() {
     return true;
   });
 
+  // Calcula distâncias para os profissionais filtrados
+  filtered.forEach(p => {
+    if (userLat !== null && userLng !== null && p.latitude && p.longitude) {
+      p._distanceKm = calculateDistanceKm(userLat, userLng, p.latitude, p.longitude);
+    } else {
+      p._distanceKm = null;
+    }
+  });
+
   // Ordenação
   if (exploreSort === 'rating') {
     filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
@@ -4759,14 +5088,22 @@ function renderSearchResults() {
     filtered.sort((a, b) => (b.reviewsCount || 0) - (a.reviewsCount || 0));
   } else if (exploreSort === 'name') {
     filtered.sort((a, b) => a.name.localeCompare(b.name));
+  } else if (currentActiveLocation.isGps && userLat !== null && userLng !== null) {
+    // Se o GPS estiver ativo, prioriza os mais próximos geograficamente
+    filtered.sort((a, b) => {
+      const distA = a._distanceKm !== null ? a._distanceKm : 99999;
+      const distB = b._distanceKm !== null ? b._distanceKm : 99999;
+      return distA - distB;
+    });
   }
 
   // Atualiza contador de resultados
   if (countEl) {
+    const locLabel = `${currentActiveLocation.city}, ${currentActiveLocation.state}`;
     if (exploreCategory !== 'all') {
-      countEl.textContent = `${filtered.length} ${filtered.length === 1 ? 'profissional em ' : 'profissionais em '} "${exploreCategory}"`;
+      countEl.textContent = `${filtered.length} ${filtered.length === 1 ? 'profissional em ' : 'profissionais em '} "${exploreCategory}" · ${locLabel}`;
     } else {
-      countEl.textContent = `${filtered.length} ${filtered.length === 1 ? 'profissional encontrado' : 'profissionais encontrados'}`;
+      countEl.textContent = `${filtered.length} ${filtered.length === 1 ? 'profissional em ' : 'profissionais em '} ${locLabel}`;
     }
   }
 
@@ -4786,12 +5123,17 @@ function renderSearchResults() {
   if (filtered.length === 0) {
     container.innerHTML = `
       <div class="explore-empty-state">
-        <i class="fa-solid fa-user-slash" aria-hidden="true"></i>
-        <h5>Nenhum profissional encontrado</h5>
-        <p>Não encontramos nenhum profissional cadastrado com os filtros atuais${exploreCategory !== 'all' ? ` em "${exploreCategory}"` : ''}.</p>
-        <button type="button" class="btn-reset-filters" onclick="resetExploreFilters()">
-          <i class="fa-solid fa-arrows-rotate"></i> Limpar filtros e ver todos
-        </button>
+        <i class="fa-solid fa-location-dot" style="color: #6366F1; font-size: 32px; margin-bottom: 8px;" aria-hidden="true"></i>
+        <h5>Nenhum profissional em ${currentActiveLocation.city}, ${currentActiveLocation.state}</h5>
+        <p>Não encontramos nenhum profissional cadastrado nesta cidade com os filtros atuais${exploreCategory !== 'all' ? ` em "${exploreCategory}"` : ''}.</p>
+        <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 14px;">
+          <button type="button" class="btn-reset-filters" onclick="openLocationPickerModal()">
+            <i class="fa-solid fa-map-location-dot"></i> Alterar Cidade
+          </button>
+          <button type="button" class="btn-reset-filters" onclick="resetExploreFilters()">
+            <i class="fa-solid fa-arrows-rotate"></i> Limpar filtros
+          </button>
+        </div>
       </div>
     `;
   } else {
@@ -5487,7 +5829,8 @@ function closeAllAuthModals() {
     'privacy-policy-modal',
     'terms-of-use-modal',
     'dpo-channel-modal',
-    'delete-account-confirm-modal'
+    'delete-account-confirm-modal',
+    'modal-location-picker'
   ];
   modals.forEach(id => {
     const el = document.getElementById(id);
@@ -5796,9 +6139,17 @@ async function handleClientSignupSubmit(event) {
   if (spinner) spinner.style.display = 'inline-block';
   if (errorAlert) errorAlert.style.display = 'none';
 
+  const state = (document.getElementById('client-state') ? document.getElementById('client-state').value : 'PA').trim().toUpperCase();
+  const city = (document.getElementById('client-city') ? document.getElementById('client-city').value : 'Parauapebas').trim();
+  const neighborhood = (document.getElementById('client-neighborhood') ? document.getElementById('client-neighborhood').value : '').trim();
+  const latVal = document.getElementById('client-lat') ? document.getElementById('client-lat').value : '';
+  const lngVal = document.getElementById('client-lng') ? document.getElementById('client-lng').value : '';
+  const lat = latVal ? parseFloat(latVal) : null;
+  const lng = lngVal ? parseFloat(lngVal) : null;
+
   try {
     let supabaseUserId = null;
-    // Tenta registrar no Supabase Auth
+    // Tenta registrar no Supabase Auth com metadados de localização geográfica
     try {
       const sRes = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
         method: 'POST',
@@ -5809,7 +6160,12 @@ async function handleClientSignupSubmit(event) {
           data: {
             full_name: name.trim(),
             role: 'client',
-            phone_whatsapp: phone.trim()
+            phone_whatsapp: phone.trim(),
+            city: city,
+            state: state,
+            neighborhood: neighborhood || city,
+            latitude: lat,
+            longitude: lng
           }
         })
       });
@@ -5830,7 +6186,11 @@ async function handleClientSignupSubmit(event) {
       phone: phone.trim(),
       password,
       role: 'client',
-      neighborhood: 'Cidade Nova',
+      city: city,
+      state: state,
+      neighborhood: neighborhood || city,
+      latitude: lat,
+      longitude: lng,
       avatar: '',
       proId: null
     };
@@ -5847,6 +6207,11 @@ async function handleClientSignupSubmit(event) {
     delete sessionUser.password;
     currentUser = sessionUser;
     localStorage.setItem('go_currentUser', JSON.stringify(currentUser));
+
+    // Ativa a cidade de cadastro do cliente
+    if (typeof setActiveLocation === 'function') {
+      setActiveLocation(city, state, lat, lng, !!lat);
+    }
 
     renderAuthUI();
     closeAuthModal('auth-client-signup-modal');
@@ -6184,6 +6549,12 @@ function validateAndGoStep(targetStep) {
     const newCatInput = document.getElementById('new-category-input');
     const bio = document.getElementById('pro-bio').value.trim();
 
+    const proState = (document.getElementById('pro-state') ? document.getElementById('pro-state').value : 'PA').trim().toUpperCase();
+    const proCity = (document.getElementById('pro-city') ? document.getElementById('pro-city').value : 'Parauapebas').trim();
+    const proNeighInput = document.getElementById('pro-neighborhoods-input') ? document.getElementById('pro-neighborhoods-input').value.trim() : '';
+    const proLatVal = document.getElementById('pro-lat') ? document.getElementById('pro-lat').value : '';
+    const proLngVal = document.getElementById('pro-lng') ? document.getElementById('pro-lng').value : '';
+
     // Se selecionou criar nova ou digitou no campo de nova categoria
     if (cat === '__NEW__' || (!cat && newCatInput && newCatInput.value.trim())) {
       const typed = newCatInput ? newCatInput.value.trim() : '';
@@ -6208,14 +6579,24 @@ function validateAndGoStep(targetStep) {
       showToast('Selecione sua Profissão Principal ou crie uma nova categoria.');
       return;
     }
-    if (!proWizardData.profile.neighborhoods || proWizardData.profile.neighborhoods.length === 0) {
-      showToast('Selecione ao menos 1 bairro de atendimento em Parauapebas.');
-      return;
+
+    let proNeighborhoods = [...(proWizardData.profile.neighborhoods || [])];
+    if (proNeighInput) {
+      const parts = proNeighInput.split(',').map(s => s.trim()).filter(Boolean);
+      parts.forEach(p => { if (!proNeighborhoods.includes(p)) proNeighborhoods.push(p); });
+    }
+    if (proNeighborhoods.length === 0) {
+      proNeighborhoods = [proCity ? `Toda a cidade (${proCity})` : 'Toda a cidade'];
     }
 
     proWizardData.profile.commercialName = commName;
     proWizardData.profile.category = cat;
     proWizardData.profile.bio = bio;
+    proWizardData.profile.state = proState;
+    proWizardData.profile.city = proCity;
+    proWizardData.profile.neighborhoods = proNeighborhoods;
+    proWizardData.profile.lat = proLatVal ? parseFloat(proLatVal) : null;
+    proWizardData.profile.lng = proLngVal ? parseFloat(proLngVal) : null;
 
     saveProDraft();
     goStep(3);
@@ -6428,8 +6809,13 @@ async function handleProSignupFinalSubmit() {
     const password = proWizardData.account.password;
 
     let dbUserId = user ? user.id : null;
+    const proCity = proWizardData.profile.city || 'Parauapebas';
+    const proState = proWizardData.profile.state || 'PA';
+    const proLat = proWizardData.profile.lat || null;
+    const proLng = proWizardData.profile.lng || null;
+    const firstNeigh = (proWizardData.profile.neighborhoods && proWizardData.profile.neighborhoods[0]) || proCity;
 
-    // Se o usuário ainda não tiver conta autenticada, registra no Supabase Auth
+    // Se o usuário ainda não tiver conta autenticada, registra no Supabase Auth com dados de localização
     if (!user && email && password) {
       try {
         const supRes = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
@@ -6442,7 +6828,12 @@ async function handleProSignupFinalSubmit() {
               full_name: commercialName,
               role: 'professional',
               phone_whatsapp: phone,
-              avatar_url: proWizardData.vitrine.avatar || ''
+              avatar_url: proWizardData.vitrine.avatar || '',
+              city: proCity,
+              state: proState,
+              neighborhood: firstNeigh,
+              latitude: proLat,
+              longitude: proLng
             }
           })
         });
@@ -6464,8 +6855,13 @@ async function handleProSignupFinalSubmit() {
       name: commercialName,
       specialty: category,
       category: category,
-      headline: proWizardData.profile.specialties.join(' • ') || `${category} em Parauapebas`,
-      neighborhood: proWizardData.profile.neighborhoods[0] || 'Parauapebas, PA',
+      headline: proWizardData.profile.specialties.join(' • ') || `${category} em ${proCity}`,
+      neighborhood: firstNeigh,
+      city: proCity,
+      state: proState,
+      latitude: proLat,
+      longitude: proLng,
+      serviceCities: [proCity],
       rating: 5.0,
       reviewsCount: 0,
       worksCount: proWizardData.vitrine.photos.length,
@@ -6473,13 +6869,13 @@ async function handleProSignupFinalSubmit() {
       verified: true,
       experience: 'Profissional Verificado',
       avatar: proWizardData.vitrine.avatar || 'carlos_avatar.png',
-      bio: proWizardData.profile.bio || 'Atendimento profissional e orçamentos em Parauapebas com garantia e qualidade.',
+      bio: proWizardData.profile.bio || `Atendimento profissional e orçamentos em ${proCity} e região com garantia e qualidade.`,
       servedNeighborhoods: proWizardData.profile.neighborhoods,
       posts: proWizardData.vitrine.photos.map((imgSrc, idx) => ({
         id: `post_${newProId}_${idx}`,
-        title: `Serviço realizado em ${proWizardData.profile.neighborhoods[0] || 'Parauapebas'}`,
+        title: `Serviço realizado em ${firstNeigh}`,
         serviceCategory: category,
-        neighborhood: proWizardData.profile.neighborhoods[0] || 'Parauapebas',
+        neighborhood: firstNeigh,
         date: 'Recente',
         image: imgSrc,
         description: 'Trabalho realizado com dedicação e garantia técnica.',
@@ -6498,7 +6894,11 @@ async function handleProSignupFinalSubmit() {
       email: email,
       phone: phone,
       role: 'professional',
-      neighborhood: proWizardData.profile.neighborhoods[0] || 'Cidade Nova',
+      city: proCity,
+      state: proState,
+      neighborhood: firstNeigh,
+      latitude: proLat,
+      longitude: proLng,
       avatar: proWizardData.vitrine.avatar || (user ? user.avatar : ''),
       proId: newProId
     };
@@ -6506,12 +6906,17 @@ async function handleProSignupFinalSubmit() {
     localStorage.setItem('go_currentUser', JSON.stringify(currentUser));
     localStorage.removeItem('go_pro_wizard_draft');
 
+    // Seta a cidade ativa do app para a cidade do profissional cadastrado
+    if (typeof setActiveLocation === 'function') {
+      setActiveLocation(proCity, proState, proLat, proLng, !!proLat);
+    }
+
     renderAuthUI();
     closeAuthModal('auth-pro-signup-modal');
 
     // Abre a vitrine recém-criada diretamente em modo de dono (proprietário)
     openProVitrine(newProId, true);
-    showToast('🎉 Parabéns! Sua vitrine profissional foi criada e está ativa em Parauapebas!');
+    showToast(`🎉 Parabéns! Sua vitrine profissional foi criada e está ativa em ${proCity}!`);
 
   } catch (err) {
     showToast('Erro ao publicar vitrine. Tente novamente.');
@@ -7148,5 +7553,20 @@ window.clearLocalAppStorage = clearLocalAppStorage;
 window.executeAccountDeletion = executeAccountDeletion;
 window.sendDpoEmail = sendDpoEmail;
 window.sendDpoWhatsapp = sendDpoWhatsapp;
+
+// Exportações Globais de Expansão Nacional e Geolocalização
+window.currentActiveLocation = currentActiveLocation;
+window.initLocationManager = initLocationManager;
+window.updateLocationDisplay = updateLocationDisplay;
+window.setActiveLocation = setActiveLocation;
+window.openLocationPickerModal = openLocationPickerModal;
+window.closeLocationPickerModal = closeLocationPickerModal;
+window.selectCityOption = selectCityOption;
+window.applyManualCityChoice = applyManualCityChoice;
+window.detectUserLocationGPS = detectUserLocationGPS;
+window.detectClientLocationGPS = detectClientLocationGPS;
+window.detectProLocationGPS = detectProLocationGPS;
+window.filterAndSortProsByLocation = filterAndSortProsByLocation;
+
 
 
