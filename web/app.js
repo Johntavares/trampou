@@ -7098,7 +7098,7 @@ async function executeAccountDeletion() {
     // Recarrega o app para o estado inicial limpo
     window.location.reload();
   } catch (err) {
-    alert('Ocorreu uma falha ao processar a exclusão. Por favor, tente novamente ou contate privacidade@trampou.jw.tec.br.');
+    alert('Ocorreu uma falha ao processar a exclusão. Por favor, tente novamente ou contate vertextecnologia001@gmail.com.');
   } finally {
     if (btnConfirm) {
       btnConfirm.disabled = false;
@@ -7124,13 +7124,13 @@ function sendDpoEmail(tipo) {
     corpo += `Nome do Titular: ${user.name || user.full_name || 'Usuário Trampou'}\nE-mail Cadastrado: ${user.email || 'Não informado'}\nTelefone: ${user.phone || 'Não informado'}\n`;
   }
 
-  const mailtoUrl = `mailto:privacidade@trampou.jw.tec.br?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+  const mailtoUrl = `mailto:vertextecnologia001@gmail.com?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
   window.open(mailtoUrl, '_blank');
 }
 
 function sendDpoWhatsapp(tipo) {
-  let msg = 'Olá! Sou usuário do aplicativo Trampou em Parauapebas e gostaria de fazer uma solicitação sobre a proteção dos meus dados pessoais conforme a LGPD.';
-  const whatsappUrl = `https://wa.me/5594999999999?text=${encodeURIComponent(msg)}`;
+  let msg = 'Olá! Sou usuário do aplicativo Trampou em Parauapebas e gostaria de fazer uma solicitação sobre o aplicativo / proteção de dados (LGPD).';
+  const whatsappUrl = `https://wa.me/559484490987?text=${encodeURIComponent(msg)}`;
   window.open(whatsappUrl, '_blank');
 }
 
