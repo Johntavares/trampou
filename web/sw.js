@@ -1,5 +1,5 @@
 // Trampou PWA Service Worker
-const CACHE_NAME = 'trampou-pwa-v17';
+const CACHE_NAME = 'trampou-pwa-v18';
 
 const STATIC_SHELL = [
   './',

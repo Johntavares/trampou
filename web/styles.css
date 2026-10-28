@@ -12508,14 +12508,64 @@ body {
   align-items: center;
 }
 
-.uf-picker-wrap {
-  width: 80px !important;
+.uf-picker-wrap,
+.uf-wrap {
+  width: 90px !important;
+  min-width: 90px !important;
+  max-width: 90px !important;
   flex-shrink: 0;
+  position: relative;
 }
 
-.uf-picker-wrap select {
+.uf-picker-wrap select,
+.uf-wrap select,
+#picker-manual-uf,
+#client-state,
+#pro-state {
+  width: 100% !important;
+  height: 46px !important;
+  padding: 0 32px 0 14px !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  color: #1E293B !important;
+  background-color: #FAF9FC !important;
+  border: 1.5px solid #CBD5E1 !important;
+  border-radius: 12px !important;
+  text-align: left !important;
+  text-indent: 0 !important;
+  line-height: normal !important;
+  cursor: pointer;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2364748B'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 10px center !important;
+  background-size: 16px 16px !important;
+  box-sizing: border-box !important;
+  letter-spacing: 0.5px !important;
+}
+
+.uf-picker-wrap select option,
+.uf-wrap select option,
+#picker-manual-uf option,
+#client-state option,
+#pro-state option {
   font-weight: 700;
-  padding-left: 10px !important;
+  color: #1E293B;
+  background-color: #FFFFFF;
+  padding: 6px 10px;
+}
+
+.uf-picker-wrap select:focus,
+.uf-wrap select:focus,
+#picker-manual-uf:focus,
+#client-state:focus,
+#pro-state:focus {
+  border-color: #6825B3 !important;
+  background-color: #FFFFFF !important;
+  box-shadow: 0 0 0 3px rgba(104, 37, 179, 0.12) !important;
 }
 
 .city-picker-input-wrap {
