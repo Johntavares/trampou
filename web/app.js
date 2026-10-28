@@ -5451,7 +5451,16 @@ window.resetOnboardingTest = function() {
   window.location.reload();
 };
 
-// Abertura e Fechamento de Modais de Auth
+// Abertura e Fechamento de Modais de Auth & Sistema
+function openAuthModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.add('active');
+  } else {
+    console.warn('[Modal] Elemento não encontrado:', modalId);
+  }
+}
+
 function openAuthWelcome() {
   closeAllAuthModals();
   const overlay = document.getElementById('auth-welcome-overlay');
@@ -5473,7 +5482,12 @@ function closeAllAuthModals() {
     'auth-recovery-modal',
     'auth-client-signup-modal',
     'auth-pro-signup-modal',
-    'edit-profile-modal'
+    'edit-profile-modal',
+    'privacy-hub-modal',
+    'privacy-policy-modal',
+    'terms-of-use-modal',
+    'dpo-channel-modal',
+    'delete-account-confirm-modal'
   ];
   modals.forEach(id => {
     const el = document.getElementById(id);
@@ -6576,6 +6590,7 @@ window.getCurrentUser = getCurrentUser;
 window.renderAuthUI = renderAuthUI;
 window.handleProAreaClick = handleProAreaClick;
 window.openAuthWelcome = openAuthWelcome;
+window.openAuthModal = openAuthModal;
 window.closeAuthModal = closeAuthModal;
 window.openLoginModal = openLoginModal;
 window.openRecoveryModal = openRecoveryModal;

@@ -2474,56 +2474,8 @@
           </div>
         </div>
 
-      </div>
-
-      <!-- BARRA DE NAVEGAÇÃO INFERIOR ÚNICA (Início, Buscar, Pedidos, Conversas, Perfil) -->
-      <nav class="app-bottom-nav">
-        <button class="nav-btn active" data-tab="home" onclick="switchTab('home')">
-          <i class="fa-solid fa-house"></i>
-          <span>Início</span>
-        </button>
-        <button class="nav-btn" data-tab="search" onclick="switchTab('search')">
-          <i class="fa-solid fa-compass"></i>
-          <span>Explorar</span>
-        </button>
-
-        <button class="nav-btn" data-tab="chat" onclick="switchTab('chat')">
-          <div class="nav-badge-wrap">
-            <i class="fa-solid fa-comments"></i>
-            <span class="nav-dot"></span>
-          </div>
-          <span>Conversas</span>
-        </button>
-        <button class="nav-btn" data-tab="profile" onclick="switchTab('profile')">
-          <i class="fa-solid fa-user"></i>
-          <span>Perfil</span>
-        </button>
-      </nav>
-    </div>
-  </main>
-
-  <div id="toast-message" class="toast">Mensagem</div>
-
-  <!-- =========================================================
-       BANNER DE CONSENTIMENTO LGPD & COOKIES (RODAPÉ)
-       ========================================================= -->
-  <aside id="lgpd-consent-banner" class="lgpd-banner" style="display: none;" role="region" aria-label="Consentimento de privacidade">
-    <div class="lgpd-banner-content">
-      <div class="lgpd-banner-icon">
-        <i class="fa-solid fa-shield-halved"></i>
-      </div>
-      <div class="lgpd-banner-text">
-        <strong>Privacidade & Proteção de Dados (LGPD)</strong>
-        <p>O Trampou utiliza armazenamento local para conectar você aos melhores profissionais de Parauapebas com rapidez e segurança. Seus dados nunca são vendidos a terceiros.</p>
-      </div>
-      <div class="lgpd-banner-actions">
-        <button type="button" class="btn-lgpd-link" onclick="openPrivacyPolicyModal()">Ler Política</button>
-        <button type="button" class="btn-lgpd-accept" onclick="acceptLgpdConsent()">Concordar e Continuar</button>
-      </div>
-    </div>
-  </aside>
-
-  <!-- =========================================================
+      
+<!-- =========================================================
        1. CENTRAL DE PRIVACIDADE, LGPD E MEUS DADOS
        ========================================================= -->
   <div id="privacy-hub-modal" class="modal-overlay">
@@ -2897,6 +2849,54 @@
       </div>
     </div>
   </div>
+      </div>
+
+      <!-- BARRA DE NAVEGAÇÃO INFERIOR ÚNICA (Início, Buscar, Pedidos, Conversas, Perfil) -->
+      <nav class="app-bottom-nav">
+        <button class="nav-btn active" data-tab="home" onclick="switchTab('home')">
+          <i class="fa-solid fa-house"></i>
+          <span>Início</span>
+        </button>
+        <button class="nav-btn" data-tab="search" onclick="switchTab('search')">
+          <i class="fa-solid fa-compass"></i>
+          <span>Explorar</span>
+        </button>
+
+        <button class="nav-btn" data-tab="chat" onclick="switchTab('chat')">
+          <div class="nav-badge-wrap">
+            <i class="fa-solid fa-comments"></i>
+            <span class="nav-dot"></span>
+          </div>
+          <span>Conversas</span>
+        </button>
+        <button class="nav-btn" data-tab="profile" onclick="switchTab('profile')">
+          <i class="fa-solid fa-user"></i>
+          <span>Perfil</span>
+        </button>
+      </nav>
+    </div>
+  </main>
+
+  <div id="toast-message" class="toast">Mensagem</div>
+
+  <!-- =========================================================
+       BANNER DE CONSENTIMENTO LGPD & COOKIES (RODAPÉ)
+       ========================================================= -->
+  <aside id="lgpd-consent-banner" class="lgpd-banner" style="display: none;" role="region" aria-label="Consentimento de privacidade">
+    <div class="lgpd-banner-content">
+      <div class="lgpd-banner-icon">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <div class="lgpd-banner-text">
+        <strong>Privacidade & Proteção de Dados (LGPD)</strong>
+        <p>O Trampou utiliza armazenamento local para conectar você aos melhores profissionais de Parauapebas com rapidez e segurança. Seus dados nunca são vendidos a terceiros.</p>
+      </div>
+      <div class="lgpd-banner-actions">
+        <button type="button" class="btn-lgpd-link" onclick="openPrivacyPolicyModal()">Ler Política</button>
+        <button type="button" class="btn-lgpd-accept" onclick="acceptLgpdConsent()">Concordar e Continuar</button>
+      </div>
+    </div>
+  </aside>
 
   <script src="app.js"></script>
 </body>

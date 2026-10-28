@@ -11828,6 +11828,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  overflow-y: auto;
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
 }
 
 .privacy-badge-card {
@@ -12071,10 +12074,22 @@ body {
 }
 
 /* 3. Modal de Exclusão de Conta */
+#delete-account-confirm-modal.active {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
+}
+
 .delete-account-dialog {
   max-width: 400px !important;
+  width: 100% !important;
+  height: auto !important;
+  max-height: 90vh !important;
+  border-radius: 20px !important;
   padding: 28px 24px !important;
   text-align: center;
+  margin: auto;
 }
 
 .delete-icon-glow {
