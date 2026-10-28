@@ -372,10 +372,11 @@
                 </div>
                 <i class="fa-solid fa-chevron-right"></i>
               </div>
-              <div class="menu-item" onclick="showToast('Termos de Uso e Política de Privacidade do Trampou')">
+              <div class="menu-item" onclick="openPrivacyHubModal()">
                 <i class="fa-solid fa-shield-halved icon-purple"></i>
                 <div class="menu-text">
-                  <span>Privacidade e Segurança</span>
+                  <span>Privacidade, LGPD e Meus Dados</span>
+                  <small>Termos, exclusão de conta e proteção de dados</small>
                 </div>
                 <i class="fa-solid fa-chevron-right"></i>
               </div>
@@ -1039,7 +1040,7 @@
                   <label class="custom-checkbox-label">
                     <input type="checkbox" id="client-terms-check" required>
                     <span class="checkbox-indicator"></span>
-                    <span class="terms-text">Li e concordo com os <a href="javascript:void(0)" onclick="showToast('Termos de Uso de Parauapebas')">Termos de Uso</a> e a <a href="javascript:void(0)" onclick="showToast('Política de Privacidade')">Política de Privacidade</a> de Parauapebas.</span>
+                    <span class="terms-text">Li e concordo com os <a href="javascript:void(0)" onclick="openTermsOfUseModal()">Termos de Uso</a> e a <a href="javascript:void(0)" onclick="openPrivacyPolicyModal()">Política de Privacidade</a> (LGPD).</span>
                   </label>
                 </div>
 
@@ -1400,7 +1401,7 @@
 
                 <div class="review-assurance-box">
                   <i class="fa-solid fa-shield-check"></i>
-                  <span>Sua vitrine será ativada imediatamente e poderá ser editada a qualquer momento pela sua Área do Profissional.</span>
+                  <span>Ao confirmar, você concorda com os <a href="javascript:void(0)" onclick="openTermsOfUseModal()" style="color: inherit; text-decoration: underline; font-weight: 700;">Termos de Uso</a> e a <a href="javascript:void(0)" onclick="openPrivacyPolicyModal()" style="color: inherit; text-decoration: underline; font-weight: 700;">Política de Privacidade (LGPD)</a>. Sua vitrine poderá ser editada ou excluída a qualquer momento.</span>
                 </div>
 
                 <div class="wizard-action-footer split">
@@ -2502,6 +2503,400 @@
   </main>
 
   <div id="toast-message" class="toast">Mensagem</div>
+
+  <!-- =========================================================
+       BANNER DE CONSENTIMENTO LGPD & COOKIES (RODAPÉ)
+       ========================================================= -->
+  <aside id="lgpd-consent-banner" class="lgpd-banner" style="display: none;" role="region" aria-label="Consentimento de privacidade">
+    <div class="lgpd-banner-content">
+      <div class="lgpd-banner-icon">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <div class="lgpd-banner-text">
+        <strong>Privacidade & Proteção de Dados (LGPD)</strong>
+        <p>O Trampou utiliza armazenamento local para conectar você aos melhores profissionais de Parauapebas com rapidez e segurança. Seus dados nunca são vendidos a terceiros.</p>
+      </div>
+      <div class="lgpd-banner-actions">
+        <button type="button" class="btn-lgpd-link" onclick="openPrivacyPolicyModal()">Ler Política</button>
+        <button type="button" class="btn-lgpd-accept" onclick="acceptLgpdConsent()">Concordar e Continuar</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- =========================================================
+       1. CENTRAL DE PRIVACIDADE, LGPD E MEUS DADOS
+       ========================================================= -->
+  <div id="privacy-hub-modal" class="modal-overlay">
+    <div class="modal-content auth-form-content privacy-hub-content">
+      <div class="auth-modal-header">
+        <button class="v-nav-icon-btn" onclick="closeAuthModal('privacy-hub-modal')" title="Voltar">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <h4>Privacidade & Meus Dados</h4>
+        <div style="width: 32px;"></div>
+      </div>
+
+      <div class="privacy-hub-body">
+        <!-- Card de Direitos do Titular -->
+        <div class="privacy-badge-card">
+          <div class="privacy-badge-icon">
+            <i class="fa-solid fa-scale-balanced"></i>
+          </div>
+          <div>
+            <h5>Seus Direitos Garantidos por Lei</h5>
+            <p>Em conformidade com a <strong>LGPD (Lei nº 13.709/2018)</strong>, você tem total controle sobre seus dados pessoais armazenados na plataforma Trampou.</p>
+          </div>
+        </div>
+
+        <!-- Seção: Documentos Legais -->
+        <div class="privacy-section-group">
+          <h6 class="privacy-group-title"><i class="fa-solid fa-file-contract"></i> Documentos Oficiais</h6>
+          <div class="privacy-card-list">
+            <div class="privacy-action-row" onclick="openPrivacyPolicyModal()">
+              <div class="privacy-row-left">
+                <i class="fa-solid fa-shield-check icon-green"></i>
+                <div>
+                  <strong>Política de Privacidade</strong>
+                  <small>Como tratamos, protegemos e armazenamos seus dados</small>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-right arrow-icon"></i>
+            </div>
+
+            <div class="privacy-action-row" onclick="openTermsOfUseModal()">
+              <div class="privacy-row-left">
+                <i class="fa-solid fa-file-lines icon-blue"></i>
+                <div>
+                  <strong>Termos de Uso do Trampou</strong>
+                  <small>Regras para clientes e profissionais em Parauapebas</small>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-right arrow-icon"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção: Proteção da Localização GPS -->
+        <div class="privacy-section-group">
+          <h6 class="privacy-group-title"><i class="fa-solid fa-location-dot"></i> Proteção de Localização</h6>
+          <div class="privacy-card-box">
+            <div class="privacy-toggle-row">
+              <div>
+                <strong>Localização Precisa via GPS</strong>
+                <p>Usada exclusivamente para ordenar profissionais mais próximos no mapa do seu bairro. Sua localização exata <strong>nunca é pública nem compartilhada com terceiros</strong>.</p>
+              </div>
+              <label class="switch-toggle-label">
+                <input type="checkbox" id="pref-gps-toggle" onchange="toggleGpsPreference(this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="privacy-note-badge">
+              <i class="fa-solid fa-circle-info"></i>
+              <span>Se desativado, o app utilizará apenas a seleção manual do seu bairro em Parauapebas.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção: Portabilidade & Gerenciamento de Dados -->
+        <div class="privacy-section-group">
+          <h6 class="privacy-group-title"><i class="fa-solid fa-download"></i> Gerenciamento e Portabilidade (Art. 18, LGPD)</h6>
+          <div class="privacy-card-list">
+            <div class="privacy-action-row" onclick="exportMyUserData()">
+              <div class="privacy-row-left">
+                <i class="fa-solid fa-file-export icon-purple"></i>
+                <div>
+                  <strong>Exportar Meus Dados (Portabilidade)</strong>
+                  <small>Baixe uma cópia dos seus dados cadastrais em formato JSON</small>
+                </div>
+              </div>
+              <i class="fa-solid fa-download arrow-icon"></i>
+            </div>
+
+            <div class="privacy-action-row" onclick="clearLocalAppStorage()">
+              <div class="privacy-row-left">
+                <i class="fa-solid fa-broom icon-amber"></i>
+                <div>
+                  <strong>Limpar Histórico Local do Aparelho</strong>
+                  <small>Apaga histórico de buscas e cache mantidos neste celular</small>
+                </div>
+              </div>
+              <i class="fa-solid fa-rotate-left arrow-icon"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção: Canal do Encarregado (DPO) & Incidentes -->
+        <div class="privacy-section-group">
+          <h6 class="privacy-group-title"><i class="fa-solid fa-user-shield"></i> Encarregado de Dados (DPO) & Incidentes</h6>
+          <div class="privacy-card-list">
+            <div class="privacy-action-row" onclick="openDpoChannelModal()">
+              <div class="privacy-row-left">
+                <i class="fa-solid fa-envelope-open-text icon-blue"></i>
+                <div>
+                  <strong>Canal de Solicitações LGPD (DPO)</strong>
+                  <small>Fale diretamente com nosso Encarregado de Proteção de Dados</small>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-right arrow-icon"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção: Exclusão Definitiva de Conta (Direito ao Esquecimento) -->
+        <div class="privacy-section-group danger-zone">
+          <h6 class="privacy-group-title danger"><i class="fa-solid fa-triangle-exclamation"></i> Zona de Exclusão de Conta</h6>
+          <div class="privacy-card-box danger-box">
+            <strong>Exclusão de Conta e Dados Pessoais (Art. 18, VI)</strong>
+            <p>Você pode solicitar a exclusão permanente da sua conta e de todos os dados vinculados a ela em nossa base de dados.</p>
+            <button type="button" class="btn-delete-account" onclick="openDeleteAccountModal()">
+              <i class="fa-solid fa-trash-can"></i>
+              <span>Excluir Minha Conta e Meus Dados</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       2. MODAL DE CONFIRMAÇÃO DE EXCLUSÃO DE CONTA (LGPD)
+       ========================================================= -->
+  <div id="delete-account-confirm-modal" class="modal-overlay">
+    <div class="modal-content auth-form-content delete-account-dialog">
+      <div class="delete-icon-glow">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h4>Excluir Conta Definitivamente?</h4>
+      <p class="delete-warning-text">
+        Esta ação é <strong>irreversível</strong> conforme a LGPD. Todos os seus dados pessoais, telefone, fotos, vitrine e histórico serão <strong>permanentemente eliminados</strong> dos nossos servidores.
+      </p>
+
+      <div class="delete-confirmation-prompt">
+        <label for="delete-confirm-input">Digite <strong>EXCLUIR</strong> para confirmar:</label>
+        <input type="text" id="delete-confirm-input" placeholder="Digite EXCLUIR" autocomplete="off">
+      </div>
+
+      <div class="delete-dialog-actions">
+        <button type="button" class="btn-cancel-delete" onclick="closeAuthModal('delete-account-confirm-modal')">Cancelar</button>
+        <button type="button" id="btn-confirm-delete-action" class="btn-danger-delete" onclick="executeAccountDeletion()">
+          <i class="fa-solid fa-trash-can"></i>
+          <span>Excluir Definitivamente</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       3. MODAL DE POLÍTICA DE PRIVACIDADE COMPLETA
+       ========================================================= -->
+  <div id="privacy-policy-modal" class="modal-overlay">
+    <div class="modal-content auth-form-content legal-text-content">
+      <div class="auth-modal-header sticky">
+        <button class="v-nav-icon-btn" onclick="closeAuthModal('privacy-policy-modal')" title="Voltar">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <h4>Política de Privacidade</h4>
+        <div style="width: 32px;"></div>
+      </div>
+
+      <div class="legal-text-body">
+        <div class="legal-meta-badge">
+          <span>Última atualização: Outubro de 2026 • Em conformidade com a Lei Federal nº 13.709/2018 (LGPD)</span>
+        </div>
+
+        <section class="legal-section">
+          <h5>1. Identificação do Controlador</h5>
+          <p>O aplicativo <strong>Trampou</strong> ("Plataforma"), operado no município de Parauapebas, Estado do Pará, atua como <strong>Controlador de Dados Pessoais</strong> nos termos do art. 5º, VI da LGPD, sendo responsável pelas decisões referentes ao tratamento de dados pessoais de seus Usuários (Clientes e Profissionais Autônomos).</p>
+        </section>
+
+        <section class="legal-section">
+          <h5>2. Dados Pessoais Coletados e Finalidade</h5>
+          <p>Coletamos exclusivamente os dados necessários para viabilizar a conexão entre clientes e profissionais em Parauapebas:</p>
+          <ul>
+            <li><strong>Clientes:</strong> Nome completo, endereço de e-mail e número de telefone/WhatsApp (para permitir o contato direto com o prestador escolhido).</li>
+            <li><strong>Profissionais:</strong> Nome comercial ou individual, telefone/WhatsApp de atendimento, categoria profissional, especialidades, fotos da vitrine e bairros de atuação em Parauapebas.</li>
+            <li><strong>Localização e GPS:</strong> Utilizada sob consentimento exclusivamente para ordenar prestadores por proximidade geográfica na cidade. A localização exata nunca é disponibilizada publicamente.</li>
+          </ul>
+        </section>
+
+        <section class="legal-section">
+          <h5>3. Bases Legais para o Tratamento (Art. 7º da LGPD)</h5>
+          <p>O tratamento de dados pessoais no Trampou apoia-se nas seguintes bases legais:</p>
+          <ul>
+            <li><strong>Execução de Contrato e Diligências Pré-contratuais (Art. 7º, V):</strong> Necessário para possibilitar o anúncio de serviços e o contato entre contratante e prestador.</li>
+            <li><strong>Consentimento do Titular (Art. 7º, I):</strong> Coleta de localização via GPS e envio de notificações locais.</li>
+            <li><strong>Legítimo Interesse (Art. 7º, IX):</strong> Melhorias na segurança, prevenção a fraudes e garantia da estabilidade do sistema.</li>
+          </ul>
+        </section>
+
+        <section class="legal-section">
+          <h5>4. Não Comercialização e Compartilhamento de Dados</h5>
+          <p>O Trampou <strong>NUNCA comercializa, aluga ou cede dados pessoais de seus usuários</strong> a terceiros para fins de marketing. O compartilhamento ocorre estritamente:</p>
+          <ul>
+            <li>Entre Cliente e Profissional, no momento em que o usuário decide deliberadamente iniciar contato via WhatsApp ou mensagem na plataforma.</li>
+            <li>Com provedores de infraestrutura técnica de alta segurança (ex: banco de dados em nuvem Supabase e hospedagem Vercel) que atuam como operadores e atendem a padrões internacionais de segurança (ISO 27001, SOC 2).</li>
+            <li>Por ordem judicial ou determinação legal de autoridade competente.</li>
+          </ul>
+        </section>
+
+        <section class="legal-section">
+          <h5>5. Armazenamento Local, Cookies e PWA</h5>
+          <p>Como Progressive Web App (PWA), o Trampou armazena informações locais no seu dispositivo (Service Worker e <code>localStorage</code>) para permitir funcionamento rápido mesmo em conexões lentas ou instáveis de Parauapebas. Você pode limpar estes dados a qualquer momento na Central de Privacidade do aplicativo.</p>
+        </section>
+
+        <section class="legal-section">
+          <h5>6. Direitos do Titular de Dados (Art. 18 da LGPD)</h5>
+          <p>Você pode exercer a qualquer momento, de forma gratuita e simplificada:</p>
+          <ul>
+            <li><strong>Confirmação e Acesso:</strong> Saber quais dados temos sobre você.</li>
+            <li><strong>Correção:</strong> Atualizar dados incompletos ou inexatos.</li>
+            <li><strong>Portabilidade:</strong> Exportar seus dados em formato legível por máquina (JSON) direto no app.</li>
+            <li><strong>Eliminação e Direito ao Esquecimento:</strong> Excluir sua conta e apagar seus dados permanentemente.</li>
+            <li><strong>Revogação do Consentimento:</strong> Desativar o uso de localização GPS ou notificações a qualquer momento.</li>
+          </ul>
+        </section>
+
+        <section class="legal-section">
+          <h5>7. Retenção e Ciclo de Vida dos Dados</h5>
+          <p>Os dados pessoais são retidos enquanto a conta do usuário permanecer ativa. Mediante solicitação de exclusão, todos os registros são imediatamente apagados de nossos bancos de dados ativos, ressalvadas hipóteses legais de guarda obrigatória (como registros de acesso a aplicações de internet pelo prazo de 6 meses, conforme o art. 15 do Marco Civil da Internet - Lei nº 12.965/2014).</p>
+        </section>
+
+        <section class="legal-section">
+          <h5>8. Procedimento para Incidentes e Vazamentos de Segurança (Art. 48)</h5>
+          <p>Em conformidade com as diretrizes da Autoridade Nacional de Proteção de Dados (ANPD), mantemos um Plano de Resposta a Incidentes de Segurança:</p>
+          <ul>
+            <li>Monitoramento contínuo e uso de criptografia de ponta a ponta nas conexões (HTTPS/TLS).</li>
+            <li>Em caso de incidente relevante de segurança que possa acarretar risco ou dano aos titulares, o Trampou comunicará a ANPD e os usuários afetados em prazo razoável, informando a natureza dos dados, as medidas de mitigação adotadas e as recomendações de segurança.</li>
+          </ul>
+        </section>
+
+        <section class="legal-section">
+          <h5>9. Canal do Encarregado de Dados (DPO)</h5>
+          <p>Para exercer qualquer direito previsto na LGPD ou esclarecer dúvidas sobre esta Política, entre em contato com nosso Encarregado de Proteção de Dados:</p>
+          <div class="legal-contact-box">
+            <div><i class="fa-solid fa-envelope"></i> <strong>E-mail do DPO:</strong> privacidade@trampou.jw.tec.br</div>
+            <div><i class="fa-solid fa-location-dot"></i> <strong>Jurisdição:</strong> Parauapebas — Pará, Brasil</div>
+          </div>
+        </section>
+      </div>
+
+      <div class="legal-footer-bar">
+        <button type="button" class="btn-auth-primary" onclick="closeAuthModal('privacy-policy-modal')">
+          Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       4. MODAL DE TERMOS DE USO COMPLETOS
+       ========================================================= -->
+  <div id="terms-of-use-modal" class="modal-overlay">
+    <div class="modal-content auth-form-content legal-text-content">
+      <div class="auth-modal-header sticky">
+        <button class="v-nav-icon-btn" onclick="closeAuthModal('terms-of-use-modal')" title="Voltar">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <h4>Termos de Uso</h4>
+        <div style="width: 32px;"></div>
+      </div>
+
+      <div class="legal-text-body">
+        <div class="legal-meta-badge">
+          <span>Termos e Condições Gerais de Uso da Plataforma Trampou — Parauapebas/PA</span>
+        </div>
+
+        <section class="legal-section">
+          <h5>1. Natureza da Plataforma</h5>
+          <p>O <strong>Trampou</strong> é uma plataforma digital que funciona como um catálogo inteligente de busca e visibilidade para conectar clientes a profissionais autônomos e prestadores de serviços no município de Parauapebas e região.</p>
+        </section>
+
+        <section class="legal-section">
+          <h5>2. Relação entre Clientes e Profissionais</h5>
+          <p>O Trampou <strong>NÃO é empregador, intermediador financeiro nem prestador dos serviços contratados</strong>. Toda a negociação, orçamento, execução, garantia e pagamento é acordada livre e diretamente entre o Cliente e o Profissional.</p>
+        </section>
+
+        <section class="legal-section">
+          <h5>3. Cadastro e Veracidade das Informações</h5>
+          <p>O usuário se compromete a fornecer informações verdadeiras e atualizadas. É estritamente proibido criar perfis falsos, utilizar fotos de terceiros sem autorização ou simular qualificações que não possua. Perfis fraudulentos serão suspensos sem aviso prévio.</p>
+        </section>
+
+        <section class="legal-section">
+          <h5>4. Selo de Verificação</h5>
+          <p>O selo "Verificado" indica que o profissional confirmou dados de contato e atuação em Parauapebas perante os critérios da plataforma, buscando aumentar a segurança da comunidade, não constituindo garantia técnica irrestrita.</p>
+        </section>
+
+        <section class="legal-section">
+          <h5>5. Conduta e Proibições</h5>
+          <p>É expressamente proibido veicular conteúdos discriminatórios, ilegais, difamatórios, pornografia, anúncios enganosos ou utilizar os canais do Trampou para assédio. A violação resultará na exclusão definitiva da conta.</p>
+        </section>
+
+        <section class="legal-section">
+          <h5>6. Foro e Legislação Aplicável</h5>
+          <p>Estes Termos são regidos pelas leis da República Federativa do Brasil, em especial o Marco Civil da Internet (Lei 12.965/2014) e a LGPD (Lei 13.709/2018). Fica eleito o Foro da Comarca de Parauapebas, Estado do Pará, para dirimir eventuais controvérsias.</p>
+        </section>
+      </div>
+
+      <div class="legal-footer-bar">
+        <button type="button" class="btn-auth-primary" onclick="closeAuthModal('terms-of-use-modal')">
+          Concordar e Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       5. MODAL DE CANAL DE SOLICITAÇÃO AO ENCARREGADO (DPO)
+       ========================================================= -->
+  <div id="dpo-channel-modal" class="modal-overlay">
+    <div class="modal-content auth-form-content">
+      <div class="auth-modal-header">
+        <button class="v-nav-icon-btn" onclick="closeAuthModal('dpo-channel-modal')" title="Voltar">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <h4>Canal do Encarregado (DPO)</h4>
+        <div style="width: 32px;"></div>
+      </div>
+
+      <div class="privacy-hub-body">
+        <div class="privacy-badge-card">
+          <div class="privacy-badge-icon">
+            <i class="fa-solid fa-user-shield"></i>
+          </div>
+          <div>
+            <h5>Atendimento Oficial LGPD</h5>
+            <p>Envie sua solicitação formal de direitos (acesso, retificação, revogação) ou reporte uma suspeita de incidente.</p>
+          </div>
+        </div>
+
+        <div class="dpo-options-list">
+          <button type="button" class="btn-dpo-channel-option" onclick="sendDpoEmail('solicitacao_geral')">
+            <i class="fa-solid fa-envelope icon-blue"></i>
+            <div class="channel-text">
+              <strong>Enviar E-mail Oficial ao DPO</strong>
+              <span>privacidade@trampou.jw.tec.br</span>
+            </div>
+          </button>
+
+          <button type="button" class="btn-dpo-channel-option" onclick="sendDpoWhatsapp('solicitacao_lgpd')">
+            <i class="fa-brands fa-whatsapp icon-green"></i>
+            <div class="channel-text">
+              <strong>Atendimento LGPD via WhatsApp</strong>
+              <span>Mensagem rápida com nossa equipe em Parauapebas</span>
+            </div>
+          </button>
+
+          <button type="button" class="btn-dpo-channel-option" onclick="sendDpoEmail('incidente_seguranca')">
+            <i class="fa-solid fa-bug icon-amber"></i>
+            <div class="channel-text">
+              <strong>Reportar Incidente ou Falha de Segurança</strong>
+              <span>Canal prioritário para vulnerabilidades e vazamentos</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>

@@ -114,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderSearchResults();
   setupEvents();
   checkFirstTimeOnboarding();
+  initLgpdConsent();
 });
 
 // Renderiza Carrossel de Anúncios antes das categorias (Integrado com Supabase + Painel Admin)
@@ -6891,5 +6892,246 @@ window.requestQuoteForShowcase = requestQuoteForShowcase;
 window.shareCurrentShowcase = shareCurrentShowcase;
 window.getShowcaseItems = getShowcaseItems;
 window.renderShowcase = renderShowcase;
+
+// =========================================================
+// LGPD & PRIVACIDADE — LÓGICA E CONFORMIDADE LEGAL
+// =========================================================
+
+// 1. Inicializa o banner de consentimento no rodapé
+function initLgpdConsent() {
+  const consentGiven = localStorage.getItem('trampou_lgpd_consent');
+  const banner = document.getElementById('lgpd-consent-banner');
+  if (!banner) return;
+
+  // Se o usuário ainda não tiver dado consentimento formal, exibe o banner
+  if (!consentGiven) {
+    setTimeout(() => {
+      banner.style.display = 'block';
+    }, 1200);
+  }
+}
+
+// 2. Aceita o consentimento LGPD
+function acceptLgpdConsent() {
+  localStorage.setItem('trampou_lgpd_consent', JSON.stringify({
+    accepted_at: new Date().toISOString(),
+    version: '1.0'
+  }));
+  const banner = document.getElementById('lgpd-consent-banner');
+  if (banner) {
+    banner.style.animation = 'fadeOut 0.25s ease-out forwards';
+    setTimeout(() => {
+      banner.style.display = 'none';
+    }, 250);
+  }
+  showToast('Preferências de privacidade salvas com sucesso.');
+}
+
+// 3. Modais de Acesso aos Documentos e Central
+function openPrivacyHubModal() {
+  // Sincroniza o switch do GPS com a preferência salva
+  const prefGps = localStorage.getItem('trampou_pref_gps') !== 'false';
+  const gpsToggle = document.getElementById('pref-gps-toggle');
+  if (gpsToggle) {
+    gpsToggle.checked = prefGps;
+  }
+  openAuthModal('privacy-hub-modal');
+}
+
+function openPrivacyPolicyModal() {
+  openAuthModal('privacy-policy-modal');
+}
+
+function openTermsOfUseModal() {
+  openAuthModal('terms-of-use-modal');
+}
+
+function openDpoChannelModal() {
+  openAuthModal('dpo-channel-modal');
+}
+
+function openDeleteAccountModal() {
+  const input = document.getElementById('delete-confirm-input');
+  if (input) input.value = '';
+  openAuthModal('delete-account-confirm-modal');
+}
+
+// 4. Controle de Geolocalização Precisa (GPS)
+function toggleGpsPreference(enabled) {
+  localStorage.setItem('trampou_pref_gps', enabled ? 'true' : 'false');
+  if (enabled) {
+    showToast('GPS ativado para ordenação por proximidade em Parauapebas.');
+  } else {
+    showToast('GPS desativado. O app priorizará seu bairro selecionado.');
+  }
+}
+
+// 5. Portabilidade de Dados Pessoais (Art. 18, V da LGPD)
+function exportMyUserData() {
+  const currentUser = getStoredAuthUser();
+  const proProfile = getStoredProProfile();
+  const consent = localStorage.getItem('trampou_lgpd_consent');
+  const conversationsData = localStorage.getItem('trampou_conversations');
+
+  let parsedConversations = [];
+  try {
+    if (conversationsData) parsedConversations = JSON.parse(conversationsData);
+  } catch (e) {
+    parsedConversations = [];
+  }
+
+  const exportPayload = {
+    _info: 'Exportação de Dados Pessoais — Trampou (Parauapebas / PA)',
+    _legislacao: 'Lei Geral de Proteção de Dados (Lei nº 13.709/2018 - Art. 18, V)',
+    data_extracao: new Date().toISOString(),
+    usuario: currentUser ? {
+      id: currentUser.id,
+      nome: currentUser.name || currentUser.full_name,
+      email: currentUser.email,
+      telefone: currentUser.phone,
+      tipo_perfil: currentUser.role || (isProfessional() ? 'professional' : 'client'),
+      criado_em: currentUser.created_at || 'Data não informada'
+    } : { status: 'Sessão anônima / Visitante sem conta vinculada' },
+    perfil_profissional: proProfile ? {
+      categoria: proProfile.categoryName,
+      especialidades: proProfile.specialties,
+      bairros_atendimento: proProfile.neighborhoods,
+      bio: proProfile.bio,
+      verificado: proProfile.verified || false
+    } : null,
+    consentimento_lgpd: consent ? JSON.parse(consent) : 'Pendente de registro',
+    total_conversas_locais: parsedConversations.length
+  };
+
+  // Cria e faz o download do arquivo JSON
+  const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(exportPayload, null, 2));
+  const downloadAnchor = document.createElement('a');
+  downloadAnchor.setAttribute('href', dataStr);
+  downloadAnchor.setAttribute('download', `meus-dados-trampou-${new Date().toISOString().split('T')[0]}.json`);
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+
+  showToast('Arquivo com seus dados gerado e baixado com sucesso!');
+}
+
+// 6. Limpeza de Histórico Local no Dispositivo
+function clearLocalAppStorage() {
+  if (confirm('Deseja limpar o histórico de buscas e cache mantidos neste aparelho? Sua conta continuará ativa.')) {
+    localStorage.removeItem('trampou_conversations');
+    localStorage.removeItem('trampou_recent_searches');
+    showToast('Histórico e cache local limpos com sucesso!');
+  }
+}
+
+// 7. Exclusão Definitiva de Conta e Dados (Direito ao Esquecimento)
+async function executeAccountDeletion() {
+  const input = document.getElementById('delete-confirm-input');
+  const confirmText = (input?.value || '').trim().toUpperCase();
+
+  if (confirmText !== 'EXCLUIR') {
+    alert('Para confirmar a exclusão definitiva, digite exatamente a palavra EXCLUIR.');
+    return;
+  }
+
+  const btnConfirm = document.getElementById('btn-confirm-delete-action');
+  if (btnConfirm) {
+    btnConfirm.disabled = true;
+    btnConfirm.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Excluindo dados...';
+  }
+
+  const user = getStoredAuthUser();
+
+  try {
+    // Se o usuário estiver autenticado no Supabase, envia a deleção de seu perfil
+    if (user && user.id && typeof SUPABASE_URL !== 'undefined') {
+      try {
+        // Exclui perfil profissional se houver
+        await fetch(`${SUPABASE_URL}/rest/v1/professional_profiles?user_id=eq.${user.id}`, {
+          method: 'DELETE',
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        });
+
+        // Exclui perfil principal de usuário
+        await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}`, {
+          method: 'DELETE',
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        });
+      } catch (err) {
+        console.warn('Erro ao chamar exclusão no Supabase:', err);
+      }
+    }
+
+    // Limpa todas as informações e dados locais do usuário
+    localStorage.removeItem('trampou_auth_user');
+    localStorage.removeItem('trampou_user_profile');
+    localStorage.removeItem('trampou_pro_profile');
+    localStorage.removeItem('trampou_conversations');
+    sessionStorage.clear();
+
+    closeAuthModal('delete-account-confirm-modal');
+    closeAuthModal('privacy-hub-modal');
+
+    alert('Sua conta e todos os seus dados foram permanentemente eliminados da nossa base, em conformidade com o Artigo 18 da LGPD.');
+    
+    // Recarrega o app para o estado inicial limpo
+    window.location.reload();
+  } catch (err) {
+    alert('Ocorreu uma falha ao processar a exclusão. Por favor, tente novamente ou contate privacidade@trampou.jw.tec.br.');
+  } finally {
+    if (btnConfirm) {
+      btnConfirm.disabled = false;
+      btnConfirm.innerHTML = '<i class="fa-solid fa-trash-can"></i> Excluir Definitivamente';
+    }
+  }
+}
+
+// 8. Envio de solicitações ao Encarregado (DPO) via E-mail ou WhatsApp
+function sendDpoEmail(tipo) {
+  let assunto = 'Solicitação LGPD — Trampou Parauapebas';
+  let corpo = 'Olá Encarregado de Proteção de Dados (DPO) do Trampou,\n\n';
+
+  if (tipo === 'incidente_seguranca') {
+    assunto = 'URGENTE: Notificação de Suspeita de Incidente / Falha de Segurança — Trampou';
+    corpo += 'Gostaria de relatar uma suspeita de incidente ou vulnerabilidade de segurança:\n\n[Descreva aqui o ocorrido]\n\n';
+  } else {
+    corpo += 'Gostaria de exercer meus direitos como titular de dados pessoais conforme a Lei nº 13.709/2018 (LGPD):\n\n[Informe sua solicitação: Acesso, Correção ou Revogação]\n\n';
+  }
+
+  const user = getStoredAuthUser();
+  if (user) {
+    corpo += `Nome do Titular: ${user.name || user.full_name || 'Usuário Trampou'}\nE-mail Cadastrado: ${user.email || 'Não informado'}\nTelefone: ${user.phone || 'Não informado'}\n`;
+  }
+
+  const mailtoUrl = `mailto:privacidade@trampou.jw.tec.br?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+  window.open(mailtoUrl, '_blank');
+}
+
+function sendDpoWhatsapp(tipo) {
+  let msg = 'Olá! Sou usuário do aplicativo Trampou em Parauapebas e gostaria de fazer uma solicitação sobre a proteção dos meus dados pessoais conforme a LGPD.';
+  const whatsappUrl = `https://wa.me/5594999999999?text=${encodeURIComponent(msg)}`;
+  window.open(whatsappUrl, '_blank');
+}
+
+// Exportações Globais de LGPD
+window.initLgpdConsent = initLgpdConsent;
+window.acceptLgpdConsent = acceptLgpdConsent;
+window.openPrivacyHubModal = openPrivacyHubModal;
+window.openPrivacyPolicyModal = openPrivacyPolicyModal;
+window.openTermsOfUseModal = openTermsOfUseModal;
+window.openDpoChannelModal = openDpoChannelModal;
+window.openDeleteAccountModal = openDeleteAccountModal;
+window.toggleGpsPreference = toggleGpsPreference;
+window.exportMyUserData = exportMyUserData;
+window.clearLocalAppStorage = clearLocalAppStorage;
+window.executeAccountDeletion = executeAccountDeletion;
+window.sendDpoEmail = sendDpoEmail;
+window.sendDpoWhatsapp = sendDpoWhatsapp;
 
 

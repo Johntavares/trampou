@@ -11722,5 +11722,591 @@ body {
   background: #E2E8F0;
 }
 
+/* =========================================================
+   LGPD & PRIVACIDADE — DESIGN SYSTEM
+   Banner de Consentimento, Central LGPD, Exclusão de Dados & Termos
+   ========================================================= */
+
+/* 1. Banner Flutuante de Consentimento LGPD */
+.lgpd-banner {
+  position: fixed;
+  bottom: 74px; /* acima da bottom nav */
+  left: 16px;
+  right: 16px;
+  max-width: 460px;
+  margin: 0 auto;
+  background: #FFFFFF;
+  border: 1px solid rgba(104, 37, 179, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.22);
+  padding: 16px;
+  z-index: 1100;
+  animation: lgpdSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes lgpdSlideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.lgpd-banner-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lgpd-banner-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #F5EEFD;
+  color: #6825B3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+.lgpd-banner-text strong {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #0F172A;
+  margin-bottom: 2px;
+}
+
+.lgpd-banner-text p {
+  font-size: 12px;
+  color: #64748B;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.lgpd-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.btn-lgpd-link {
+  background: transparent;
+  border: none;
+  color: #6825B3;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 12px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.btn-lgpd-accept {
+  background: linear-gradient(135deg, #6825B3 0%, #4C1D95 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(104, 37, 179, 0.3);
+  transition: all 0.2s;
+}
+
+.btn-lgpd-accept:hover {
+  transform: translateY(-1px);
+}
+
+/* 2. Central de Privacidade & LGPD */
+.privacy-hub-content {
+  max-width: 520px !important;
+}
+
+.privacy-hub-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.privacy-badge-card {
+  background: linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%);
+  border: 1px solid #E9D5FF;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.privacy-badge-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #6825B3;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.privacy-badge-card h5 {
+  font-size: 14px;
+  font-weight: 800;
+  color: #4C1D95;
+  margin: 0 0 3px;
+}
+
+.privacy-badge-card p {
+  font-size: 12px;
+  color: #6B21A8;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.privacy-section-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.privacy-group-title {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.privacy-group-title.danger {
+  color: #EF4444;
+}
+
+.privacy-card-list {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.privacy-action-row {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  border-bottom: 1px solid #F1F5F9;
+  transition: background 0.15s;
+}
+
+.privacy-action-row:last-child {
+  border-bottom: none;
+}
+
+.privacy-action-row:hover {
+  background: #F8FAFC;
+}
+
+.privacy-row-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.privacy-row-left i {
+  font-size: 17px;
+  width: 22px;
+  text-align: center;
+}
+
+.privacy-row-left strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0F172A;
+  margin-bottom: 1px;
+}
+
+.privacy-row-left small {
+  display: block;
+  font-size: 11px;
+  color: #64748B;
+}
+
+.arrow-icon {
+  font-size: 12px;
+  color: #94A3B8;
+}
+
+.privacy-card-box {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.privacy-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.privacy-toggle-row strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0F172A;
+  margin-bottom: 2px;
+}
+
+.privacy-toggle-row p {
+  font-size: 11.5px;
+  color: #64748B;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.privacy-note-badge {
+  margin-top: 10px;
+  background: #F8FAFC;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 11px;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Switch Toggle Custom */
+.switch-toggle-label {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.switch-toggle-label input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #CBD5E1;
+  transition: 0.25s;
+  border-radius: 26px;
+}
+
+.toggle-slider::before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.25s;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.switch-toggle-label input:checked + .toggle-slider {
+  background-color: #6825B3;
+}
+
+.switch-toggle-label input:checked + .toggle-slider::before {
+  transform: translateX(20px);
+}
+
+/* Zona de perigo / Exclusão */
+.danger-box {
+  background: #FEF2F2 !important;
+  border-color: #FECACA !important;
+}
+
+.danger-box strong {
+  display: block;
+  font-size: 13px;
+  color: #991B1B;
+  margin-bottom: 4px;
+}
+
+.danger-box p {
+  font-size: 12px;
+  color: #B91C1C;
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.btn-delete-account {
+  background: #DC2626;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.btn-delete-account:hover {
+  background: #B91C1C;
+}
+
+/* 3. Modal de Exclusão de Conta */
+.delete-account-dialog {
+  max-width: 400px !important;
+  padding: 28px 24px !important;
+  text-align: center;
+}
+
+.delete-icon-glow {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: #FEF2F2;
+  border: 2px solid #FCA5A5;
+  color: #DC2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+
+.delete-account-dialog h4 {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0F172A;
+  margin-bottom: 8px;
+}
+
+.delete-warning-text {
+  font-size: 12.5px;
+  color: #64748B;
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+
+.delete-confirmation-prompt {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.delete-confirmation-prompt label {
+  display: block;
+  font-size: 12px;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+.delete-confirmation-prompt input {
+  width: 100%;
+  height: 42px;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #DC2626;
+  outline: none;
+  text-transform: uppercase;
+}
+
+.delete-confirmation-prompt input:focus {
+  border-color: #DC2626;
+}
+
+.delete-dialog-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-cancel-delete {
+  flex: 1;
+  background: #F1F5F9;
+  border: none;
+  color: #475569;
+  border-radius: 10px;
+  padding: 11px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-danger-delete {
+  flex: 1.3;
+  background: #DC2626;
+  border: none;
+  color: #FFFFFF;
+  border-radius: 10px;
+  padding: 11px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.btn-danger-delete:hover {
+  background: #B91C1C;
+}
+
+/* 4. Modais de Textos Legais (Política & Termos) */
+.legal-text-content {
+  max-width: 640px !important;
+  display: flex;
+  flex-direction: column;
+  max-height: 88vh !important;
+}
+
+.auth-modal-header.sticky {
+  position: sticky;
+  top: 0;
+  background: #FFFFFF;
+  z-index: 10;
+}
+
+.legal-text-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.legal-meta-badge {
+  background: #F1F5F9;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 11.5px;
+  color: #64748B;
+  font-weight: 600;
+}
+
+.legal-section h5 {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0 0 6px;
+}
+
+.legal-section p {
+  font-size: 12.5px;
+  color: #475569;
+  line-height: 1.55;
+  margin: 0 0 8px;
+}
+
+.legal-section ul {
+  padding-left: 18px;
+  margin: 0 0 8px;
+}
+
+.legal-section li {
+  font-size: 12.5px;
+  color: #475569;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+.legal-contact-box {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: #334155;
+}
+
+.legal-footer-bar {
+  padding: 14px 24px;
+  border-top: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* 5. Canal do DPO / Incidentes */
+.dpo-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-dpo-channel-option {
+  background: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-dpo-channel-option:hover {
+  border-color: #6825B3;
+  background: #FAF5FF;
+  transform: translateY(-1px);
+}
+
+.btn-dpo-channel-option i {
+  font-size: 24px;
+  width: 28px;
+  text-align: center;
+}
+
+.channel-text strong {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0F172A;
+  margin-bottom: 2px;
+}
+
+.channel-text span {
+  display: block;
+  font-size: 11.5px;
+  color: #64748B;
+}
+
+/* Ícones temáticos */
+.icon-green { color: #10B981; }
+.icon-blue { color: #3B82F6; }
+.icon-purple { color: #8B5CF6; }
+.icon-amber { color: #F59E0B; }
+
+
 
 
