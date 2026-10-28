@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=19">
+  <link rel="stylesheet" href="styles.css?v=20">
 </head>
 <body>
   <!-- Container Principal do Aplicativo Nativo / PWA -->
@@ -98,9 +98,14 @@
             <!-- Carrossel de Banner para Anúncios (Antes das Categorias) -->
             <div class="home-ad-carousel-wrap" aria-label="Anúncios patrocinados">
               <div class="banner-carousel-track" id="home-banner-track">
-                <!-- Slides de Anúncios injetados dinamicamente via JS -->
+                <div class="ad-slide-card ad-slide-img-card" data-slide-index="0" data-banner-id="default-share" role="banner" style="cursor: pointer;" onclick="if(typeof openShareAppModal === 'function') openShareAppModal();">
+                  <picture>
+                    <source srcset="banner-share-trampou.webp" type="image/webp">
+                    <img src="banner-share-trampou.png" alt="Compartilhe o Trampou com Amigos" loading="eager">
+                  </picture>
+                </div>
               </div>
-              <div class="carousel-dots" id="carousel-dots" role="tablist">
+              <div class="carousel-dots" id="carousel-dots" role="tablist" style="display: none;">
                 <!-- Indicadores injetados via JS -->
               </div>
             </div>
@@ -3210,6 +3215,6 @@
     </div>
   </aside>
 
-  <script src="app.js?v=19"></script>
+  <script src="app.js?v=20"></script>
 </body>
 </html>

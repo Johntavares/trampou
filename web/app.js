@@ -527,8 +527,8 @@ async function renderAdBannerCarousel() {
   function buildBannerHtml(banner, index) {
     // Se o banner possuir imagem dedicada (1080x432 px / 2.5:1)
     if (banner.image_url) {
-      const fallbackUrl = banner.image_url_fallback || banner.image_url;
       const isWebp = banner.image_url.endsWith('.webp');
+      const fallbackUrl = banner.image_url_fallback || (isWebp ? banner.image_url.replace('.webp', '.png') : banner.image_url);
       return `
         <div class="ad-slide-card ad-slide-img-card" data-slide-index="${index}" data-banner-id="${banner.id || ''}" role="banner" style="cursor: pointer;">
           <picture>
