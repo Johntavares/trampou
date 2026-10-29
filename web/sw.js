@@ -1,16 +1,23 @@
 // Trampou PWA Service Worker
-const CACHE_NAME = 'trampou-pwa-v24';
+const CACHE_NAME = 'trampou-pwa-v25';
 
 const STATIC_SHELL = [
   './',
   './index.html',
   './styles.css',
+  './styles.css?v=24',
   './app.js',
+  './app.js?v=24',
   './manifest.json',
+  './manifest.json?v=5',
   './icon-192.png',
+  './icon-192.png?v=5',
   './icon-512.png',
+  './icon-512.png?v=5',
   './icon-maskable-512.png',
+  './icon-maskable-512.png?v=5',
   './trampou_app_icon.png',
+  './trampou_app_icon.png?v=5',
   './trampou_onboarding_hero.png',
   './banner-share-trampou.webp',
   './banner-share-trampou.png',
@@ -49,17 +56,30 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
 
   // 1. Ignora requisições de outros esquemas ou métodos não-GET
-  if (req.method !== 'GET') return;
+  if (req.method !== 'GET' || !url.protocol.startsWith('http')) return;
 
-  // 2. Chamadas de API do Supabase: Sempre Rede Primeiro (Network-First)
+  // 2. Chamadas de API do Supabase:Sempre Rede Primeiro (Network-First) com cache de leitura e fallback seguro
   if (url.hostname.includes('supabase.co')) {
     event.respondWith(
       fetch(req)
         .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(req, responseClone);
+            });
+          }
           return networkResponse;
         })
         .catch(() => {
-          return caches.match(req);
+          return caches.match(req).then((cached) => {
+            if (cached) return cached;
+            return new Response(JSON.stringify([]), {
+              status: 503,
+              statusText: 'Service Unavailable (Offline)',
+              headers: { 'Content-Type': 'application/json' }
+            });
+          });
         })
     );
     return;
@@ -72,40 +92,42 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       caches.match(req).then((cached) => {
         const fetchPromise = fetch(req).then((networkRes) => {
-          if (networkRes.status === 200) {
+          if (networkRes && networkRes.status === 200) {
             const resClone = networkRes.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone));
           }
           return networkRes;
-        }).catch(() => cached);
+        }).catch(() => cached || new Response('', { status: 504 }));
         return cached || fetchPromise;
       })
     );
     return;
   }
 
-  // 4. Arquivos estáticos do app (HTML, CSS, JS, Imagens locais): Stale-While-Revalidate
+  // 4. Arquivos estáticos do app (HTML, CSS, JS, Imagens locais): Stale-While-Revalidate com fallback ignoreSearch
   event.respondWith(
-    caches.match(req).then((cachedResponse) => {
-      const fetchPromise = fetch(req)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(req, responseClone);
-            });
-          }
-          return networkResponse;
-        })
-        .catch(() => {
-          // Se offline e for navegação de página, retorna index.html em cache
-          if (req.mode === 'navigate') {
-            return caches.match('./index.html') || caches.match('./');
-          }
-          return cachedResponse;
-        });
+    caches.match(req).then((exactCached) => {
+      return (exactCached ? Promise.resolve(exactCached) : caches.match(req, { ignoreSearch: true })).then((cachedResponse) => {
+        const fetchPromise = fetch(req)
+          .then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              const responseClone = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(req, responseClone);
+              });
+            }
+            return networkResponse;
+          })
+          .catch(() => {
+            // Se offline e for navegação de página, retorna index.html em cache
+            if (req.mode === 'navigate') {
+              return caches.match('./index.html') || caches.match('./');
+            }
+            return cachedResponse || new Response('', { status: 504 });
+          });
 
-      return cachedResponse || fetchPromise;
+        return cachedResponse || fetchPromise;
+      });
     })
   );
 });

@@ -410,14 +410,16 @@ function filterAndSortProsByLocation(prosList) {
     }
   });
 
-  // Ordena por proximidade se GPS estiver ativo
-  if (currentActiveLocation.isGps && userLat !== null && userLng !== null) {
-    filtered.sort((a, b) => {
-      const distA = a._distanceKm !== null ? a._distanceKm : 99999;
-      const distB = b._distanceKm !== null ? b._distanceKm : 99999;
-      return distA - distB;
-    });
-  }
+  // Ordena prioritariamente os profissionais mais recentemente criados na cidade (com desempate por proximidade se GPS ativo)
+  filtered.sort((a, b) => {
+    if (currentActiveLocation.isGps && userLat !== null && userLng !== null && a._distanceKm !== null && b._distanceKm !== null) {
+      const diff = a._distanceKm - b._distanceKm;
+      if (Math.abs(diff) > 0.5) return diff; // Se a diferença de distância for significativa (>500m)
+    }
+    const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return dateB - dateA;
+  });
 
   return filtered;
 }
@@ -427,7 +429,33 @@ function filterAndSortProsByLocation(prosList) {
 // ==========================================
 let deferredInstallPrompt = null;
 
+function isPWAInstalled() {
+  return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+         window.navigator.standalone === true ||
+         document.referrer.includes('android-app://');
+}
+
+function updatePWAInstallVisibility() {
+  const installed = isPWAInstalled();
+  const installBtns = document.querySelectorAll('.btn-pwa-install');
+  const installCard = document.getElementById('pwa-install-banner');
+
+  if (installed) {
+    installBtns.forEach(btn => btn.style.display = 'none');
+    if (installCard) installCard.style.display = 'none';
+  }
+}
+
 function initPWA() {
+  updatePWAInstallVisibility();
+
+  if (window.matchMedia) {
+    const standaloneMedia = window.matchMedia('(display-mode: standalone)');
+    if (standaloneMedia.addEventListener) {
+      standaloneMedia.addEventListener('change', updatePWAInstallVisibility);
+    }
+  }
+
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js')
@@ -445,7 +473,8 @@ function initPWA() {
     e.preventDefault();
     deferredInstallPrompt = e;
     console.log('📱 PWA pronto para instalação!');
-    
+    if (isPWAInstalled()) return;
+
     const installBtns = document.querySelectorAll('.btn-pwa-install');
     installBtns.forEach(btn => btn.style.display = 'inline-flex');
 
@@ -456,6 +485,7 @@ function initPWA() {
   window.addEventListener('appinstalled', () => {
     console.log('🎉 Trampou PWA instalado com sucesso!');
     deferredInstallPrompt = null;
+    updatePWAInstallVisibility();
     const installBtns = document.querySelectorAll('.btn-pwa-install');
     installBtns.forEach(btn => btn.style.display = 'none');
     const installCard = document.getElementById('pwa-install-banner');
@@ -465,6 +495,11 @@ function initPWA() {
 }
 
 function triggerPWAInstall() {
+  if (isPWAInstalled()) {
+    showToast('O aplicativo Trampou já está instalado no seu aparelho! 🎉');
+    return;
+  }
+
   if (deferredInstallPrompt) {
     deferredInstallPrompt.prompt();
     deferredInstallPrompt.userChoice.then((choiceResult) => {
@@ -476,10 +511,49 @@ function triggerPWAInstall() {
       deferredInstallPrompt = null;
     });
   } else {
-    showToast('Para instalar: no menu do navegador selecione "Adicionar à Tela de Início" ou "Instalar Aplicativo" 📲');
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent || '') ||
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (isIOS) {
+      showToast('No iPhone/iPad: toque no botão Compartilhar do Safari e selecione "Adicionar à Tela de Início" 📲');
+    } else {
+      showToast('Para instalar: no menu do navegador selecione "Adicionar à Tela de Início" ou "Instalar Aplicativo" 📲');
+    }
   }
 }
 window.triggerPWAInstall = triggerPWAInstall;
+window.isPWAInstalled = isPWAInstalled;
+
+// Roteador de atalhos do PWA (shortcuts do manifest.json) e links compartilhados (#explore, #sos, #showcase, #pro/...)
+function handlePWADeepLinks() {
+  const rawHash = (window.location.hash || '').replace(/^#\/?/, '').trim();
+  if (!rawHash) return;
+
+  const lowerHash = rawHash.toLowerCase();
+
+  if (lowerHash === 'explore' || lowerHash === 'search') {
+    if (typeof switchTab === 'function') switchTab('search');
+  } else if (lowerHash === 'sos') {
+    if (typeof openSOSRequestModal === 'function') openSOSRequestModal();
+  } else if (lowerHash === 'showcase') {
+    if (typeof switchTab === 'function') switchTab('search');
+    setTimeout(() => {
+      const showcaseEl = document.getElementById('showcase-container');
+      if (showcaseEl) showcaseEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 200);
+  } else if (lowerHash.startsWith('pro/')) {
+    const proSlug = rawHash.slice(4).trim().toLowerCase();
+    if (!proSlug) return;
+    const matchPro = (PROFESSIONALS || []).find(p =>
+      (p.id && p.id.toLowerCase() === proSlug) ||
+      (p.handle && p.handle.toLowerCase() === proSlug) ||
+      (p.name && p.name.toLowerCase().replace(/\s+/g, '.') === proSlug)
+    );
+    if (matchPro && typeof openProDetail === 'function') {
+      openProDetail(matchPro.id);
+    }
+  }
+}
+window.handlePWADeepLinks = handlePWADeepLinks;
 
 // Inicialização
 document.addEventListener('DOMContentLoaded', () => {
@@ -490,7 +564,11 @@ document.addEventListener('DOMContentLoaded', () => {
   initAuthManager();
   renderAdBannerCarousel();
   fetchCategories();
-  loadProfessionalsFromSupabase();
+  loadProfessionalsFromSupabase().then(() => {
+    if ((window.location.hash || '').toLowerCase().includes('pro/')) {
+      handlePWADeepLinks();
+    }
+  });
   renderRecommendedProfessionals();
   renderNewsFeed();
   renderConversations();
@@ -502,6 +580,8 @@ document.addEventListener('DOMContentLoaded', () => {
   setupEvents();
   checkFirstTimeOnboarding();
   initLgpdConsent();
+  handlePWADeepLinks();
+  window.addEventListener('hashchange', handlePWADeepLinks);
 });
 
 // Renderiza Carrossel de Anúncios antes das categorias (Integrado com Supabase + Painel Admin)
@@ -2614,7 +2694,7 @@ function loadProfessionalsFromStorage() {
 async function loadProfessionalsFromSupabase() {
   const statusPills = document.querySelectorAll('.db-status-pill');
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/profiles?role=eq.professional&select=*,professional_profiles(*)`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/profiles?role=eq.professional&select=*,professional_profiles(*)&order=created_at.desc`, {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
@@ -2641,6 +2721,9 @@ async function loadProfessionalsFromSupabase() {
             dbId: lp.id,
             handle: handle,
             name: lp.full_name,
+            email: lp.email || '',
+            phone: lp.phone_whatsapp || '',
+            created_at: lp.created_at || null,
             specialty: (proDetails.skills && proDetails.skills[0]) || 'Profissional Autônomo',
             headline: proDetails.skills ? proDetails.skills.join(' • ') : `Serviços em ${city}`,
             neighborhood: lp.neighborhood || `${city}, ${state}`,
@@ -5280,12 +5363,16 @@ function renderSearchResults() {
     filtered.sort((a, b) => (b.reviewsCount || 0) - (a.reviewsCount || 0));
   } else if (exploreSort === 'name') {
     filtered.sort((a, b) => a.name.localeCompare(b.name));
-  } else if (currentActiveLocation.isGps && userLat !== null && userLng !== null) {
-    // Se o GPS estiver ativo, prioriza os mais próximos geograficamente
+  } else {
+    // Padrão: mais recentes criados primeiro (com desempate por proximidade se GPS estiver ativo)
     filtered.sort((a, b) => {
-      const distA = a._distanceKm !== null ? a._distanceKm : 99999;
-      const distB = b._distanceKm !== null ? b._distanceKm : 99999;
-      return distA - distB;
+      if (currentActiveLocation.isGps && userLat !== null && userLng !== null && a._distanceKm !== null && b._distanceKm !== null) {
+        const diff = a._distanceKm - b._distanceKm;
+        if (Math.abs(diff) > 0.5) return diff;
+      }
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return dateB - dateA;
     });
   }
 
@@ -6494,7 +6581,7 @@ async function handleClientSignupSubmit(event) {
       });
       if (sRes.ok) {
         const sData = await sRes.json();
-        if (sData.user) supabaseUserId = sData.user.id;
+        supabaseUserId = (sData.user && sData.user.id) || sData.id || null;
         if (sData.access_token) localStorage.setItem('go_supabase_token', sData.access_token);
       }
     } catch (_) {}
@@ -7176,6 +7263,7 @@ async function handleProSignupFinalSubmit() {
       dbId: dbUserId,
       handle: handleName,
       name: commercialName,
+      created_at: new Date().toISOString(),
       specialty: category,
       category: category,
       headline: proWizardData.profile.specialties.join(' • ') || `${category} em ${proCity}`,
@@ -7914,8 +8002,8 @@ function openAppFeedbackModal() {
   if (messageInput) messageInput.value = '';
 
   if (user) {
-    if (nameInput && !nameInput.value) nameInput.value = user.name || user.full_name || '';
-    if (contactInput && !contactInput.value) contactInput.value = user.phone || user.phone_whatsapp || user.email || '';
+    if (nameInput) nameInput.value = user.name || user.full_name || '';
+    if (contactInput) contactInput.value = user.email || user.phone || user.phone_whatsapp || '';
   }
 
   setFeedbackType('sugestao');
@@ -7965,12 +8053,27 @@ function setFeedbackRating(stars) {
 async function handleFeedbackSubmit(event) {
   event.preventDefault();
 
+  // Exige usuário autenticado también no envio (bloqueia chamadas diretas via console/DOM)
+  if (typeof requireUserAuth === 'function' && !requireUserAuth('feedback')) return;
+
+  const user = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+               (typeof getStoredAuthUser === 'function' ? getStoredAuthUser() : null);
+
+  if (!user || (!user.id && !user.email)) {
+    closeAppFeedbackModal();
+    if (typeof openAuthGateModal === 'function') openAuthGateModal('feedback');
+    return;
+  }
+
   const type = document.getElementById('feedback-type-val')?.value || 'sugestao';
   const rating = parseInt(document.getElementById('feedback-rating-val')?.value || '5', 10);
   const title = document.getElementById('feedback-title-input')?.value.trim() || '';
   const message = document.getElementById('feedback-message-input')?.value.trim();
-  const userName = document.getElementById('feedback-user-name')?.value.trim();
-  const userContact = document.getElementById('feedback-user-contact')?.value.trim() || '';
+
+  // Usa sempre os dados reais da conta autenticada (impede falsificação de identidade no formulário)
+  const verifiedName = (user.name || user.full_name || '').trim();
+  const verifiedEmail = (user.email || '').trim().toLowerCase();
+  const verifiedPhone = (user.phone || user.phone_whatsapp || '').trim();
 
   const alertEl = document.getElementById('feedback-submit-alert');
   const alertText = document.getElementById('feedback-submit-alert-text');
@@ -7985,13 +8088,6 @@ async function handleFeedbackSubmit(event) {
     }
     return;
   }
-  if (!userName || userName.length < 2) {
-    if (alertEl && alertText) {
-      alertEl.style.display = 'flex';
-      alertText.textContent = 'Por favor, informe seu nome para podermos registrar seu feedback.';
-    }
-    return;
-  }
 
   // Previne cliques duplicados
   if (btn) btn.disabled = true;
@@ -7999,14 +8095,32 @@ async function handleFeedbackSubmit(event) {
   if (btnSpinner) btnSpinner.style.display = 'inline-block';
   if (alertEl) alertEl.style.display = 'none';
 
-  const user = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
-               (typeof getStoredAuthUser === 'function' ? getStoredAuthUser() : null);
+  // Se o ID local ainda estiver com prefixo 'u_', resolve o UUID oficial na tabela profiles pelo e-mail
+  let realUserId = user.id && !String(user.id).startsWith('u_') ? user.id : null;
+  if (!realUserId && verifiedEmail) {
+    try {
+      const pRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles?email=eq.${encodeURIComponent(verifiedEmail)}&select=id,full_name,phone_whatsapp&limit=1`, {
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        }
+      });
+      if (pRes.ok) {
+        const pRows = await pRes.json();
+        if (Array.isArray(pRows) && pRows.length > 0 && pRows[0].id) {
+          realUserId = pRows[0].id;
+          user.id = realUserId;
+          localStorage.setItem('go_currentUser', JSON.stringify(user));
+        }
+      }
+    } catch (_) {}
+  }
 
   const payload = {
-    user_id: user && user.id && !user.id.startsWith('u_') ? user.id : null,
-    user_name: userName,
-    user_email: userContact.includes('@') ? userContact : (user?.email || null),
-    user_phone: !userContact.includes('@') && userContact ? userContact : (user?.phone || null),
+    user_id: realUserId,
+    user_name: verifiedName || 'Usuário Cadastrado',
+    user_email: verifiedEmail || null,
+    user_phone: verifiedPhone || null,
     feedback_type: type,
     rating: rating,
     title: title || (type === 'sugestao' ? 'Sugestão de Usuário' : type === 'elogio' ? 'Elogio ao App' : 'Relato de Problema'),
