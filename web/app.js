@@ -3,6 +3,17 @@ const SUPABASE_URL = 'https://txcmnqisfwekmhihdutt.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR4Y21ucWlzZndla21oaWhkdXR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMjQ3ODMsImV4cCI6MjEwNzkwMDc4M30.VF7amv-LqsCMw1pvGAU7_tesjjPxenVQMMHt8tk2P7E';
 const OFFICIAL_APP_URL = 'https://trampou.jw.tec.br';
 
+function escapeHTML(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+window.escapeHTML = escapeHTML;
+
 // Dados em memória de Profissionais (carregados em tempo real do Supabase ou cadastro local)
 let PROFESSIONALS = [];
 
