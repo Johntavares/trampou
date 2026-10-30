@@ -2092,6 +2092,14 @@
 
     tbody.innerHTML = state.notifications.map(n => {
       const aud = audienceLabels[n.target_audience] || audienceLabels.all;
+      let geoBadgeText = '🇧🇷 Nacional';
+      if (n.target_state && n.target_state !== 'all') {
+        if (n.target_city && n.target_city !== 'all') {
+          geoBadgeText = `📍 ${n.target_city}, ${n.target_state}`;
+        } else {
+          geoBadgeText = `📍 Estado: ${n.target_state}`;
+        }
+      }
       const cat = categoryLabels[n.category] || categoryLabels.geral;
       const actionText = actionLabels[n.action_type] || '📱 App';
       const dateStr = n.created_at ? new Date(n.created_at).toLocaleString('pt-BR') : '—';
@@ -2110,6 +2118,9 @@
             <span class="badge-status-pill" style="background: rgba(0,0,0,0.04); color: ${aud.color}; border: 1px solid rgba(0,0,0,0.08);">
               <i class="fa-solid ${aud.icon}" style="margin-right: 4px;"></i> ${aud.text}
             </span>
+            <div style="font-size: 11px; color: #64748B; font-weight: 600; margin-top: 3px;">
+              ${geoBadgeText}
+            </div>
           </td>
           <td>
             <span class="badge-status-pill ${cat.badge}">
@@ -2265,6 +2276,62 @@
     }
   }
 
+  
+  const adminIbgeCitiesCache = {};
+
+  async function handlePushStateChange() {
+    const stateSelect = document.getElementById('push-select-state');
+    const citySelect = document.getElementById('push-select-city');
+    const loadingEl = document.getElementById('push-city-loading');
+    if (!stateSelect || !citySelect) return;
+
+    const uf = stateSelect.value;
+    if (uf === 'all') {
+      citySelect.innerHTML = '<option value="all">🏙️ Todas as Cidades (Nacional)</option>';
+      updatePushPreview();
+      return;
+    }
+
+    if (adminIbgeCitiesCache[uf]) {
+      populateAdminPushCities(adminIbgeCitiesCache[uf], uf);
+      updatePushPreview();
+      return;
+    }
+
+    if (loadingEl) loadingEl.style.display = 'inline-block';
+    citySelect.disabled = true;
+
+    try {
+      const res = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios?orderBy=nome`);
+      if (res.ok) {
+        const data = await res.json();
+        const cityNames = data.map(m => m.nome);
+        adminIbgeCitiesCache[uf] = cityNames;
+        populateAdminPushCities(cityNames, uf);
+      } else {
+        citySelect.innerHTML = `<option value="all">🏙️ Todas as Cidades de ${uf}</option>`;
+      }
+    } catch (_) {
+      citySelect.innerHTML = `<option value="all">🏙️ Todas as Cidades de ${uf}</option>`;
+    } finally {
+      if (loadingEl) loadingEl.style.display = 'none';
+      citySelect.disabled = false;
+      updatePushPreview();
+    }
+  }
+
+  function populateAdminPushCities(cities, uf) {
+    const citySelect = document.getElementById('push-select-city');
+    if (!citySelect) return;
+
+    const options = [`<option value="all">🏙️ Todas as Cidades de ${uf}</option>`];
+    cities.forEach(name => {
+      const isDefault = (uf === 'PA' && name === 'Parauapebas') ? 'selected' : '';
+      options.push(`<option value="${escapeHTML(name)}" ${isDefault}>${escapeHTML(name)}</option>`);
+    });
+    citySelect.innerHTML = options.join('');
+  }
+
   function handlePushActionChange() {
     const actionSelect = document.getElementById('push-select-action');
     const urlGroup = document.getElementById('push-url-group');
@@ -2287,6 +2354,8 @@
     const title = (document.getElementById('push-input-title') ? document.getElementById('push-input-title').value : '').trim();
     const body = (document.getElementById('push-input-body') ? document.getElementById('push-input-body').value : '').trim();
     const audience = document.getElementById('push-select-audience') ? document.getElementById('push-select-audience').value : 'all';
+    const stateVal = document.getElementById('push-select-state') ? document.getElementById('push-select-state').value : 'all';
+    const cityVal = document.getElementById('push-select-city') ? document.getElementById('push-select-city').value : 'all';
     const category = document.getElementById('push-select-category') ? document.getElementById('push-select-category').value : 'geral';
     const actionType = document.getElementById('push-select-action') ? document.getElementById('push-select-action').value : 'app';
     const actionUrl = document.getElementById('push-input-url') ? document.getElementById('push-input-url').value.trim() : '';
@@ -2306,6 +2375,8 @@
         title,
         body,
         target_audience: audience,
+        target_state: stateVal || 'all',
+        target_city: cityVal || 'all',
         category,
         action_type: actionType,
         action_url: (actionType === 'url' && actionUrl) ? actionUrl : null,
@@ -2360,6 +2431,15 @@
     if (titleInput) titleInput.value = item.title;
     if (bodyInput) bodyInput.value = item.body;
     if (audSelect) audSelect.value = item.target_audience;
+    const stateSelect = document.getElementById('push-select-state');
+    const citySelect = document.getElementById('push-select-city');
+    if (stateSelect && item.target_state) {
+      stateSelect.value = item.target_state;
+      handlePushStateChange().then(() => {
+        if (citySelect && item.target_city) citySelect.value = item.target_city;
+        updatePushPreview();
+      });
+    }
     if (catSelect) catSelect.value = item.category;
     if (actionSelect) actionSelect.value = item.action_type || 'app';
     if (urlInput) urlInput.value = item.action_url || '';
@@ -2396,6 +2476,7 @@
   // Expõe a API pública do Admin no objeto global
   window.AdminApp = {
     handleSendPushNotification,
+    handlePushStateChange,
     applyPushTemplate,
     updatePushPreview,
     handlePushActionChange,

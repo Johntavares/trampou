@@ -445,6 +445,9 @@
         <!-- ==========================================
              ABA: CENTRAL DE NOTIFICAÇÕES PUSH & COMUNICADOS
              ========================================== -->
+        <!-- ==========================================
+             ABA: CENTRAL DE NOTIFICAÇÕES PUSH & COMUNICADOS
+             ========================================== -->
         <section class="admin-tab-pane" id="tab-notifications">
           <!-- Cards de Métricas de Push -->
           <div class="admin-stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 24px;">
@@ -548,6 +551,62 @@
                       <span id="push-body-count" style="font-size: 11px; font-weight: 600; color: #94A3B8;">0/240</span>
                     </label>
                     <textarea id="push-input-body" rows="3" placeholder="Escreva uma mensagem amigável, clara e atraente para o usuário visualizar no celular..." maxlength="240" required oninput="window.AdminApp.updatePushPreview()"></textarea>
+                  </div>
+
+                  
+                  <!-- Linha Dupla: Estado e Cidade (Filtros Geográficos) -->
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <div class="admin-input-group">
+                      <label for="push-select-state">
+                        <span><i class="fa-solid fa-map-location-dot" style="color: #6366F1; margin-right: 4px;"></i> Estado (UF) *</span>
+                      </label>
+                      <select id="push-select-state" onchange="window.AdminApp.handlePushStateChange()">
+                        <option value="all">🇧🇷 Todos os Estados (Nacional)</option>
+                        <option value="AC">Acre (AC)</option>
+                        <option value="AL">Alagoas (AL)</option>
+                        <option value="AP">Amapá (AP)</option>
+                        <option value="AM">Amazonas (AM)</option>
+                        <option value="BA">Bahia (BA)</option>
+                        <option value="CE">Ceará (CE)</option>
+                        <option value="DF">Distrito Federal (DF)</option>
+                        <option value="ES">Espírito Santo (ES)</option>
+                        <option value="GO">Goiás (GO)</option>
+                        <option value="MA">Maranhão (MA)</option>
+                        <option value="MT">Mato Grosso (MT)</option>
+                        <option value="MS">Mato Grosso do Sul (MS)</option>
+                        <option value="MG">Minas Gerais (MG)</option>
+                        <option value="PA" selected>Pará (PA)</option>
+                        <option value="PB">Paraíba (PB)</option>
+                        <option value="PR">Paraná (PR)</option>
+                        <option value="PE">Pernambuco (PE)</option>
+                        <option value="PI">Piauí (PI)</option>
+                        <option value="RJ">Rio de Janeiro (RJ)</option>
+                        <option value="RN">Rio Grande do Norte (RN)</option>
+                        <option value="RS">Rio Grande do Sul (RS)</option>
+                        <option value="RO">Rondônia (RO)</option>
+                        <option value="RR">Roraima (RR)</option>
+                        <option value="SC">Santa Catarina (SC)</option>
+                        <option value="SP">São Paulo (SP)</option>
+                        <option value="SE">Sergipe (SE)</option>
+                        <option value="TO">Tocantins (TO)</option>
+                      </select>
+                    </div>
+
+                    <div class="admin-input-group">
+                      <label for="push-select-city">
+                        <span><i class="fa-solid fa-city" style="color: #6366F1; margin-right: 4px;"></i> Cidade *</span>
+                        <span id="push-city-loading" style="display: none; font-size: 11px; color: #8B5CF6;">Carregando...</span>
+                      </label>
+                      <select id="push-select-city" onchange="window.AdminApp.updatePushPreview()">
+                        <option value="all">🏙️ Todas as Cidades do Estado</option>
+                        <option value="Parauapebas" selected>Parauapebas</option>
+                        <option value="Canaã dos Carajás">Canaã dos Carajás</option>
+                        <option value="Marabá">Marabá</option>
+                        <option value="Belém">Belém</option>
+                        <option value="Ananindeua">Ananindeua</option>
+                        <option value="Santarém">Santarém</option>
+                      </select>
+                    </div>
                   </div>
 
                   <!-- Linha Dupla: Público e Categoria -->

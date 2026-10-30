@@ -7,7 +7,9 @@ CREATE TABLE IF NOT EXISTS public.push_notifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
     body TEXT NOT NULL,
-    target_audience TEXT NOT NULL DEFAULT 'all', -- 'all', 'clients', 'professionals'
+    target_audience TEXT NOT NULL DEFAULT 'all',
+    target_state TEXT DEFAULT 'all',
+    target_city TEXT DEFAULT 'all', -- 'all', 'clients', 'professionals'
     target_city TEXT DEFAULT 'all',
     category TEXT NOT NULL DEFAULT 'geral', -- 'geral', 'novidade', 'promocao', 'urgente', 'dica'
     action_type TEXT DEFAULT 'app', -- 'app', 'chat', 'sos', 'vitrine', 'url'
@@ -54,3 +56,4 @@ BEGIN
         END IF;
     END IF;
 END $$;
+

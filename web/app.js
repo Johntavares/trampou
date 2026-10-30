@@ -2782,9 +2782,19 @@ function isNotificationForCurrentClient(pushItem) {
   if (pushItem.target_audience === 'professionals' && role !== 'professional') return false;
 
   // Filtro por cidade (se especificada e diferente de 'all')
+    const userCity = ((user && user.city) || currentActiveLocation.city || 'Parauapebas').toLowerCase().trim();
+  const userState = ((user && user.state) || currentActiveLocation.state || 'PA').toUpperCase().trim();
+
+  // Filtro por Estado
+  if (pushItem.target_state && pushItem.target_state !== 'all') {
+    if (pushItem.target_state.toUpperCase().trim() !== userState) {
+      return false;
+    }
+  }
+
+  // Filtro por Cidade
   if (pushItem.target_city && pushItem.target_city !== 'all') {
-    const userCity = (user && user.city) || currentActiveLocation.city || 'Parauapebas';
-    if (pushItem.target_city.toLowerCase() !== userCity.toLowerCase()) {
+    if (pushItem.target_city.toLowerCase().trim() !== userCity) {
       return false;
     }
   }
