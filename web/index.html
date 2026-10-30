@@ -437,21 +437,12 @@
                 <button class="v-nav-icon-btn" id="vitrine-menu-trigger" onclick="toggleVitrineMenu()" title="Mais opções">
                   <i class="fa-solid fa-ellipsis"></i>
                 </button>
-                <!-- Menu flutuante de opções -->
+                <!-- Menu flutuante de opções (renderizado dinamicamente conforme permissão do usuário) -->
                 <div class="vitrine-dropdown-menu" id="vitrine-dropdown-menu">
-                  <button class="dropdown-item" onclick="toggleVitrineMode()">
-                    <i class="fa-solid fa-repeat"></i>
-                    <span id="menu-mode-label">Alternar para Modo Visitante</span>
-                  </button>
-                  <button class="dropdown-item" onclick="openEditProModal()">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                    <span>Editar perfil</span>
-                  </button>
                   <button class="dropdown-item" onclick="shareProProfile()">
                     <i class="fa-solid fa-share-nodes"></i>
                     <span>Compartilhar perfil</span>
                   </button>
-
                 </div>
               </div>
             </div>

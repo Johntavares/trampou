@@ -2656,6 +2656,18 @@ function compressImageFile(file, maxWidth = 1080, quality = 0.82) {
 }
 window.compressImageFile = compressImageFile;
 
+// Verifica estritamente se o usuário logado é o verdadeiro proprietário do perfil profissional
+function isCurrentUserOwnerOfPro(pro = currentVitrinePro) {
+  if (!pro) return false;
+  const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+  if (!user || user.role !== 'professional') return false;
+  if (user.id && pro.dbId && String(user.id) === String(pro.dbId)) return true;
+  if (user.proId && pro.id && String(user.proId) === String(pro.id)) return true;
+  if (user.email && pro.email && user.email.trim().toLowerCase() === pro.email.trim().toLowerCase()) return true;
+  return false;
+}
+window.isCurrentUserOwnerOfPro = isCurrentUserOwnerOfPro;
+
 // Abre a Vitrine Social do Profissional
 function openProVitrine(id, asOwner = false) {
   currentVitrinePro = PROFESSIONALS.find(p => p.id === id || p.dbId === id) || (PROFESSIONALS.length > 0 ? PROFESSIONALS[0] : null);
@@ -2664,17 +2676,9 @@ function openProVitrine(id, asOwner = false) {
     return;
   }
 
-  // Detecta automaticamente se o usuário logado é o dono deste perfil profissional
-  const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
-  const isLoggedProOwner = Boolean(
-    user && (
-      (user.id && currentVitrinePro.dbId && user.id === currentVitrinePro.dbId) ||
-      (user.proId && user.proId === currentVitrinePro.id) ||
-      (user.email && currentVitrinePro.email && user.email.toLowerCase() === currentVitrinePro.email.toLowerCase())
-    )
-  );
-
-  isVitrineOwner = Boolean(asOwner || isLoggedProOwner);
+  // NUNCA permite modo proprietário se o usuário logado não for o verdadeiro dono deste perfil
+  const isRealOwner = isCurrentUserOwnerOfPro(currentVitrinePro);
+  isVitrineOwner = isRealOwner;
   currentVitrineTab = 'posts';
 
   renderVitrineView();
@@ -2683,13 +2687,13 @@ function openProVitrine(id, asOwner = false) {
 
 // Compatibilidade com chamadas antigas
 function openProDetail(id) {
-  openProVitrine(id, false); // Visitante
+  openProVitrine(id, false);
 }
 
 function openProDashboard() {
   const user = getCurrentUser();
   if (user && user.role === 'professional') {
-    const myPro = PROFESSIONALS.find(p => p.dbId === user.id || p.id === user.proId || p.id === user.id);
+    const myPro = PROFESSIONALS.find(p => p.dbId === user.id || p.id === user.proId || p.id === user.id || (user.email && p.email && p.email.toLowerCase() === user.email.toLowerCase()));
     if (myPro) {
       openProVitrine(myPro.id, true);
     } else {
@@ -2709,11 +2713,18 @@ window.openProDetail = openProDetail;
 window.openProDashboard = openProDashboard;
 window.closeProVitrine = closeProVitrine;
 
-// Alternar entre visão de Visitante e Proprietário
+// Alternar entre visão de Visitante e Proprietário (EXCLUSIVO PARA O DONO REAL DO PERFIL)
 function toggleVitrineMode() {
+  if (!isCurrentUserOwnerOfPro(currentVitrinePro)) {
+    isVitrineOwner = false;
+    showToast('Acesso restrito ao profissional proprietário deste perfil.');
+    return;
+  }
   isVitrineOwner = !isVitrineOwner;
+  const menu = document.getElementById('vitrine-dropdown-menu');
+  if (menu) menu.classList.remove('active');
   renderVitrineView();
-  showToast(isVitrineOwner ? '💼 Modo Proprietário ativado (Visualização do Dono)' : '👁️ Modo Visitante ativado (Visualização do Cliente)');
+  showToast(isVitrineOwner ? '💼 Painel do Proprietário ativado' : '👁️ Pré-visualizando como Cliente');
 }
 
 // Renderiza todos os blocos da Vitrine Social (Modelo exato ao design de referência)
@@ -2721,13 +2732,54 @@ function renderVitrineView() {
   if (!currentVitrinePro) return;
   const p = currentVitrinePro;
 
-  // 1. Barra Superior
+  // Bloqueio de segurança: se o usuário logado não é o dono real, garante isVitrineOwner = false
+  const isRealOwner = isCurrentUserOwnerOfPro(p);
+  if (!isRealOwner) {
+    isVitrineOwner = false;
+  }
+
+  // 1. Barra Superior e Menu de 3 Pontinhos Dinâmico (Dono vs Visitante)
   const handleElem = document.getElementById('vitrine-handle');
   if (handleElem) handleElem.innerText = p.handle || `${p.name.toLowerCase().replace(/\s+/g, '.')}`;
 
-  const menuModeLabel = document.getElementById('menu-mode-label');
-  if (menuModeLabel) {
-    menuModeLabel.innerText = isVitrineOwner ? 'Alternar para Modo Visitante' : 'Alternar para Modo Proprietário';
+  const dropdownMenu = document.getElementById('vitrine-dropdown-menu');
+  if (dropdownMenu) {
+    if (isRealOwner) {
+      dropdownMenu.innerHTML = `
+        <button class="dropdown-item" onclick="toggleVitrineMenu(); openEditProModal();">
+          <i class="fa-solid fa-pen-to-square"></i>
+          <span>Editar meu perfil</span>
+        </button>
+        <button class="dropdown-item" onclick="toggleVitrineMenu(); triggerAddMediaFlow();">
+          <i class="fa-solid fa-camera"></i>
+          <span>Publicar foto de serviço</span>
+        </button>
+        <button class="dropdown-item" onclick="toggleVitrineMode()">
+          <i class="fa-solid fa-eye"></i>
+          <span>${isVitrineOwner ? 'Ver como Cliente' : 'Voltar ao Modo Proprietário'}</span>
+        </button>
+        <button class="dropdown-item" onclick="toggleVitrineMenu(); shareProProfile();">
+          <i class="fa-solid fa-share-nodes"></i>
+          <span>Compartilhar perfil</span>
+        </button>
+      `;
+    } else {
+      const isFav = typeof isProFavorited === 'function' ? isProFavorited(p.id) : false;
+      dropdownMenu.innerHTML = `
+        <button class="dropdown-item" onclick="toggleVitrineMenu(); shareProProfile();">
+          <i class="fa-solid fa-share-nodes"></i>
+          <span>Compartilhar perfil</span>
+        </button>
+        <button class="dropdown-item" onclick="toggleVitrineMenu(); toggleProFavorite('${p.id}');">
+          <i class="${isFav ? 'fa-solid fa-heart' : 'fa-regular fa-heart'}"></i>
+          <span>${isFav ? 'Remover dos favoritos' : 'Salvar nos favoritos'}</span>
+        </button>
+        <button class="dropdown-item" onclick="toggleVitrineMenu(); startChatWithPro();">
+          <i class="fa-solid fa-comments"></i>
+          <span>Conversar com profissional</span>
+        </button>
+      `;
+    }
   }
 
   // 2. Avatar e Header Info
@@ -2928,7 +2980,10 @@ function updateVitrine24hBadge() {
 }
 
 function toggleVitrine24hAvailability(checked) {
-  if (!currentVitrinePro) return;
+  if (!currentVitrinePro || !isCurrentUserOwnerOfPro(currentVitrinePro)) {
+    showToast('Apenas o próprio profissional pode alterar o status do plantão.');
+    return;
+  }
 
   currentVitrinePro.emergencyAvailable = checked;
   currentVitrinePro.is24h = checked;
@@ -4227,7 +4282,10 @@ function closePostDetail() {
 }
 
 async function deletePost(postId) {
-  if (!currentVitrinePro) return;
+  if (!currentVitrinePro || !isCurrentUserOwnerOfPro(currentVitrinePro)) {
+    showToast('Apenas o profissional proprietário pode excluir publicações.');
+    return;
+  }
   const postToDelete = (currentVitrinePro.posts || []).find(p => p.id === postId);
   currentVitrinePro.posts = (currentVitrinePro.posts || []).filter(p => p.id !== postId);
   currentVitrinePro.worksCount = currentVitrinePro.posts.length;
@@ -4281,6 +4339,10 @@ let selectedCustomImage = null;
 
 // Dispara a abertura imediata da galeria ou câmera nativa (estilo Instagram)
 function triggerAddMediaFlow() {
+  if (!currentVitrinePro || !isCurrentUserOwnerOfPro(currentVitrinePro)) {
+    showToast('Apenas o profissional proprietário pode adicionar fotos neste perfil.');
+    return;
+  }
   const fileInput = document.getElementById('portfolio-fab-file-input');
   if (fileInput) {
     fileInput.value = ''; // Limpa para permitir selecionar a mesma foto novamente
@@ -4293,6 +4355,10 @@ window.triggerAddMediaFlow = triggerAddMediaFlow;
 
 // Manipula a foto selecionada na galeria, comprime com alta nitidez e abre o modal de publicação
 async function handleMediaSelected(event) {
+  if (!currentVitrinePro || !isCurrentUserOwnerOfPro(currentVitrinePro)) {
+    showToast('Apenas o profissional proprietário pode publicar fotos.');
+    return;
+  }
   const file = event.target.files && event.target.files[0];
   if (!file) return;
 
@@ -4309,7 +4375,10 @@ window.handleMediaSelected = handleMediaSelected;
 
 // Abre o modal de publicação já com a foto em destaque
 function openCreatePostModal(imageUrl = null) {
-  if (!currentVitrinePro) return;
+  if (!currentVitrinePro || !isCurrentUserOwnerOfPro(currentVitrinePro)) {
+    showToast('Apenas o profissional proprietário pode publicar no portfólio.');
+    return;
+  }
 
   if (imageUrl) {
     selectedCustomImage = imageUrl;
@@ -4366,6 +4435,10 @@ window.closeCreatePostModal = closeCreatePostModal;
 
 // Salva e publica a mídia na vitrine e sincroniza em tempo real no Supabase (public.portfolio_items)
 async function submitNewPost() {
+  if (!currentVitrinePro || !isCurrentUserOwnerOfPro(currentVitrinePro)) {
+    showToast('Apenas o profissional proprietário pode publicar no portfólio.');
+    return;
+  }
   const titleInput = document.getElementById('new-post-title');
   const title = titleInput ? titleInput.value.trim() : '';
   const service = document.getElementById('new-post-service-select')?.value || (currentVitrinePro && currentVitrinePro.specialty) || 'Serviço Profissional';
@@ -4471,7 +4544,10 @@ async function handleEditProAvatarSelect(input) {
 window.handleEditProAvatarSelect = handleEditProAvatarSelect;
 
 function openEditProModal() {
-  if (!currentVitrinePro) return;
+  if (!currentVitrinePro || !isCurrentUserOwnerOfPro(currentVitrinePro)) {
+    showToast('Acesso negado: apenas o próprio profissional pode editar este perfil.');
+    return;
+  }
   pendingEditProAvatar = null;
   const avatarPreview = document.getElementById('edit-pro-avatar-preview');
   const nameEl = document.getElementById('edit-pro-name');
@@ -4506,7 +4582,10 @@ function closeEditProModal() {
 }
 
 async function saveProProfile() {
-  if (!currentVitrinePro) return;
+  if (!currentVitrinePro || !isCurrentUserOwnerOfPro(currentVitrinePro)) {
+    showToast('Acesso negado: apenas o próprio profissional pode salvar alterações neste perfil.');
+    return;
+  }
   const newName = document.getElementById('edit-pro-name')?.value.trim() || currentVitrinePro.name;
   const newSpec = document.getElementById('edit-pro-specialty')?.value.trim() || currentVitrinePro.specialty;
   const newCep = document.getElementById('edit-pro-cep')?.value.trim() || '';
@@ -4581,7 +4660,10 @@ async function saveProProfile() {
 // MODAL: GERENCIAR SERVIÇOS (DONO)
 // =========================================================
 function openManageServicesModal() {
-  if (!currentVitrinePro) return;
+  if (!currentVitrinePro || !isCurrentUserOwnerOfPro(currentVitrinePro)) {
+    showToast('Apenas o profissional proprietário pode gerenciar o catálogo de serviços.');
+    return;
+  }
   renderManageServicesList();
   document.getElementById('manage-services-overlay').classList.add('active');
 }
@@ -4608,6 +4690,10 @@ function renderManageServicesList() {
 }
 
 function addNewService() {
+  if (!currentVitrinePro || !isCurrentUserOwnerOfPro(currentVitrinePro)) {
+    showToast('Apenas o profissional proprietário pode adicionar serviços.');
+    return;
+  }
   const title = document.getElementById('new-service-title').value.trim();
   const price = document.getElementById('new-service-price').value.trim();
 
@@ -4626,14 +4712,19 @@ function addNewService() {
   document.getElementById('new-service-title').value = '';
   document.getElementById('new-service-price').value = '';
 
+  saveProfessionalsToStorage();
   renderManageServicesList();
   renderVitrineView();
   showToast('Serviço adicionado ao seu catálogo!');
 }
 
 function deleteService(index) {
-  if (!currentVitrinePro) return;
+  if (!currentVitrinePro || !isCurrentUserOwnerOfPro(currentVitrinePro)) {
+    showToast('Apenas o profissional proprietário pode remover serviços.');
+    return;
+  }
   currentVitrinePro.services.splice(index, 1);
+  saveProfessionalsToStorage();
   renderManageServicesList();
   renderVitrineView();
   showToast('Serviço removido.');
@@ -8326,6 +8417,11 @@ let showcaseImageData = { before: null, after: null };
 let currentViewingShowcase = null;
 
 function openPublishShowcaseModal() {
+  const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+  if (!user || user.role !== 'professional') {
+    showToast('Apenas profissionais cadastrados podem publicar transformações Antes & Depois.');
+    return;
+  }
   const modal = document.getElementById('modal-publish-showcase');
   if (!modal) return;
 
