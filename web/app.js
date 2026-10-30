@@ -2922,15 +2922,15 @@ function renderVitrineEmergencyCard() {
             <i class="fa-solid fa-clock"></i>
           </div>
           <div class="emergency-card-texts">
-            <span class="emergency-card-title">Plantão 24h & Emergência</span>
+            <span class="emergency-card-title">Atendimento SOS 24h</span>
             <span class="emergency-card-sub ${isAvailable ? 'on' : 'off'}">
               <span class="status-indicator-dot ${isAvailable ? 'dot-active' : 'dot-inactive'}"></span>
-              ${isAvailable ? 'Disponível para chamados urgentes' : 'Atendimento em horário comercial'}
+              ${isAvailable ? 'Atendimento SOS 24h ativado no seu perfil' : 'Atendimento apenas em horário comercial'}
             </span>
           </div>
         </div>
         <div class="emergency-card-right">
-          <label class="discreet-switch" title="${isAvailable ? 'Desativar plantão 24h' : 'Ativar plantão 24h'}">
+          <label class="discreet-switch" title="${isAvailable ? 'Desativar SOS 24h' : 'Ativar SOS 24h'}">
             <input type="checkbox" id="vitrine-24h-switch" ${isAvailable ? 'checked' : ''} onchange="toggleVitrine24hAvailability(this.checked)">
             <span class="discreet-slider"></span>
           </label>
@@ -2938,26 +2938,13 @@ function renderVitrineEmergencyCard() {
       </div>
     `;
   } else {
-    // Modo Visitante (Cliente vendo o perfil)
+    // Modo Visitante (Cliente vendo o perfil): tag discreto informativo, sem botão de chamar
     if (isAvailable) {
       container.innerHTML = `
-        <div class="emergency-card-discreet visitor">
-          <div class="emergency-card-left">
-            <div class="emergency-icon-box on">
-              <i class="fa-solid fa-bolt"></i>
-            </div>
-            <div class="emergency-card-texts">
-              <span class="emergency-card-title">Atende Emergências 24h</span>
-              <span class="emergency-card-sub on">
-                <span class="status-indicator-dot dot-active"></span> Disponível agora para socorro rápido
-              </span>
-            </div>
-          </div>
-          <div class="emergency-card-right">
-            <button type="button" class="btn-emergency-subtle" onclick="startEmergencyCallWithPro()">
-              <i class="fa-solid fa-phone"></i> Chamar
-            </button>
-          </div>
+        <div class="sos-24h-visitor-tag">
+          <span class="status-indicator-dot dot-active"></span>
+          <i class="fa-solid fa-bolt sos-24h-visitor-icon"></i>
+          <span class="sos-24h-visitor-text"><strong>Atendimento SOS 24h ativado</strong> • Disponível para urgências</span>
         </div>
       `;
     } else {
@@ -2972,7 +2959,7 @@ function updateVitrine24hBadge() {
 
   const isAvailable = currentVitrinePro.emergencyAvailable !== false;
   if (isAvailable) {
-    badge.innerHTML = `<span class="dot-active-tiny"></span> Plantão 24h`;
+    badge.innerHTML = `<span class="dot-active-tiny"></span> SOS 24h`;
     badge.style.display = 'inline-flex';
   } else {
     badge.style.display = 'none';

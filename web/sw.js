@@ -1,13 +1,13 @@
 // Trampou PWA Service Worker
-const CACHE_NAME = 'trampou-pwa-v29';
+const CACHE_NAME = 'trampou-pwa-v31';
 
 const STATIC_SHELL = [
   './',
   './index.html',
   './styles.css',
-  './styles.css?v=25',
+  './styles.css?v=31',
   './app.js',
-  './app.js?v=25',
+  './app.js?v=31',
   './manifest.json',
   './manifest.json?v=5',
   './icon-192.png',
@@ -106,7 +106,40 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 4. Arquivos estáticos do app (HTML, CSS, JS, Imagens locais): Stale-While-Revalidate com fallback ignoreSearch
+  // 4. Arquivos HTML, CSS e JS do app: Network-First para sempre refletir atualizações imediatamente
+  if (req.mode === 'navigate' ||
+      url.pathname.endsWith('.html') ||
+      url.pathname.endsWith('.js') ||
+      url.pathname.endsWith('.css') ||
+      url.pathname === '/') {
+    event.respondWith(
+      fetch(req)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(req, responseClone);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          return caches.match(req).then((exactCached) => {
+            if (exactCached) return exactCached;
+            return caches.match(req, { ignoreSearch: true }).then((fallback) => {
+              if (fallback) return fallback;
+              if (req.mode === 'navigate') {
+                return caches.match('./index.html') || caches.match('./');
+              }
+              return new Response('', { status: 504 });
+            });
+          });
+        })
+    );
+    return;
+  }
+
+  // 5. Demais ativos estáticos (Imagens, ícones): Stale-While-Revalidate
   event.respondWith(
     caches.match(req).then((exactCached) => {
       return (exactCached ? Promise.resolve(exactCached) : caches.match(req, { ignoreSearch: true })).then((cachedResponse) => {
@@ -120,13 +153,7 @@ self.addEventListener('fetch', (event) => {
             }
             return networkResponse;
           })
-          .catch(() => {
-            // Se offline e for navegação de página, retorna index.html em cache
-            if (req.mode === 'navigate') {
-              return caches.match('./index.html') || caches.match('./');
-            }
-            return cachedResponse || new Response('', { status: 504 });
-          });
+          .catch(() => cachedResponse || new Response('', { status: 504 }));
 
         return cachedResponse || fetchPromise;
       });
