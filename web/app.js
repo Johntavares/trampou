@@ -2755,6 +2755,163 @@ function ensureWelcomeNotification(user, notifyUser = false) {
 }
 window.ensureWelcomeNotification = ensureWelcomeNotification;
 
+// ==============================================================================
+// RECEPTOR DE NOTIFICAÇÕES PUSH & COMUNICADOS EM TEMPO REAL
+// ==============================================================================
+
+async function requestPushNotificationPermission() {
+  if (!('Notification' in window)) return false;
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      showToast('🔔 Notificações push ativadas com sucesso!');
+      return true;
+    }
+  } catch (_) {}
+  return false;
+}
+window.requestPushNotificationPermission = requestPushNotificationPermission;
+
+function isNotificationForCurrentClient(pushItem) {
+  if (!pushItem) return false;
+  const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+  const role = user ? user.role : 'client';
+
+  // Filtro por público-alvo
+  if (pushItem.target_audience === 'clients' && role === 'professional') return false;
+  if (pushItem.target_audience === 'professionals' && role !== 'professional') return false;
+
+  // Filtro por cidade (se especificada e diferente de 'all')
+  if (pushItem.target_city && pushItem.target_city !== 'all') {
+    const userCity = (user && user.city) || currentActiveLocation.city || 'Parauapebas';
+    if (pushItem.target_city.toLowerCase() !== userCity.toLowerCase()) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function handleIncomingPushNotification(pushItem) {
+  if (!pushItem || !pushItem.id) return;
+  if (!isNotificationForCurrentClient(pushItem)) return;
+
+  const deliveredKey = 'trampou_delivered_pushes';
+  let deliveredList = [];
+  try {
+    deliveredList = JSON.parse(localStorage.getItem(deliveredKey) || '[]');
+  } catch (_) { deliveredList = []; }
+
+  if (deliveredList.includes(pushItem.id)) return; // Já entregue
+
+  deliveredList.push(pushItem.id);
+  localStorage.setItem(deliveredKey, JSON.stringify(deliveredList.slice(-100)));
+
+  // 1. Notificação nativa do sistema / PWA (se permitido)
+  if ('Notification' in window && Notification.permission === 'granted') {
+    const notifTitle = pushItem.title || 'Trampou';
+    const notifOptions = {
+      body: pushItem.body || 'Você tem uma nova notificação oficial!',
+      icon: './trampou_app_icon.png',
+      badge: './trampou_app_icon.png',
+      vibrate: [200, 100, 200],
+      data: {
+        action_type: pushItem.action_type || 'app',
+        url: pushItem.action_url || './'
+      }
+    };
+
+    if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+      navigator.serviceWorker.ready.then(reg => {
+        reg.showNotification(notifTitle, notifOptions);
+      }).catch(() => {
+        try { new Notification(notifTitle, notifOptions); } catch(_) {}
+      });
+    } else {
+      try { new Notification(notifTitle, notifOptions); } catch(_) {}
+    }
+  }
+
+  // 2. Insere na aba Mensagens como conversa oficial de destaque
+  const convId = 'push_' + pushItem.id;
+  const existingIndex = conversations.findIndex(c => c.id === convId);
+  const categoryLabels = {
+    geral: '📢 Comunicado Oficial',
+    novidade: '🚀 Novidade no App',
+    promocao: '🏷️ Destaque / Oferta',
+    urgente: '🚨 Alerta Importante',
+    dica: '💡 Dica Trampou'
+  };
+  const categoryTitle = categoryLabels[pushItem.category] || '📢 Comunicado';
+
+  const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+  let formattedBody = `📢 **${pushItem.title}**\n\n${pushItem.body}`;
+  if (pushItem.action_url) {
+    formattedBody += `\n\n🔗 [Toque aqui para acessar](${pushItem.action_url})`;
+  }
+
+  if (existingIndex < 0) {
+    const newConv = {
+      id: convId,
+      proName: 'Equipe Trampou',
+      proId: 'trampou_official',
+      clientName: (user && user.name) ? user.name : 'Você',
+      service: categoryTitle,
+      isOfficial: true,
+      lastMsg: `${pushItem.title}: ${pushItem.body}`,
+      time: 'Agora',
+      unread: 1,
+      action_type: pushItem.action_type || 'app',
+      action_url: pushItem.action_url || null,
+      messages: [
+        {
+          isMe: false,
+          isOfficial: true,
+          text: formattedBody,
+          time: 'Agora'
+        }
+      ],
+      attendance: null
+    };
+    conversations.unshift(newConv);
+  }
+
+  saveStoredConversations();
+  renderConversations();
+  updateNotificationBadges();
+
+  // 3. Feedback tátil e sonoro
+  if (navigator && navigator.vibrate) {
+    try { navigator.vibrate([150, 70, 150]); } catch (_) {}
+  }
+
+  // 4. Toast interativo na tela
+  showToast(`🔔 ${pushItem.title}: ${pushItem.body.slice(0, 45)}...`);
+}
+window.handleIncomingPushNotification = handleIncomingPushNotification;
+
+async function loadLatestBroadcastNotifications() {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/push_notifications?status=eq.sent&order=created_at.desc&limit=20`, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    });
+    if (!res.ok) return;
+    const items = await res.json();
+    if (!Array.isArray(items)) return;
+
+    for (const item of items) {
+      handleIncomingPushNotification(item);
+    }
+  } catch (err) {
+    console.warn('Erro ao carregar notificações push:', err);
+  }
+}
+window.loadLatestBroadcastNotifications = loadLatestBroadcastNotifications;
+
+
 // Renderiza Conversas e Notificações
 function renderConversations() {
   const container = document.getElementById('conversations-container');
@@ -3466,7 +3623,8 @@ function initRealtimeDatabaseSync() {
               { event: '*', schema: 'public', table: 'profiles' },
               { event: '*', schema: 'public', table: 'professional_profiles' },
               { event: '*', schema: 'public', table: 'portfolio_items' },
-              { event: '*', schema: 'public', table: 'banners' }
+              { event: '*', schema: 'public', table: 'banners' },
+              { event: '*', schema: 'public', table: 'push_notifications' }
             ]
           }
         },
@@ -9419,3 +9577,16 @@ window.updatePopularCitiesChips = updatePopularCitiesChips;
 
 
 
+
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'NAVIGATE_ACTION') {
+      const act = event.data.action_type;
+      if (act === 'chat') switchTab('chat');
+      else if (act === 'sos') openRadarSOS();
+      else if (act === 'url' && event.data.url) window.open(event.data.url, '_blank');
+      else switchTab('home');
+    }
+  });
+}

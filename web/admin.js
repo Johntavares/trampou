@@ -22,6 +22,7 @@
     categories: [],
     subscriptions: [],
     feedbacks: [],
+    notifications: [],
     currentTab: 'dashboard',
     isLoading: false
   };
@@ -121,6 +122,7 @@
     const titles = {
       dashboard: 'Visão Geral',
       banners: 'Gerenciador de Banners & Anúncios',
+      notifications: 'Central de Notificações Push & Comunicados',
       professionals: 'Base de Profissionais Autônomos',
       users: 'Usuários Clientes',
       monetization: 'Monetização, Faturamento & Planos PRO',
@@ -140,8 +142,12 @@
     if (typeof closeMobileSidebar === 'function') closeMobileSidebar();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
+    if (tabId === 'notifications' && typeof renderPushNotifications === 'function') {
+      renderPushNotifications();
+    }
     if (tabId === 'feedbacks' && typeof renderFeedbacks === 'function') {
       renderFeedbacks();
+      renderPushNotifications();
     }
   }
 
@@ -185,7 +191,8 @@
         fetchUsers(),
         fetchCategories(),
         fetchSubscriptions(),
-        fetchFeedbacks()
+        fetchFeedbacks(),
+        fetchNotifications()
       ]);
 
       renderDashboard();
@@ -210,6 +217,8 @@
     const sCount = document.getElementById('nav-subs-count');
     const cCount = document.getElementById('nav-cats-count');
     const fbCount = document.getElementById('nav-feedbacks-count');
+    const nCount = document.getElementById('nav-notifications-count');
+    if (nCount) nCount.textContent = state.notifications.length;
 
     if (bCount) bCount.textContent = state.banners.length;
     if (pCount) pCount.textContent = state.professionals.length;
@@ -2009,8 +2018,321 @@
     }
   }
 
+  
+  // =========================================================
+  // GESTÃO DE NOTIFICAÇÕES PUSH & COMUNICADOS
+  // =========================================================
+  async function fetchNotifications() {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/push_notifications?order=created_at.desc`, {
+        headers: getHeaders()
+      });
+      if (res.ok) {
+        state.notifications = await res.json();
+      } else {
+        state.notifications = [];
+      }
+    } catch (_) {
+      state.notifications = [];
+    }
+  }
+
+  function renderPushNotifications() {
+    const totalEl = document.getElementById('stat-push-total');
+    const clientsEl = document.getElementById('stat-push-clients');
+    const prosEl = document.getElementById('stat-push-pros');
+    const allEl = document.getElementById('stat-push-all');
+
+    const total = state.notifications.length;
+    const clientsCount = state.notifications.filter(n => n.target_audience === 'clients').length;
+    const prosCount = state.notifications.filter(n => n.target_audience === 'professionals').length;
+    const allCount = state.notifications.filter(n => n.target_audience === 'all').length;
+
+    if (totalEl) totalEl.textContent = total;
+    if (clientsEl) clientsEl.textContent = clientsCount;
+    if (prosEl) prosEl.textContent = prosCount;
+    if (allEl) allEl.textContent = allCount;
+
+    const tbody = document.getElementById('notifications-table-body');
+    if (!tbody) return;
+
+    if (state.notifications.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align: center; padding: 40px 16px; color: #64748B;">
+            <i class="fa-solid fa-bullhorn" style="font-size: 32px; color: #CBD5E1; margin-bottom: 10px; display: block;"></i>
+            <h5 style="font-size: 14px; font-weight: 700; color: #334155; margin-bottom: 4px;">Nenhuma notificação enviada ainda</h5>
+            <p style="font-size: 12px; margin: 0;">Use o formulário acima para compor e disparar comunicados push aos celulares dos usuários.</p>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    const categoryLabels = {
+      geral: { text: 'Comunicado', badge: 'neutral' },
+      novidade: { text: 'Novidade', badge: 'pro' },
+      promocao: { text: 'Promoção', badge: 'warning' },
+      urgente: { text: 'Urgente', badge: 'danger' },
+      dica: { text: 'Dica', badge: 'success' }
+    };
+
+    const audienceLabels = {
+      all: { text: 'Todos (Geral)', icon: 'fa-earth-americas', color: '#6825B3' },
+      clients: { text: 'Clientes', icon: 'fa-users', color: '#2563EB' },
+      professionals: { text: 'Profissionais', icon: 'fa-user-tie', color: '#059669' }
+    };
+
+    const actionLabels = {
+      app: '📱 Tela Inicial',
+      chat: '💬 Mensagens',
+      sos: '🚨 Plantão SOS',
+      url: '🔗 Link Externo'
+    };
+
+    tbody.innerHTML = state.notifications.map(n => {
+      const aud = audienceLabels[n.target_audience] || audienceLabels.all;
+      const cat = categoryLabels[n.category] || categoryLabels.geral;
+      const actionText = actionLabels[n.action_type] || '📱 App';
+      const dateStr = n.created_at ? new Date(n.created_at).toLocaleString('pt-BR') : '—';
+
+      return `
+        <tr>
+          <td>
+            <div style="font-weight: 800; color: #0F172A; font-size: 13px; margin-bottom: 2px;">
+              ${escapeHTML(n.title)}
+            </div>
+            <div style="font-size: 11.5px; color: #64748B; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              ${escapeHTML(n.body)}
+            </div>
+          </td>
+          <td>
+            <span class="badge-status-pill" style="background: rgba(0,0,0,0.04); color: ${aud.color}; border: 1px solid rgba(0,0,0,0.08);">
+              <i class="fa-solid ${aud.icon}" style="margin-right: 4px;"></i> ${aud.text}
+            </span>
+          </td>
+          <td>
+            <span class="badge-status-pill ${cat.badge}">
+              ${cat.text}
+            </span>
+          </td>
+          <td>
+            <div style="font-size: 12px; font-weight: 600; color: #334155;">
+              ${actionText}
+            </div>
+            ${n.action_url ? `<a href="${escapeHTML(n.action_url)}" target="_blank" style="font-size: 11px; color: var(--admin-brand); text-decoration: none; max-width: 150px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHTML(n.action_url)}</a>` : ''}
+          </td>
+          <td style="font-size: 12px; color: #64748B; white-space: nowrap;">
+            ${dateStr}
+          </td>
+          <td>
+            <span class="badge-status-pill success">
+              <i class="fa-solid fa-check"></i> Enviada
+            </span>
+          </td>
+          <td style="text-align: right; white-space: nowrap;">
+            <button class="btn-action-icon" title="Reenviar / Usar como base" onclick="window.AdminApp.resendNotification('${n.id}')" style="margin-right: 4px;">
+              <i class="fa-solid fa-arrow-rotate-right" style="color: #6825B3;"></i>
+            </button>
+            <button class="btn-action-icon" title="Excluir do histórico" onclick="window.AdminApp.deleteNotification('${n.id}')">
+              <i class="fa-solid fa-trash-can" style="color: #DC2626;"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function updatePushPreview() {
+    const titleInput = document.getElementById('push-input-title');
+    const bodyInput = document.getElementById('push-input-body');
+    const audSelect = document.getElementById('push-select-audience');
+    const catSelect = document.getElementById('push-select-category');
+
+    const previewTitle = document.getElementById('preview-push-title');
+    const previewBody = document.getElementById('preview-push-body');
+    const previewBadge = document.getElementById('preview-push-badge');
+    const previewTarget = document.getElementById('preview-push-target');
+    const titleCount = document.getElementById('push-title-count');
+    const bodyCount = document.getElementById('push-body-count');
+
+    const titleVal = titleInput ? titleInput.value.trim() : '';
+    const bodyVal = bodyInput ? bodyInput.value.trim() : '';
+
+    if (titleCount && titleInput) titleCount.textContent = `${titleInput.value.length}/60`;
+    if (bodyCount && bodyInput) bodyCount.textContent = `${bodyInput.value.length}/240`;
+
+    if (previewTitle) {
+      previewTitle.textContent = titleVal || 'Título da notificação aparecerá aqui...';
+    }
+    if (previewBody) {
+      previewBody.textContent = bodyVal || 'A mensagem digitada acima aparecerá aqui em tempo real conforme você escreve.';
+    }
+
+    if (previewBadge && catSelect) {
+      const catTexts = {
+        geral: 'Comunicado',
+        novidade: 'Novidade',
+        promocao: 'Destaque',
+        urgente: 'Alerta',
+        dica: 'Dica'
+      };
+      previewBadge.textContent = catTexts[catSelect.value] || 'Aviso';
+    }
+
+    if (previewTarget && audSelect) {
+      const audTexts = {
+        all: '<i class="fa-solid fa-users"></i> Todos os Usuários',
+        clients: '<i class="fa-solid fa-user"></i> Somente Clientes',
+        professionals: '<i class="fa-solid fa-user-tie"></i> Somente Profissionais'
+      };
+      previewTarget.innerHTML = audTexts[audSelect.value] || '<i class="fa-solid fa-users"></i> Todos os Usuários';
+    }
+
+    const clockEl = document.getElementById('preview-phone-clock');
+    if (clockEl) {
+      const d = new Date();
+      clockEl.textContent = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }
+  }
+
+  function handlePushActionChange() {
+    const actionSelect = document.getElementById('push-select-action');
+    const urlGroup = document.getElementById('push-url-group');
+    if (actionSelect && urlGroup) {
+      urlGroup.style.display = actionSelect.value === 'url' ? 'block' : 'none';
+    }
+    updatePushPreview();
+  }
+
+  function resetPushForm() {
+    const form = document.getElementById('admin-push-form');
+    if (form) form.reset();
+    handlePushActionChange();
+    updatePushPreview();
+  }
+
+  async function handleSendPushNotification(event) {
+    if (event) event.preventDefault();
+
+    const title = (document.getElementById('push-input-title') ? document.getElementById('push-input-title').value : '').trim();
+    const body = (document.getElementById('push-input-body') ? document.getElementById('push-input-body').value : '').trim();
+    const audience = document.getElementById('push-select-audience') ? document.getElementById('push-select-audience').value : 'all';
+    const category = document.getElementById('push-select-category') ? document.getElementById('push-select-category').value : 'geral';
+    const actionType = document.getElementById('push-select-action') ? document.getElementById('push-select-action').value : 'app';
+    const actionUrl = document.getElementById('push-input-url') ? document.getElementById('push-input-url').value.trim() : '';
+
+    if (!title || !body) {
+      alert('Por favor, preencha o título e a mensagem da notificação.');
+      return;
+    }
+
+    const btn = document.getElementById('btn-submit-push');
+    const btnText = document.getElementById('btn-submit-push-text');
+    if (btn) btn.disabled = true;
+    if (btnText) btnText.textContent = 'Disparando Notificação Push...';
+
+    try {
+      const payload = {
+        title,
+        body,
+        target_audience: audience,
+        category,
+        action_type: actionType,
+        action_url: (actionType === 'url' && actionUrl) ? actionUrl : null,
+        sent_by: 'Admin Trampou',
+        status: 'sent',
+        created_at: new Date().toISOString()
+      };
+
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/push_notifications`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText || 'Falha ao salvar notificação');
+      }
+
+      const inserted = await res.json();
+      if (Array.isArray(inserted) && inserted.length > 0) {
+        state.notifications.unshift(inserted[0]);
+      } else {
+        await fetchNotifications();
+      }
+
+      updateCounters();
+      renderPushNotifications();
+      resetPushForm();
+
+      alert('🚀 Notificação Push disparada com sucesso para os usuários!');
+    } catch (err) {
+      console.error('Erro ao disparar notificação push:', err);
+      alert('Erro ao disparar notificação push. Verifique sua conexão e tente novamente.');
+    } finally {
+      if (btn) btn.disabled = false;
+      if (btnText) btnText.textContent = 'Enviar Notificação Push Agora';
+    }
+  }
+
+  function resendNotification(id) {
+    const item = state.notifications.find(n => n.id === id);
+    if (!item) return;
+
+    const titleInput = document.getElementById('push-input-title');
+    const bodyInput = document.getElementById('push-input-body');
+    const audSelect = document.getElementById('push-select-audience');
+    const catSelect = document.getElementById('push-select-category');
+    const actionSelect = document.getElementById('push-select-action');
+    const urlInput = document.getElementById('push-input-url');
+
+    if (titleInput) titleInput.value = item.title;
+    if (bodyInput) bodyInput.value = item.body;
+    if (audSelect) audSelect.value = item.target_audience;
+    if (catSelect) catSelect.value = item.category;
+    if (actionSelect) actionSelect.value = item.action_type || 'app';
+    if (urlInput) urlInput.value = item.action_url || '';
+
+    handlePushActionChange();
+    updatePushPreview();
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (titleInput) titleInput.focus();
+  }
+
+  async function deleteNotification(id) {
+    if (!confirm('Deseja realmente remover esta notificação do histórico?')) return;
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/push_notifications?id=eq.${id}`, {
+        method: 'DELETE',
+        headers: getHeaders()
+      });
+      if (res.ok) {
+        state.notifications = state.notifications.filter(n => n.id !== id);
+        updateCounters();
+        renderPushNotifications();
+      }
+    } catch (err) {
+      console.error('Erro ao excluir notificação:', err);
+    }
+  }
+
+  async function refreshNotificationsTable() {
+    await fetchNotifications();
+    renderPushNotifications();
+  }
+
   // Expõe a API pública do Admin no objeto global
   window.AdminApp = {
+    handleSendPushNotification,
+    updatePushPreview,
+    handlePushActionChange,
+    resetPushForm,
+    refreshNotificationsTable,
+    resendNotification,
+    deleteNotification,
     handleLogin,
     togglePasswordVisibility,
     logout,

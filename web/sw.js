@@ -1,5 +1,5 @@
 // Trampou PWA Service Worker
-const CACHE_NAME = 'trampou-pwa-v36';
+const CACHE_NAME = 'trampou-pwa-v37';
 
 const STATIC_SHELL = [
   './',
@@ -160,3 +160,58 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+// =========================================================
+// PUSH NOTIFICATIONS & INTERAÇÃO DO USUÁRIO
+// =========================================================
+self.addEventListener('push', (event) => {
+  let data = {};
+  if (event.data) {
+    try {
+      data = event.data.json();
+    } catch (_) {
+      data = { title: 'Trampou', body: event.data.text() };
+    }
+  }
+
+  const title = data.title || 'Trampou';
+  const options = {
+    body: data.body || 'Nova notificação no Trampou!',
+    icon: './trampou_app_icon.png',
+    badge: './trampou_app_icon.png',
+    vibrate: [200, 100, 200],
+    data: {
+      action_type: data.action_type || 'app',
+      url: data.action_url || './'
+    }
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const notifData = event.notification.data || {};
+  const targetUrl = notifData.url || './';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url && 'focus' in client) {
+          if (notifData.action_type) {
+            client.postMessage({
+              type: 'NAVIGATE_ACTION',
+              action_type: notifData.action_type,
+              url: targetUrl
+            });
+          }
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
+  );
+});
+
