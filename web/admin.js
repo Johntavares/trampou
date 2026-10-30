@@ -2143,6 +2143,65 @@
     }).join('');
   }
 
+  
+  function applyPushTemplate(type) {
+    const titleInput = document.getElementById('push-input-title');
+    const bodyInput = document.getElementById('push-input-body');
+    const audSelect = document.getElementById('push-select-audience');
+    const catSelect = document.getElementById('push-select-category');
+    const actionSelect = document.getElementById('push-select-action');
+
+    const templates = {
+      geral: {
+        title: '📢 Comunicado Oficial Trampou',
+        body: 'Estamos trazendo melhorias constantes na plataforma para facilitar contratações e atendimentos em toda a cidade.',
+        audience: 'all',
+        category: 'geral',
+        action: 'app'
+      },
+      novidade: {
+        title: '🚀 Nova Atualização Disponível!',
+        body: 'Nova versão mais rápida e leve! Veja as novidades navegando pelas categorias e perfis profissionais.',
+        audience: 'all',
+        category: 'novidade',
+        action: 'app'
+      },
+      sos: {
+        title: '🚨 Plantão SOS 24h em Operação',
+        body: 'Precisando de socorro urgente para imprevistos elétricos, hidráulicos ou chaveiro? Acione socorro rápido com 1 toque no Radar SOS!',
+        audience: 'clients',
+        category: 'urgente',
+        action: 'sos'
+      },
+      dica: {
+        title: '💡 Dica para Contratar com Segurança',
+        body: 'Antes de iniciar o serviço, combine detalhes e prazos diretamente pelo chat com o profissional. Avalie o trabalho ao concluir!',
+        audience: 'clients',
+        category: 'dica',
+        action: 'chat'
+      },
+      pro: {
+        title: '🛠️ Dica de Ouro para Profissionais!',
+        body: 'Mantenha sua vitrine atualizada com fotos recentes de serviços concluídos. Portfólio com fotos atrai até 5x mais clientes!',
+        audience: 'professionals',
+        category: 'dica',
+        action: 'chat'
+      }
+    };
+
+    const t = templates[type];
+    if (!t) return;
+
+    if (titleInput) titleInput.value = t.title;
+    if (bodyInput) bodyInput.value = t.body;
+    if (audSelect) audSelect.value = t.audience;
+    if (catSelect) catSelect.value = t.category;
+    if (actionSelect) actionSelect.value = t.action;
+
+    handlePushActionChange();
+    updatePushPreview();
+  }
+
   function updatePushPreview() {
     const titleInput = document.getElementById('push-input-title');
     const bodyInput = document.getElementById('push-input-body');
@@ -2193,6 +2252,16 @@
     if (clockEl) {
       const d = new Date();
       clockEl.textContent = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }
+    const bigClock = document.getElementById('preview-lockscreen-clock');
+    if (bigClock) {
+      const d = new Date();
+      bigClock.textContent = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }
+    const dateEl = document.getElementById('preview-lockscreen-date');
+    if (dateEl) {
+      const now = new Date();
+      dateEl.textContent = now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'short' });
     }
   }
 
@@ -2327,6 +2396,7 @@
   // Expõe a API pública do Admin no objeto global
   window.AdminApp = {
     handleSendPushNotification,
+    applyPushTemplate,
     updatePushPreview,
     handlePushActionChange,
     resetPushForm,
