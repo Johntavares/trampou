@@ -1,13 +1,13 @@
-// Trampou PWA Service Worker
-const CACHE_NAME = 'trampou-pwa-v31';
+﻿// Trampou PWA Service Worker
+const CACHE_NAME = 'trampou-pwa-v32';
 
 const STATIC_SHELL = [
   './',
   './index.html',
   './styles.css',
-  './styles.css?v=31',
+  './styles.css?v=32',
   './app.js',
-  './app.js?v=31',
+  './app.js?v=32',
   './manifest.json',
   './manifest.json?v=5',
   './icon-192.png',
@@ -26,7 +26,7 @@ const STATIC_SHELL = [
   './favicon.png'
 ];
 
-// Instalação: Pré-cache do app shell
+// InstalaÃ§Ã£o: PrÃ©-cache do app shell
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -35,7 +35,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Ativação: Limpeza de caches antigos
+// AtivaÃ§Ã£o: Limpeza de caches antigos
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -50,12 +50,12 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Interceptação de requisições
+// InterceptaÃ§Ã£o de requisiÃ§Ãµes
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
-  // 1. Ignora requisições de outros esquemas ou métodos não-GET
+  // 1. Ignora requisiÃ§Ãµes de outros esquemas ou mÃ©todos nÃ£o-GET
   if (req.method !== 'GET' || !url.protocol.startsWith('http')) return;
 
   // 2. Chamadas de API do Supabase, ViaCEP e IBGE: Sempre Rede Primeiro (Network-First) com cache de leitura e fallback seguro
@@ -106,7 +106,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 4. Arquivos HTML, CSS e JS do app: Network-First para sempre refletir atualizações imediatamente
+  // 4. Arquivos HTML, CSS e JS do app: Network-First para sempre refletir atualizaÃ§Ãµes imediatamente
   if (req.mode === 'navigate' ||
       url.pathname.endsWith('.html') ||
       url.pathname.endsWith('.js') ||
@@ -139,7 +139,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 5. Demais ativos estáticos (Imagens, ícones): Stale-While-Revalidate
+  // 5. Demais ativos estÃ¡ticos (Imagens, Ã­cones): Stale-While-Revalidate
   event.respondWith(
     caches.match(req).then((exactCached) => {
       return (exactCached ? Promise.resolve(exactCached) : caches.match(req, { ignoreSearch: true })).then((cachedResponse) => {

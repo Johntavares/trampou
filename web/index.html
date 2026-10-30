@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#581C87">
-  <meta name="description" content="Trampou: Encontre eletricistas, encanadores, diaristas e profissionais autônomos perto de você em Parauapebas/PA.">
-  <title>Trampou — Profissionais Perto de Você</title>
+  <meta name="description" content="Trampou: Encontre eletricistas, encanadores, diaristas e profissionais autÃ´nomos perto de vocÃª em Parauapebas/PA.">
+  <title>Trampou â€” Profissionais Perto de VocÃª</title>
   
   <!-- PWA Manifest & App Config -->
   <link rel="manifest" href="manifest.json?v=5">
@@ -29,32 +29,32 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=31">
+  <link rel="stylesheet" href="styles.css?v=32">
 </head>
 <body>
   <!-- Container Principal do Aplicativo Nativo / PWA -->
   <main class="viewport-wrapper">
     <div id="device-container" class="device-mockup">
-      <!-- Área de Aplicativo -->
+      <!-- Ãrea de Aplicativo -->
       <div class="app-screen">
-        <!-- TAB 1: INÍCIO (HOME OTIMIZADA) -->
+        <!-- TAB 1: INÃCIO (HOME OTIMIZADA) -->
         <section id="tab-home" class="screen-tab active">
-          <!-- 1. Cabeçalho Compacto Integrado -->
+          <!-- 1. CabeÃ§alho Compacto Integrado -->
           <header class="app-header-compact">
             <div class="header-compact-row">
               <div class="header-brand-user-wrap">
-                <img src="trampou_app_icon.png" alt="Trampou" class="header-trampou-icon" onclick="openAuthWelcome()" title="Trampou — Profissionais Perto de Você">
+                <img src="trampou_app_icon.png" alt="Trampou" class="header-trampou-icon" onclick="openAuthWelcome()" title="Trampou â€” Profissionais Perto de VocÃª">
                 <div class="header-user-info">
                   <div class="location-pill clickable" id="home-location" onclick="openLocationPickerModal()" title="Toque para mudar sua cidade ou ativar GPS">
                     <i class="fa-solid fa-location-dot loc-icon"></i>
                     <span id="home-location-text">Parauapebas, PA</span>
                     <i class="fa-solid fa-chevron-down loc-caret"></i>
                   </div>
-                  <h1 class="greeting-text">Olá, Cliente</h1>
+                  <h1 class="greeting-text">OlÃ¡, Cliente</h1>
                 </div>
               </div>
               <div class="header-compact-actions">
-                <button class="notif-btn-compact" id="notif-btn" onclick="openNotificationsFromHome()" title="Notificações e Mensagens" aria-label="Notificações e Mensagens">
+                <button class="notif-btn-compact" id="notif-btn" onclick="openNotificationsFromHome()" title="NotificaÃ§Ãµes e Mensagens" aria-label="NotificaÃ§Ãµes e Mensagens">
                   <i class="fa-regular fa-bell" id="home-bell-icon" aria-hidden="true"></i>
                   <span class="badge-dot" id="home-notif-badge"></span>
                   <span class="notif-badge-counter" id="home-notif-counter">1</span>
@@ -76,7 +76,7 @@
                   placeholder="Buscar eletricista, encanador, diarista..." 
                   autocomplete="off" 
                   spellcheck="false"
-                  aria-label="Buscar profissionais e serviços em Parauapebas"
+                  aria-label="Buscar profissionais e serviÃ§os em Parauapebas"
                 />
                 <button type="button" class="search-clear-btn" id="home-search-clear" title="Limpar busca" aria-label="Limpar busca" style="display: none;">
                   <i class="fa-solid fa-xmark" aria-hidden="true"></i>
@@ -86,17 +86,17 @@
                 </button>
               </div>
 
-              <!-- Dropdown Inteligente Flutuante de Sugestões -->
-              <div class="search-suggestions-dropdown" id="search-suggestions-dropdown" style="display: none;" role="listbox" aria-label="Sugestões de profissionais">
-                <!-- Conteúdo dinâmico injetado via JS -->
+              <!-- Dropdown Inteligente Flutuante de SugestÃµes -->
+              <div class="search-suggestions-dropdown" id="search-suggestions-dropdown" style="display: none;" role="listbox" aria-label="SugestÃµes de profissionais">
+                <!-- ConteÃºdo dinÃ¢mico injetado via JS -->
               </div>
             </div>
           </header>
 
-          <!-- Conteúdo Rolável da Home com Espaçamento Harmonioso -->
+          <!-- ConteÃºdo RolÃ¡vel da Home com EspaÃ§amento Harmonioso -->
           <div class="scroll-content-home">
-            <!-- Carrossel de Banner para Anúncios (Antes das Categorias) -->
-            <div class="home-ad-carousel-wrap" aria-label="Anúncios patrocinados">
+            <!-- Carrossel de Banner para AnÃºncios (Antes das Categorias) -->
+            <div class="home-ad-carousel-wrap" aria-label="AnÃºncios patrocinados">
               <div class="banner-carousel-track" id="home-banner-track">
                 <!-- Slide 1: Compartilhe o Trampou -->
                 <div class="ad-slide-card ad-slide-img-card" data-slide-index="0" data-banner-id="default-share" role="banner" style="cursor: pointer;" onclick="if(typeof openShareAppModal === 'function') openShareAppModal();">
@@ -109,7 +109,7 @@
                 <div class="ad-slide-card ad-slide-img-card" data-slide-index="1" data-banner-id="default-pwa" role="banner" style="cursor: pointer;" onclick="if(typeof triggerPWAInstall === 'function') triggerPWAInstall();">
                   <picture>
                     <source srcset="banner-home-2.webp" type="image/webp">
-                    <img src="banner-home-2.jpg" alt="O Trampou não consome o seu espaço! Aplicativo leve e rápido" loading="lazy">
+                    <img src="banner-home-2.jpg" alt="O Trampou nÃ£o consome o seu espaÃ§o! Aplicativo leve e rÃ¡pido" loading="lazy">
                   </picture>
                 </div>
               </div>
@@ -137,7 +137,7 @@
               </div>
             </div>
 
-            <!-- 4. Profissionais em Destaque (Cards com Foco em Avaliações) -->
+            <!-- 4. Profissionais em Destaque (Cards com Foco em AvaliaÃ§Ãµes) -->
             <div class="home-block">
               <div class="block-title-row">
                 <h4>Profissionais em destaque</h4>
@@ -145,7 +145,7 @@
               </div>
               <div class="pros-scroll-wrap" id="pros-scroll-wrap">
                 <div class="pros-cards-scroll" id="featured-professionals-container">
-                  <!-- Cards com Destaque para Avaliações -->
+                  <!-- Cards com Destaque para AvaliaÃ§Ãµes -->
                 </div>
               </div>
               <div class="pros-scroll-progress" id="pros-scroll-progress" aria-hidden="true"></div>
@@ -161,14 +161,14 @@
               </div>
             </div>
 
-            <!-- 6. Espaço Reservado para Publicidade Local -->
+            <!-- 6. EspaÃ§o Reservado para Publicidade Local -->
             <div class="home-block ad-block">
               <div class="ad-tag-label">Publicidade</div>
               <div class="ad-banner-compact">
                 <div class="ad-icon"><i class="fa-solid fa-store"></i></div>
                 <div class="ad-content">
-                  <h5>Anuncie seus serviços em Parauapebas</h5>
-                  <p>Apareça para milhares de moradores buscando autônomos na região.</p>
+                  <h5>Anuncie seus serviÃ§os em Parauapebas</h5>
+                  <p>ApareÃ§a para milhares de moradores buscando autÃ´nomos na regiÃ£o.</p>
                 </div>
                 <button class="ad-btn" onclick="openProDashboard()">Anunciar</button>
               </div>
@@ -180,12 +180,12 @@
 
         <!-- TAB 2: EXPLORAR PROFISSIONAIS -->
         <section id="tab-search" class="screen-tab">
-          <!-- Cabeçalho Fixo da Página Explorar -->
+          <!-- CabeÃ§alho Fixo da PÃ¡gina Explorar -->
           <div class="explore-top-container">
             <div class="explore-header-row">
               <div class="explore-title-wrap">
                 <h3 class="explore-page-title">Explorar Profissionais</h3>
-                <span class="explore-sub">Autônomos verificados em Parauapebas, PA</span>
+                <span class="explore-sub">AutÃ´nomos verificados em Parauapebas, PA</span>
               </div>
               <div class="explore-city-tag clickable" onclick="openLocationPickerModal()" title="Toque para trocar de cidade ou informar CEP" style="cursor: pointer;">
                 <i class="fa-solid fa-location-dot" aria-hidden="true"></i> <span id="explore-city-tag-text">Parauapebas</span> <i class="fa-solid fa-chevron-down" style="font-size: 9px; margin-left: 3px;"></i>
@@ -202,16 +202,16 @@
                 placeholder="Buscar por nome ou especialidade..." 
                 autocomplete="off"
                 spellcheck="false"
-                aria-label="Buscar profissionais na página explorar"
+                aria-label="Buscar profissionais na pÃ¡gina explorar"
               />
               <button type="button" id="clear-search-btn" class="explore-clear-btn" style="display: none;" title="Limpar busca" aria-label="Limpar">
                 <i class="fa-solid fa-xmark" aria-hidden="true"></i>
               </button>
             </div>
 
-            <!-- Carrossel de Categorias com Botão "Todas as Categorias" que abre o modal de opções completas -->
+            <!-- Carrossel de Categorias com BotÃ£o "Todas as Categorias" que abre o modal de opÃ§Ãµes completas -->
             <div class="explore-filters-row" id="explore-category-filter" role="tablist" aria-label="Filtrar por categoria">
-              <button type="button" class="explore-chip-btn explore-all-cats-btn active" id="btn-explore-all-cats" data-category="all" onclick="openAllCategoriesModal()" title="Ver todas as opções de categorias">
+              <button type="button" class="explore-chip-btn explore-all-cats-btn active" id="btn-explore-all-cats" data-category="all" onclick="openAllCategoriesModal()" title="Ver todas as opÃ§Ãµes de categorias">
                 <i class="fa-solid fa-shapes" aria-hidden="true"></i>
                 <span id="all-cats-chip-text">Todas as Categorias</span>
                 <i class="fa-solid fa-chevron-down chip-dropdown-arrow" aria-hidden="true"></i>
@@ -221,7 +221,7 @@
               </div>
             </div>
 
-            <!-- Botão Discreto de Emergência SOS (Logo abaixo do Menu de Categorias) -->
+            <!-- BotÃ£o Discreto de EmergÃªncia SOS (Logo abaixo do Menu de Categorias) -->
             <div class="sos-discreet-bar-wrap">
               <button type="button" class="btn-sos-discreet" onclick="openSOSRequestModal()">
                 <div class="sos-discreet-left">
@@ -229,7 +229,7 @@
                     <i class="fa-solid fa-triangle-exclamation"></i>
                   </span>
                   <div class="sos-discreet-text">
-                    <span class="sos-discreet-title">Plantão SOS Emergência</span>
+                    <span class="sos-discreet-title">PlantÃ£o SOS EmergÃªncia</span>
                     <span class="sos-discreet-sub">Disparar socorro urgente no radar</span>
                   </div>
                 </div>
@@ -241,9 +241,9 @@
             </div>
           </div>
 
-          <!-- Conteúdo Rolável da Página Explorar -->
+          <!-- ConteÃºdo RolÃ¡vel da PÃ¡gina Explorar -->
           <div class="explore-scroll-body">
-            <!-- Barra de Status dos Resultados e Ordenação -->
+            <!-- Barra de Status dos Resultados e OrdenaÃ§Ã£o -->
             <div class="explore-results-header">
               <div class="explore-results-info-group">
                 <span class="explore-results-count" id="explore-results-count">Carregando profissionais...</span>
@@ -255,24 +255,24 @@
               <div class="explore-sort-wrap">
                 <label for="explore-sort-select" class="sr-only">Ordenar por</label>
                 <select id="explore-sort-select" class="explore-sort-select" aria-label="Ordenar listagem">
-                  <option value="rating">Melhor avaliação</option>
-                  <option value="reviews">Mais avaliações</option>
-                  <option value="name">Nome (A–Z)</option>
+                  <option value="rating">Melhor avaliaÃ§Ã£o</option>
+                  <option value="reviews">Mais avaliaÃ§Ãµes</option>
+                  <option value="name">Nome (Aâ€“Z)</option>
                 </select>
               </div>
             </div>
 
-            <!-- Listagem Compacta de Profissionais (Blocos Horizontais Compactos de 90–115px) -->
+            <!-- Listagem Compacta de Profissionais (Blocos Horizontais Compactos de 90â€“115px) -->
             <div class="compact-pros-list" id="explore-professionals-container" role="feed" aria-busy="false">
               <!-- Cards compactos injetados via JS -->
             </div>
 
-            <!-- 2. FEITO EM PARAUAPEBAS — ANTES & DEPOIS SHOWCASE -->
+            <!-- 2. FEITO EM PARAUAPEBAS â€” ANTES & DEPOIS SHOWCASE -->
             <div class="explore-section">
               <div class="explore-title-row">
-                <h4>📸 Feito em Parauapebas (Antes & Depois)</h4>
+                <h4>ðŸ“¸ Feito em Parauapebas (Antes & Depois)</h4>
               </div>
-              <p class="explore-desc-text">Veja transformações reais executadas por autônomos nos bairros da cidade</p>
+              <p class="explore-desc-text">Veja transformaÃ§Ãµes reais executadas por autÃ´nomos nos bairros da cidade</p>
 
               <div class="showcase-scroll" id="showcase-container">
                 <!-- Injetado dinamicamente via JS -->
@@ -291,7 +291,7 @@
         <section id="tab-chat" class="screen-tab">
           <div class="subpage-header" style="display: flex; align-items: center; justify-content: space-between;">
             <div style="display: flex; align-items: center; gap: 8px;">
-              <h3 style="margin: 0;">Mensagens & Notificações</h3>
+              <h3 style="margin: 0;">Mensagens & NotificaÃ§Ãµes</h3>
               <span class="chat-tab-badge" id="chat-tab-badge" style="display: none; background: #EF4444; color: #FFF; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 999px;"></span>
             </div>
             <button type="button" class="btn-link-subtle" onclick="markAllNotificationsAsRead()" title="Marcar todas como lidas" style="font-size: 11px;">
@@ -309,7 +309,7 @@
             <h3>Meu Perfil</h3>
           </div>
           <div class="profile-scroll">
-            <!-- Card de Perfil Dinâmico -->
+            <!-- Card de Perfil DinÃ¢mico -->
             <div class="profile-card" id="profile-card-container">
               <div class="profile-avatar-big" id="profile-avatar-wrap">
                 <i class="fa-solid fa-user" id="profile-avatar-icon"></i>
@@ -326,13 +326,13 @@
               <button class="edit-profile-btn" onclick="openEditProfileModal()" title="Editar dados"><i class="fa-solid fa-pen"></i></button>
             </div>
 
-            <!-- Banner Área do Profissional (Dinâmico: Acessar ou Quero me tornar profissional) -->
+            <!-- Banner Ãrea do Profissional (DinÃ¢mico: Acessar ou Quero me tornar profissional) -->
             <div class="pro-area-card" id="card-access-pro-area" onclick="handleProAreaClick()" style="cursor: pointer;">
               <div class="pro-card-content">
                 <i class="fa-solid fa-briefcase pro-badge-icon" id="pro-card-icon"></i>
                 <div>
-                  <h5 id="pro-card-title">Área do Profissional</h5>
-                  <p id="pro-card-desc">Gerencie seus serviços, orçamentos recebidos e vitrine</p>
+                  <h5 id="pro-card-title">Ãrea do Profissional</h5>
+                  <p id="pro-card-desc">Gerencie seus serviÃ§os, orÃ§amentos recebidos e vitrine</p>
                 </div>
               </div>
               <button type="button" class="pro-access-btn" id="btn-access-pro-area" onclick="handleProAreaClick(); event.stopPropagation();">
@@ -340,13 +340,13 @@
               </button>
             </div>
 
-            <!-- Card de Instalação do PWA (Instalar no celular / desktop) -->
+            <!-- Card de InstalaÃ§Ã£o do PWA (Instalar no celular / desktop) -->
             <div class="pro-area-card pwa-install-card" id="pwa-install-banner" onclick="triggerPWAInstall()" style="cursor: pointer; background: linear-gradient(135deg, #FAF5FF, #F3E8FF); border: 1.5px solid #D8B4FE; margin-top: 10px;">
               <div class="pro-card-content">
                 <i class="fa-solid fa-mobile-screen-button pro-badge-icon" style="color: #7E22CE; background: #EDE9FE;"></i>
                 <div>
                   <h5 style="color: #581C87;">Instalar Trampou no Celular</h5>
-                  <p style="color: #6B21A8;">Tenha o app direto na tela inicial com carregamento instantâneo</p>
+                  <p style="color: #6B21A8;">Tenha o app direto na tela inicial com carregamento instantÃ¢neo</p>
                 </div>
               </div>
               <button type="button" class="pro-access-btn" style="background: #7E22CE; color: #FFF;" onclick="triggerPWAInstall(); event.stopPropagation();">
@@ -354,13 +354,13 @@
               </button>
             </div>
 
-            <!-- Menu de Opções -->
+            <!-- Menu de OpÃ§Ãµes -->
             <div class="menu-group">
               <div class="menu-item" onclick="switchTab('search')">
                 <i class="fa-solid fa-compass icon-purple"></i>
                 <div class="menu-text">
                   <span>Explorar Profissionais</span>
-                  <small>Encontre os melhores serviços da cidade</small>
+                  <small>Encontre os melhores serviÃ§os da cidade</small>
                 </div>
                 <i class="fa-solid fa-chevron-right"></i>
               </div>
@@ -368,7 +368,7 @@
                 <i class="fa-solid fa-heart icon-purple"></i>
                 <div class="menu-text">
                   <span>Profissionais Favoritos</span>
-                  <small>Acesse seus prestadores de confiança</small>
+                  <small>Acesse seus prestadores de confianÃ§a</small>
                 </div>
                 <i class="fa-solid fa-chevron-right"></i>
               </div>
@@ -380,10 +380,10 @@
                 </div>
                 <i class="fa-solid fa-chevron-right"></i>
               </div>
-              <div class="menu-item" onclick="showToast('Notificações ativadas para Parauapebas')">
+              <div class="menu-item" onclick="showToast('NotificaÃ§Ãµes ativadas para Parauapebas')">
                 <i class="fa-solid fa-bell icon-purple"></i>
                 <div class="menu-text">
-                  <span>Notificações</span>
+                  <span>NotificaÃ§Ãµes</span>
                 </div>
                 <i class="fa-solid fa-chevron-right"></i>
               </div>
@@ -391,14 +391,14 @@
                 <i class="fa-solid fa-shield-halved icon-purple"></i>
                 <div class="menu-text">
                   <span>Privacidade, LGPD e Meus Dados</span>
-                  <small>Termos, exclusão de conta e proteção de dados</small>
+                  <small>Termos, exclusÃ£o de conta e proteÃ§Ã£o de dados</small>
                 </div>
                 <i class="fa-solid fa-chevron-right"></i>
               </div>
               <div class="menu-item" onclick="openAppFeedbackModal()">
                 <i class="fa-solid fa-lightbulb icon-purple"></i>
                 <div class="menu-text">
-                  <span>Enviar Sugestão ou Feedback</span>
+                  <span>Enviar SugestÃ£o ou Feedback</span>
                   <small>Ideias, elogios ou relatos para a equipe</small>
                 </div>
                 <i class="fa-solid fa-chevron-right"></i>
@@ -418,7 +418,7 @@
                 </div>
               </div>
             </div>
-            <div class="app-version-tag">Trampou • v1.0.0 — Profissionais perto de você</div>
+            <div class="app-version-tag">Trampou â€¢ v1.0.0 â€” Profissionais perto de vocÃª</div>
           </div>
         </section>
 
@@ -427,17 +427,17 @@
              ========================================================= -->
         <div id="pro-vitrine-overlay" class="modal-overlay" style="z-index: 1200;">
           <div class="modal-content pro-vitrine-content">
-            <!-- Barra Superior do Perfil Social (Exato ao Modelo: Back, Handle Central, Opções ...) -->
+            <!-- Barra Superior do Perfil Social (Exato ao Modelo: Back, Handle Central, OpÃ§Ãµes ...) -->
             <div class="vitrine-top-bar">
               <button class="v-nav-icon-btn" onclick="closeProVitrine()" title="Voltar">
                 <i class="fa-solid fa-arrow-left"></i>
               </button>
               <div class="vitrine-top-handle" id="vitrine-handle">carlos.eletricista</div>
               <div class="vitrine-top-menu-wrap">
-                <button class="v-nav-icon-btn" id="vitrine-menu-trigger" onclick="toggleVitrineMenu()" title="Mais opções">
+                <button class="v-nav-icon-btn" id="vitrine-menu-trigger" onclick="toggleVitrineMenu()" title="Mais opÃ§Ãµes">
                   <i class="fa-solid fa-ellipsis"></i>
                 </button>
-                <!-- Menu flutuante de opções (renderizado dinamicamente conforme permissão do usuário) -->
+                <!-- Menu flutuante de opÃ§Ãµes (renderizado dinamicamente conforme permissÃ£o do usuÃ¡rio) -->
                 <div class="vitrine-dropdown-menu" id="vitrine-dropdown-menu">
                   <button class="dropdown-item" onclick="shareProProfile()">
                     <i class="fa-solid fa-share-nodes"></i>
@@ -447,10 +447,10 @@
               </div>
             </div>
 
-            <!-- Corpo Rolável da Vitrine Social -->
+            <!-- Corpo RolÃ¡vel da Vitrine Social -->
             <div class="vitrine-scroll-body" id="vitrine-scroll-body">
               
-              <!-- Bloco Superior: Avatar + Nome/Especialidade + Estatísticas (Trabalhos, Avaliações, Nota) -->
+              <!-- Bloco Superior: Avatar + Nome/Especialidade + EstatÃ­sticas (Trabalhos, AvaliaÃ§Ãµes, Nota) -->
               <div class="vitrine-header-row">
                 <div class="vitrine-avatar-circle">
                   <img id="vitrine-avatar-img" class="vitrine-avatar-photo" src="trampou_app_icon.png" alt="Profissional" onerror="this.style.display='none'; document.getElementById('vitrine-avatar-fallback').style.display='flex';">
@@ -462,13 +462,13 @@
                 <div class="vitrine-header-right">
                   <h2 class="vitrine-pro-name" id="vitrine-name">Perfil Profissional</h2>
                   <div class="vitrine-pro-sub-row">
-                    <div class="vitrine-pro-sub" id="vitrine-specialty">Serviços em Parauapebas</div>
+                    <div class="vitrine-pro-sub" id="vitrine-specialty">ServiÃ§os em Parauapebas</div>
                     <span class="vitrine-badge-24h" id="vitrine-badge-24h" style="display: none;">
-                      <i class="fa-solid fa-bolt"></i> <span>Plantão 24h</span>
+                      <i class="fa-solid fa-bolt"></i> <span>PlantÃ£o 24h</span>
                     </span>
                   </div>
 
-                  <!-- Métricas: 32 Trabalhos | 28 Avaliações | ⭐ 4,9 Nota -->
+                  <!-- MÃ©tricas: 32 Trabalhos | 28 AvaliaÃ§Ãµes | â­ 4,9 Nota -->
                   <div class="vitrine-metrics-bar">
                     <div class="v-metric-item">
                       <span class="v-metric-num" id="stat-works-count">32</span>
@@ -476,7 +476,7 @@
                     </div>
                     <div class="v-metric-item" onclick="openReviewsModal()">
                       <span class="v-metric-num" id="stat-reviews-count">28</span>
-                      <span class="v-metric-label">Avaliações</span>
+                      <span class="v-metric-label">AvaliaÃ§Ãµes</span>
                     </div>
                     <div class="v-metric-item" onclick="openReviewsModal()">
                       <div class="v-metric-num-rating">
@@ -489,27 +489,27 @@
                 </div>
               </div>
 
-              <!-- Bloco Bio & Descrição -->
+              <!-- Bloco Bio & DescriÃ§Ã£o -->
               <div class="vitrine-bio-container">
                 <div class="vitrine-headline" id="vitrine-headline">
-                  <span class="headline-emoji">⚡</span> <span id="vitrine-headline-text">Instalações e manutenção elétrica</span>
+                  <span class="headline-emoji">âš¡</span> <span id="vitrine-headline-text">InstalaÃ§Ãµes e manutenÃ§Ã£o elÃ©trica</span>
                 </div>
                 <p class="vitrine-description" id="vitrine-bio">
-                  Serviços residenciais e comerciais. Instalações, iluminação, chuveiros e reparos elétricos.
+                  ServiÃ§os residenciais e comerciais. InstalaÃ§Ãµes, iluminaÃ§Ã£o, chuveiros e reparos elÃ©tricos.
                 </p>
                 <div class="vitrine-city-row" id="vitrine-city-row">
                   <i class="fa-solid fa-location-dot"></i>
                   <span id="vitrine-location-text">Parauapebas, PA</span>
                 </div>
                 <button class="vitrine-readmore-btn" id="vitrine-readmore-btn" onclick="toggleBioExpand()">
-                  Ver descrição completa
+                  Ver descriÃ§Ã£o completa
                 </button>
                 <div class="vitrine-expanded-bio" id="vitrine-expanded-bio" style="display: none;">
-                  <p>Mais de 8 anos de experiência prestando serviços elétricos de excelência em Parauapebas. Atendimento nos bairros Cidade Nova, Rio Verde, União, Nova Carajás, Da Paz e Beira Rio. Instalação e manutenção de quadros de distribuição, disjuntores DIN, DPS, IDR, fiação completa, tomadas 20A, balanceamento de cargas, instalação de chuveiros, lustres, refletores e adequação ao padrão Equatorial Energia com emissão de recibo e garantia formal de 90 dias.</p>
+                  <p>Mais de 8 anos de experiÃªncia prestando serviÃ§os elÃ©tricos de excelÃªncia em Parauapebas. Atendimento nos bairros Cidade Nova, Rio Verde, UniÃ£o, Nova CarajÃ¡s, Da Paz e Beira Rio. InstalaÃ§Ã£o e manutenÃ§Ã£o de quadros de distribuiÃ§Ã£o, disjuntores DIN, DPS, IDR, fiaÃ§Ã£o completa, tomadas 20A, balanceamento de cargas, instalaÃ§Ã£o de chuveiros, lustres, refletores e adequaÃ§Ã£o ao padrÃ£o Equatorial Energia com emissÃ£o de recibo e garantia formal de 90 dias.</p>
                 </div>
               </div>
 
-              <!-- Bloco de Botões de Ação (Editar perfil / Compartilhar perfil / Share icon) -->
+              <!-- Bloco de BotÃµes de AÃ§Ã£o (Editar perfil / Compartilhar perfil / Share icon) -->
               <div class="vitrine-buttons-row" id="vitrine-action-buttons">
                 <!-- Injetado dinamicamente via JS de acordo com Modo Dono vs Modo Visitante -->
               </div>
@@ -517,23 +517,23 @@
               <!-- Card Exclusivo do Dono: Publicar Antes & Depois (Showcase Trampou PRO) -->
               <div id="vitrine-owner-showcase-box" style="display: none; padding: 0 16px 14px;"></div>
 
-              <!-- Linha divisória sutil -->
+              <!-- Linha divisÃ³ria sutil -->
               <div class="vitrine-separator"></div>
 
-              <!-- Card de Disponibilidade: Plantão 24h & Atendimento de Emergência -->
+              <!-- Card de Disponibilidade: PlantÃ£o 24h & Atendimento de EmergÃªncia -->
               <div class="vitrine-emergency-card" id="vitrine-emergency-card">
                 <!-- Injetado dinamicamente via JS -->
               </div>
 
-              <!-- Card "Meus serviços" -->
+              <!-- Card "Meus serviÃ§os" -->
               <div class="vitrine-services-card" id="vitrine-services-card" onclick="openServicesSheet()">
                 <div class="services-card-left">
                   <div class="services-icon-box">
                     <i class="fa-solid fa-briefcase"></i>
                   </div>
                   <div class="services-card-texts">
-                    <span class="services-card-title">Meus serviços</span>
-                    <span class="services-card-sub">Especialidades e serviços oferecidos</span>
+                    <span class="services-card-title">Meus serviÃ§os</span>
+                    <span class="services-card-sub">Especialidades e serviÃ§os oferecidos</span>
                   </div>
                 </div>
                 <div class="services-card-right">
@@ -541,7 +541,7 @@
                 </div>
               </div>
 
-              <!-- Seção "Meus trabalhos" com Grade 3x3 -->
+              <!-- SeÃ§Ã£o "Meus trabalhos" com Grade 3x3 -->
               <div class="vitrine-works-section">
                 <div class="works-header-row" style="display: flex; justify-content: space-between; align-items: center;">
                   <h3 class="works-section-title">Meus trabalhos</h3>
@@ -550,28 +550,28 @@
                   </button>
                 </div>
 
-                <!-- Grade com 3 colunas de trabalhos fotográficos -->
+                <!-- Grade com 3 colunas de trabalhos fotogrÃ¡ficos -->
                 <div class="vitrine-works-grid" id="vitrine-works-grid">
                   <!-- Fotos dos trabalhos injetadas dinamicamente via JS -->
                 </div>
               </div>
 
-              <!-- Espaçador para o FAB não cobrir conteúdo ao rolar -->
+              <!-- EspaÃ§ador para o FAB nÃ£o cobrir conteÃºdo ao rolar -->
               <div class="vitrine-bottom-spacer"></div>
             </div>
 
-            <!-- Input invisível para acionar a galeria de fotos nativa imediatamente (estilo Instagram) -->
+            <!-- Input invisÃ­vel para acionar a galeria de fotos nativa imediatamente (estilo Instagram) -->
             <input type="file" id="portfolio-fab-file-input" accept="image/*" style="display: none;" onchange="handleMediaSelected(event)">
 
-            <!-- Botão Flutuante (FAB) Redondo de Upload no canto inferior direito -->
-            <button class="vitrine-fab-upload" id="vitrine-fab-upload" onclick="triggerAddMediaFlow()" title="Adicionar foto ao portfólio" aria-label="Adicionar foto ao portfólio">
+            <!-- BotÃ£o Flutuante (FAB) Redondo de Upload no canto inferior direito -->
+            <button class="vitrine-fab-upload" id="vitrine-fab-upload" onclick="triggerAddMediaFlow()" title="Adicionar foto ao portfÃ³lio" aria-label="Adicionar foto ao portfÃ³lio">
               <i class="fa-solid fa-plus"></i>
             </button>
           </div>
         </div>
 
         <!-- =========================================================
-             MODAL / BOTTOM SHEET: MEUS SERVIÇOS DETALHADOS
+             MODAL / BOTTOM SHEET: MEUS SERVIÃ‡OS DETALHADOS
              ========================================================= -->
         <div id="services-sheet-overlay" class="modal-overlay" style="z-index: 1300;">
           <div class="modal-content services-sheet-content">
@@ -580,7 +580,7 @@
                 <div class="services-icon-box" style="width: 32px; height: 32px; font-size: 14px;">
                   <i class="fa-solid fa-briefcase"></i>
                 </div>
-                <h4 style="margin: 0; font-size: 15px; font-weight: 800;">Meus Serviços Oferecidos</h4>
+                <h4 style="margin: 0; font-size: 15px; font-weight: 800;">Meus ServiÃ§os Oferecidos</h4>
               </div>
               <button class="close-x-btn" onclick="closeServicesSheet()"><i class="fa-solid fa-xmark"></i></button>
             </div>
@@ -594,14 +594,14 @@
         </div>
 
         <!-- =========================================================
-             MODAL: AVALIAÇÕES DO PROFISSIONAL
+             MODAL: AVALIAÃ‡Ã•ES DO PROFISSIONAL
              ========================================================= -->
         <div id="reviews-modal-overlay" class="modal-overlay" style="z-index: 1300;">
           <div class="modal-content reviews-modal-content">
             <div class="modal-header">
               <div style="display: flex; align-items: center; gap: 8px;">
                 <i class="fa-solid fa-star" style="color: #F59E0B;"></i>
-                <h4 style="margin: 0; font-size: 15px; font-weight: 800;">Avaliações de Clientes</h4>
+                <h4 style="margin: 0; font-size: 15px; font-weight: 800;">AvaliaÃ§Ãµes de Clientes</h4>
               </div>
               <button class="close-x-btn" onclick="closeReviewsModal()"><i class="fa-solid fa-xmark"></i></button>
             </div>
@@ -610,7 +610,7 @@
               <div class="reviews-feed-list" id="modal-reviews-list"></div>
             </div>
             <div class="modal-footer" style="padding: 10px 14px; border-top: 1px solid #F1F5F9; display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-size: 11px; color: #64748B;"><i class="fa-solid fa-certificate" style="color: #4F46E5;"></i> Avaliações verificadas</span>
+              <span style="font-size: 11px; color: #64748B;"><i class="fa-solid fa-certificate" style="color: #4F46E5;"></i> AvaliaÃ§Ãµes verificadas</span>
               <button type="button" class="btn-att-action btn-att-review" style="font-size: 12px; padding: 7px 14px; border-radius: 8px;" onclick="triggerProReviewFromModal()">
                 <i class="fa-solid fa-star"></i> Avaliar Profissional
               </button>
@@ -619,7 +619,7 @@
         </div>
 
         <!-- =========================================================
-             MODAL: VISUALIZAÇÃO INDIVIDUAL DA PUBLICAÇÃO (POST DETAIL)
+             MODAL: VISUALIZAÃ‡ÃƒO INDIVIDUAL DA PUBLICAÃ‡ÃƒO (POST DETAIL)
              ========================================================= -->
         <div id="post-detail-overlay" class="modal-overlay" style="z-index: 1300; background: #FFFFFF;">
           <div class="modal-content post-modal-content">
@@ -635,13 +635,13 @@
               </div>
             </div>
             <div class="post-detail-scroll-body" id="post-detail-body">
-              <!-- Conteúdo da publicação -->
+              <!-- ConteÃºdo da publicaÃ§Ã£o -->
             </div>
           </div>
         </div>
 
         <!-- =========================================================
-             MODAL: CRIAR NOVA PUBLICAÇÃO (DONO DO PERFIL)
+             MODAL: CRIAR NOVA PUBLICAÃ‡ÃƒO (DONO DO PERFIL)
              ========================================================= -->
         <div id="create-post-overlay" class="modal-overlay" style="z-index: 1300;">
           <div class="modal-content create-post-content instagram-post-modal">
@@ -649,16 +649,16 @@
               <button class="ig-btn-back" onclick="closeCreatePostModal()" title="Cancelar">
                 <i class="fa-solid fa-xmark"></i>
               </button>
-              <h4 class="ig-modal-title">Nova Publicação</h4>
+              <h4 class="ig-modal-title">Nova PublicaÃ§Ã£o</h4>
               <button class="ig-btn-publish-header" onclick="submitNewPost()" title="Publicar">
                 Publicar
               </button>
             </div>
             
             <div class="modal-body ig-post-body">
-              <!-- Palco de Mídia Estilo Instagram: Foto Selecionada em Destaque -->
+              <!-- Palco de MÃ­dia Estilo Instagram: Foto Selecionada em Destaque -->
               <div class="instagram-media-stage" id="instagram-media-stage">
-                <img id="instagram-post-img" class="instagram-preview-img" src="" alt="Mídia selecionada" style="display: none;">
+                <img id="instagram-post-img" class="instagram-preview-img" src="" alt="MÃ­dia selecionada" style="display: none;">
                 <div id="instagram-post-fallback" class="instagram-preview-fallback" onclick="triggerAddMediaFlow()" style="cursor: pointer;">
                   <i class="fa-solid fa-camera"></i>
                   <span>Toque aqui para selecionar ou tirar uma foto</span>
@@ -668,23 +668,23 @@
                 </button>
               </div>
 
-              <!-- Informações da Publicação: Título, Legenda e Bairro -->
+              <!-- InformaÃ§Ãµes da PublicaÃ§Ã£o: TÃ­tulo, Legenda e Bairro -->
               <div class="ig-form-fields">
                 <div class="ig-field-group">
-                  <label for="new-post-title">Título do trabalho</label>
-                  <input type="text" id="new-post-title" class="ig-input-title" placeholder="Ex: Higienização Completa de Split 18.000">
+                  <label for="new-post-title">TÃ­tulo do trabalho</label>
+                  <input type="text" id="new-post-title" class="ig-input-title" placeholder="Ex: HigienizaÃ§Ã£o Completa de Split 18.000">
                 </div>
 
                 <div class="ig-field-group">
-                  <label for="new-post-desc">Descrição / Legenda do serviço</label>
-                  <textarea id="new-post-desc" rows="3" class="ig-textarea-desc" placeholder="Descreva o procedimento técnico, tempo gasto, peças trocadas e o resultado entregue..."></textarea>
+                  <label for="new-post-desc">DescriÃ§Ã£o / Legenda do serviÃ§o</label>
+                  <textarea id="new-post-desc" rows="3" class="ig-textarea-desc" placeholder="Descreva o procedimento tÃ©cnico, tempo gasto, peÃ§as trocadas e o resultado entregue..."></textarea>
                 </div>
 
                 <div class="ig-fields-row">
                   <div class="ig-field-group" style="width: 100%;">
-                    <label for="new-post-service-select">Especialidade / Serviço</label>
+                    <label for="new-post-service-select">Especialidade / ServiÃ§o</label>
                     <select id="new-post-service-select" class="ig-select">
-                      <!-- Opções de serviços do profissional -->
+                      <!-- OpÃ§Ãµes de serviÃ§os do profissional -->
                     </select>
                   </div>
                 </div>
@@ -693,7 +693,7 @@
 
             <div class="modal-footer ig-modal-footer">
               <button type="button" class="btn-cancel" onclick="closeCreatePostModal()">Descartar</button>
-              <button type="button" class="btn-submit" onclick="submitNewPost()"><i class="fa-solid fa-paper-plane"></i> Publicar no Portfólio</button>
+              <button type="button" class="btn-submit" onclick="submitNewPost()"><i class="fa-solid fa-paper-plane"></i> Publicar no PortfÃ³lio</button>
             </div>
           </div>
         </div>
@@ -728,7 +728,7 @@
               <input type="text" id="edit-pro-specialty">
 
               <div class="auth-label-row" style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-                <label style="margin: 0;">Cidade de Atuação (CEP ou Nome da Cidade)</label>
+                <label style="margin: 0;">Cidade de AtuaÃ§Ã£o (CEP ou Nome da Cidade)</label>
                 <button type="button" class="btn-geo-detect" onclick="detectEditProLocationGPS()" title="Detectar cidade via GPS">
                   <i class="fa-solid fa-location-crosshairs"></i> Usar GPS
                 </button>
@@ -768,15 +768,15 @@
               </div>
               <div id="edit-pro-location-status" class="cep-status-pill" style="display: none; margin-bottom: 10px;"></div>
 
-              <label>Biografia / Apresentação</label>
+              <label>Biografia / ApresentaÃ§Ã£o</label>
               <textarea id="edit-pro-bio" rows="3"></textarea>
 
-              <!-- Checkbox de Disponibilidade para Plantão SOS Emergência -->
+              <!-- Checkbox de Disponibilidade para PlantÃ£o SOS EmergÃªncia -->
               <div class="emergency-pro-switch-wrap">
                 <div class="emergency-switch-info">
-                  <div class="emergency-switch-badge"><i class="fa-solid fa-triangle-exclamation"></i> Plantão 24h & Emergência</div>
-                  <label for="edit-pro-emergency-available" class="emergency-switch-title">Disponível para Atendimentos 24h e Emergências</label>
-                  <p class="emergency-switch-desc">Coloque-se à disposição para socorro rápido e chamados urgentes 24 horas em Parauapebas.</p>
+                  <div class="emergency-switch-badge"><i class="fa-solid fa-triangle-exclamation"></i> PlantÃ£o 24h & EmergÃªncia</div>
+                  <label for="edit-pro-emergency-available" class="emergency-switch-title">DisponÃ­vel para Atendimentos 24h e EmergÃªncias</label>
+                  <p class="emergency-switch-desc">Coloque-se Ã  disposiÃ§Ã£o para socorro rÃ¡pido e chamados urgentes 24 horas em Parauapebas.</p>
                 </div>
                 <label class="custom-switch-label">
                   <input type="checkbox" id="edit-pro-emergency-available" checked>
@@ -786,31 +786,31 @@
             </div>
             <div class="modal-footer">
               <button class="btn-cancel" onclick="closeEditProModal()">Cancelar</button>
-              <button class="btn-submit" onclick="saveProProfile()">Salvar Alterações</button>
+              <button class="btn-submit" onclick="saveProProfile()">Salvar AlteraÃ§Ãµes</button>
             </div>
           </div>
         </div>
 
         <!-- =========================================================
-             MODAL: GERENCIAR SERVIÇOS E CATÁLOGO (DONO)
+             MODAL: GERENCIAR SERVIÃ‡OS E CATÃLOGO (DONO)
              ========================================================= -->
         <div id="manage-services-overlay" class="modal-overlay" style="z-index: 1300;">
           <div class="modal-content manage-services-content">
             <div class="modal-header">
-              <h4>Gerenciar Meus Serviços</h4>
+              <h4>Gerenciar Meus ServiÃ§os</h4>
               <button class="close-x-btn" onclick="closeManageServicesModal()"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body">
               <div class="add-service-box">
-                <h5>Adicionar Novo Serviço</h5>
-                <input type="text" id="new-service-title" placeholder="Nome do serviço (ex: Carga de Gás R410A)">
+                <h5>Adicionar Novo ServiÃ§o</h5>
+                <input type="text" id="new-service-title" placeholder="Nome do serviÃ§o (ex: Carga de GÃ¡s R410A)">
                 <div style="display: flex; gap: 8px; margin-top: 6px;">
-                  <input type="text" id="new-service-price" placeholder="Preço (ex: R$ 150,00)">
+                  <input type="text" id="new-service-price" placeholder="PreÃ§o (ex: R$ 150,00)">
                   <button class="btn-submit" style="white-space: nowrap; padding: 0 14px;" onclick="addNewService()"><i class="fa-solid fa-plus"></i> Adicionar</button>
                 </div>
               </div>
 
-              <h5 style="margin: 16px 0 8px; font-size: 13px;">Serviços Atuais no Catálogo</h5>
+              <h5 style="margin: 16px 0 8px; font-size: 13px;">ServiÃ§os Atuais no CatÃ¡logo</h5>
               <div id="manage-services-list" class="manage-services-list">
                 <!-- Injetado dinamicamente -->
               </div>
@@ -818,16 +818,16 @@
           </div>
         </div>
 
-        <!-- MODAL: SOLICITAR ORÇAMENTO -->
+        <!-- MODAL: SOLICITAR ORÃ‡AMENTO -->
         <div id="quote-modal-overlay" class="modal-overlay">
           <div class="modal-content quote-modal-box">
             <div class="modal-header">
-              <h4>Solicitar Orçamento</h4>
+              <h4>Solicitar OrÃ§amento</h4>
               <button class="close-x-btn" onclick="closeQuoteModal()"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body">
-              <label>Título do Serviço</label>
-              <input type="text" id="quote-title-input" placeholder="Ex: Instalação de Split ou Troca de Fiação">
+              <label>TÃ­tulo do ServiÃ§o</label>
+              <input type="text" id="quote-title-input" placeholder="Ex: InstalaÃ§Ã£o de Split ou Troca de FiaÃ§Ã£o">
 
               <label>Detalhes do que precisa</label>
               <textarea id="quote-desc-input" rows="3" placeholder="Descreva brevemente o problema, prazo desejado ou marca do aparelho..."></textarea>
@@ -865,13 +865,13 @@
 
               <div class="auth-gate-benefit-box" id="auth-gate-benefit-box">
                 <i class="fa-solid fa-circle-check auth-gate-check-icon"></i>
-                <span id="auth-gate-benefit-text">Leva menos de 1 minuto e é 100% grátis.</span>
+                <span id="auth-gate-benefit-text">Leva menos de 1 minuto e Ã© 100% grÃ¡tis.</span>
               </div>
 
               <div class="auth-gate-perks-row">
                 <div class="auth-gate-perk">
                   <i class="fa-solid fa-bolt"></i>
-                  <span>Cadastro Rápido</span>
+                  <span>Cadastro RÃ¡pido</span>
                 </div>
                 <div class="auth-gate-perk">
                   <i class="fa-solid fa-shield-halved"></i>
@@ -879,7 +879,7 @@
                 </div>
                 <div class="auth-gate-perk">
                   <i class="fa-solid fa-gift"></i>
-                  <span>Totalmente Grátis</span>
+                  <span>Totalmente GrÃ¡tis</span>
                 </div>
               </div>
             </div>
@@ -889,7 +889,7 @@
                 <i class="fa-solid fa-user-plus"></i> Criar Conta Gratuita
               </button>
               <button type="button" class="btn-auth-gate-secondary" onclick="proceedToLoginFromGate()">
-                Já tenho conta • Entrar
+                JÃ¡ tenho conta â€¢ Entrar
               </button>
               <button type="button" class="btn-auth-gate-ghost" onclick="closeAuthGateModal()">
                 Continuar explorando como Visitante
@@ -911,37 +911,37 @@
 
             <div class="auth-welcome-body">
               <div class="auth-brand-hero">
-                <img src="trampou_onboarding_hero.png?v=7" alt="Trampou — Sua rede de profissionais autônomos" class="auth-onboard-graphic-img">
+                <img src="trampou_onboarding_hero.png?v=7" alt="Trampou â€” Sua rede de profissionais autÃ´nomos" class="auth-onboard-graphic-img">
               </div>
 
               <div class="auth-role-cards">
-                <!-- Opção 1: Quero contratar um profissional -->
+                <!-- OpÃ§Ã£o 1: Quero contratar um profissional -->
                 <div class="auth-role-card" onclick="openClientSignup()" id="btn-choice-client">
                   <div class="auth-role-icon purple">
                     <i class="fa-solid fa-magnifying-glass"></i>
                   </div>
                   <div class="auth-role-text">
                     <h4>Quero contratar um profissional</h4>
-                    <p>Encontre especialistas, solicite orçamentos e converse sem compromisso.</p>
+                    <p>Encontre especialistas, solicite orÃ§amentos e converse sem compromisso.</p>
                   </div>
                   <i class="fa-solid fa-chevron-right role-arrow"></i>
                 </div>
 
-                <!-- Opção 2: Sou profissional e quero me cadastrar -->
+                <!-- OpÃ§Ã£o 2: Sou profissional e quero me cadastrar -->
                 <div class="auth-role-card pro" onclick="openProSignup()" id="btn-choice-pro">
                   <div class="auth-role-icon dark-purple">
                     <i class="fa-solid fa-briefcase"></i>
                   </div>
                   <div class="auth-role-text">
                     <h4>Sou profissional e quero me cadastrar</h4>
-                    <p>Crie sua vitrine digital, mostre seus trabalhos e receba clientes da sua região.</p>
+                    <p>Crie sua vitrine digital, mostre seus trabalhos e receba clientes da sua regiÃ£o.</p>
                   </div>
                   <i class="fa-solid fa-chevron-right role-arrow"></i>
                 </div>
               </div>
 
               <div class="auth-welcome-footer">
-                <p>Já tem uma conta? <button type="button" class="btn-link-auth" onclick="openLoginModal()">Entrar</button></p>
+                <p>JÃ¡ tem uma conta? <button type="button" class="btn-link-auth" onclick="openLoginModal()">Entrar</button></p>
                 <button type="button" class="btn-guest-browse" onclick="closeAuthModal('auth-welcome-overlay')">
                   Continuar explorando como visitante
                 </button>
@@ -966,7 +966,7 @@
             <div class="auth-form-body">
               <div class="auth-intro-text">
                 <h3>Bem-vindo de volta!</h3>
-                <p>Acesse seus serviços, orçamentos e mensagens em Parauapebas.</p>
+                <p>Acesse seus serviÃ§os, orÃ§amentos e mensagens em Parauapebas.</p>
               </div>
 
               <!-- Alerta de Erro -->
@@ -1008,7 +1008,7 @@
 
 
               <div class="auth-bottom-switch">
-                <span>Ainda não possui conta?</span>
+                <span>Ainda nÃ£o possui conta?</span>
                 <button type="button" class="btn-link-auth" onclick="openClientSignup()">Criar conta de cliente</button>
                 <span>ou</span>
                 <button type="button" class="btn-link-auth" onclick="openProSignup()">Cadastrar como profissional</button>
@@ -1018,7 +1018,7 @@
         </div>
 
         <!-- =========================================================
-             3. MODAL DE RECUPERAÇÃO DE SENHA
+             3. MODAL DE RECUPERAÃ‡ÃƒO DE SENHA
              ========================================================= -->
         <div id="auth-recovery-modal" class="modal-overlay">
           <div class="modal-content auth-form-content">
@@ -1033,7 +1033,7 @@
             <div class="auth-form-body">
               <div class="auth-intro-text">
                 <h3>Esqueceu sua senha?</h3>
-                <p>Não se preocupe! Informe seu e-mail ou telefone cadastrado para enviarmos instruções de recuperação.</p>
+                <p>NÃ£o se preocupe! Informe seu e-mail ou telefone cadastrado para enviarmos instruÃ§Ãµes de recuperaÃ§Ã£o.</p>
               </div>
 
               <div id="recovery-alert" class="auth-alert" style="display: none;">
@@ -1051,7 +1051,7 @@
                 </div>
 
                 <button type="submit" id="btn-recovery-submit" class="btn-auth-primary">
-                  <span id="btn-recovery-label">Enviar instruções</span>
+                  <span id="btn-recovery-label">Enviar instruÃ§Ãµes</span>
                   <i class="fa-solid fa-paper-plane" id="btn-recovery-icon"></i>
                   <i class="fa-solid fa-circle-notch fa-spin auth-spinner" id="btn-recovery-spinner" style="display: none;"></i>
                 </button>
@@ -1082,7 +1082,7 @@
             <div class="auth-form-body">
               <div class="auth-intro-text">
                 <h3>Crie sua conta</h3>
-                <p>Solicite orçamentos gratuitos e contrate prestadores em Parauapebas.</p>
+                <p>Solicite orÃ§amentos gratuitos e contrate prestadores em Parauapebas.</p>
               </div>
 
               <!-- Alerta de Erro -->
@@ -1116,7 +1116,7 @@
                   </div>
                 </div>
 
-                <!-- Cidade & Estado do Usuário (CEP ou Nome da Cidade) -->
+                <!-- Cidade & Estado do UsuÃ¡rio (CEP ou Nome da Cidade) -->
                 <div class="auth-input-group">
                   <div class="auth-label-row">
                     <label>Sua Cidade (digite o CEP ou o nome da cidade)</label>
@@ -1171,7 +1171,7 @@
                 </div>
 
                 <div class="auth-input-group">
-                  <label for="client-password">Senha (mínimo 6 caracteres)</label>
+                  <label for="client-password">Senha (mÃ­nimo 6 caracteres)</label>
                   <div class="input-icon-wrap">
                     <i class="fa-solid fa-lock"></i>
                     <input type="password" id="client-password" placeholder="Crie uma senha segura" required minlength="6">
@@ -1196,7 +1196,7 @@
                   <label class="custom-checkbox-label">
                     <input type="checkbox" id="client-terms-check" required>
                     <span class="checkbox-indicator"></span>
-                    <span class="terms-text">Li e concordo com os <a href="javascript:void(0)" onclick="openTermsOfUseModal()">Termos de Uso</a> e a <a href="javascript:void(0)" onclick="openPrivacyPolicyModal()">Política de Privacidade</a> (LGPD).</span>
+                    <span class="terms-text">Li e concordo com os <a href="javascript:void(0)" onclick="openTermsOfUseModal()">Termos de Uso</a> e a <a href="javascript:void(0)" onclick="openPrivacyPolicyModal()">PolÃ­tica de Privacidade</a> (LGPD).</span>
                   </label>
                 </div>
 
@@ -1208,7 +1208,7 @@
               </form>
 
               <div class="auth-bottom-switch">
-                <span>Já tem conta?</span>
+                <span>JÃ¡ tem conta?</span>
                 <button type="button" class="btn-link-auth" onclick="openLoginModal()">Fazer Login</button>
               </div>
             </div>
@@ -1250,7 +1250,7 @@
               <div class="wizard-connector" id="w-conn-3"></div>
               <div class="wizard-step" id="w-indicator-4">
                 <div class="step-circle">4</div>
-                <span>Revisão</span>
+                <span>RevisÃ£o</span>
               </div>
             </div>
 
@@ -1264,15 +1264,15 @@
               <div class="wizard-step-pane active" id="step-pane-1">
                 <div class="auth-intro-text">
                   <h3>Etapa 1: Dados de Acesso</h3>
-                  <p>Crie sua identidade de acesso à plataforma Trampou.</p>
+                  <p>Crie sua identidade de acesso Ã  plataforma Trampou.</p>
                 </div>
 
-                <!-- Notificação de usuário já conectado (vinculação sem duplicidade) -->
+                <!-- NotificaÃ§Ã£o de usuÃ¡rio jÃ¡ conectado (vinculaÃ§Ã£o sem duplicidade) -->
                 <div id="pro-already-logged-banner" class="auth-alert info" style="display: none;">
                   <i class="fa-solid fa-id-card"></i>
                   <div>
                     <strong>Conta identificada:</strong>
-                    <p id="pro-already-logged-desc">Você já está logado como <span id="logged-user-display-name"></span>. Vincularemos sua vitrine profissional à sua conta existente.</p>
+                    <p id="pro-already-logged-desc">VocÃª jÃ¡ estÃ¡ logado como <span id="logged-user-display-name"></span>. Vincularemos sua vitrine profissional Ã  sua conta existente.</p>
                   </div>
                 </div>
 
@@ -1302,7 +1302,7 @@
                   </div>
 
                   <div class="auth-input-group">
-                    <label for="pro-password">Senha de Acesso (mínimo 6 dígitos)</label>
+                    <label for="pro-password">Senha de Acesso (mÃ­nimo 6 dÃ­gitos)</label>
                     <div class="input-icon-wrap">
                       <i class="fa-solid fa-lock"></i>
                       <input type="password" id="pro-password" placeholder="Crie sua senha segura" minlength="6">
@@ -1327,14 +1327,14 @@
                     <label class="custom-checkbox-label">
                       <input type="checkbox" id="pro-terms-check">
                       <span class="checkbox-indicator"></span>
-                      <span class="terms-text">Declaro que li e concordo com os <a href="javascript:void(0)" onclick="showToast('Termos para Prestadores de Serviços')">Termos de Prestação de Serviços</a> e Responsabilidade Técnica.</span>
+                      <span class="terms-text">Declaro que li e concordo com os <a href="javascript:void(0)" onclick="showToast('Termos para Prestadores de ServiÃ§os')">Termos de PrestaÃ§Ã£o de ServiÃ§os</a> e Responsabilidade TÃ©cnica.</span>
                     </label>
                   </div>
                 </div>
 
                 <div class="wizard-action-footer">
                   <button type="button" class="btn-auth-primary" onclick="validateAndGoStep(2)">
-                    <span>Avançar para Perfil Profissional</span>
+                    <span>AvanÃ§ar para Perfil Profissional</span>
                     <i class="fa-solid fa-arrow-right"></i>
                   </button>
                 </div>
@@ -1343,22 +1343,22 @@
               <!-- ================= ETAPA 2: PERFIL PROFISSIONAL ================= -->
               <div class="wizard-step-pane" id="step-pane-2">
                 <div class="auth-intro-text">
-                  <h3>Etapa 2: Especialidade & Região</h3>
-                  <p>Como os clientes vão encontrar você nas buscas de Parauapebas.</p>
+                  <h3>Etapa 2: Especialidade & RegiÃ£o</h3>
+                  <p>Como os clientes vÃ£o encontrar vocÃª nas buscas de Parauapebas.</p>
                 </div>
 
                 <div class="auth-input-group">
-                  <label for="pro-commercial-name">Nome Comercial / Público</label>
+                  <label for="pro-commercial-name">Nome Comercial / PÃºblico</label>
                   <div class="input-icon-wrap">
                     <i class="fa-solid fa-signature"></i>
                     <input type="text" id="pro-commercial-name" placeholder="ex: Carlos Eletricista ou Silva Ar-Condicionado">
                   </div>
-                  <small class="field-hint">É como seu perfil aparecerá na vitrine social e nos resultados.</small>
+                  <small class="field-hint">Ã‰ como seu perfil aparecerÃ¡ na vitrine social e nos resultados.</small>
                 </div>
 
                 <div class="auth-input-group">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                    <label for="pro-main-category" style="margin-bottom: 0;">Profissão Principal</label>
+                    <label for="pro-main-category" style="margin-bottom: 0;">ProfissÃ£o Principal</label>
                     <button type="button" class="btn-link-subtle" onclick="toggleNewCategoryField()" title="Cadastrar nova categoria">
                       <i class="fa-solid fa-plus-circle"></i> Criar nova categoria
                     </button>
@@ -1366,24 +1366,24 @@
                   <div class="input-icon-wrap select-wrap">
                     <i class="fa-solid fa-screwdriver-wrench"></i>
                     <select id="pro-main-category" onchange="handleProCategoryChange(this.value)">
-                      <option value="">Selecione sua profissão...</option>
+                      <option value="">Selecione sua profissÃ£o...</option>
                       <option value="Eletricista">Eletricista Residencial e Comercial</option>
-                      <option value="Ar-Condicionado">Técnico em Refrigeração & Split</option>
-                      <option value="Encanador">Encanador e Bombeiro Hidráulico</option>
+                      <option value="Ar-Condicionado">TÃ©cnico em RefrigeraÃ§Ã£o & Split</option>
+                      <option value="Encanador">Encanador e Bombeiro HidrÃ¡ulico</option>
                       <option value="Pedreiro">Pedreiro e Reformas Gerais</option>
                       <option value="Pintor">Pintor e Texturas</option>
                       <option value="Diarista">Diarista e Limpeza Pesada</option>
-                      <option value="Mecânico">Mecânico e Socorro Automotivo</option>
-                      <option value="Marceneiro">Marcenaria e Montagem de Móveis</option>
-                      <option value="Informática">Técnico em Informática e Redes</option>
+                      <option value="MecÃ¢nico">MecÃ¢nico e Socorro Automotivo</option>
+                      <option value="Marceneiro">Marcenaria e Montagem de MÃ³veis</option>
+                      <option value="InformÃ¡tica">TÃ©cnico em InformÃ¡tica e Redes</option>
                       <option value="Fretes">Fretes e Carretos</option>
-                      <option value="__NEW__">➕ Outra profissão / Criar nova categoria...</option>
+                      <option value="__NEW__">âž• Outra profissÃ£o / Criar nova categoria...</option>
                     </select>
                   </div>
 
-                  <!-- Caixa de Criação de Nova Categoria -->
+                  <!-- Caixa de CriaÃ§Ã£o de Nova Categoria -->
                   <div id="new-category-box" class="new-category-box" style="display: none;">
-                    <label for="new-category-input" class="new-cat-label">Nome da nova profissão ou categoria</label>
+                    <label for="new-category-input" class="new-cat-label">Nome da nova profissÃ£o ou categoria</label>
                     <div class="new-cat-input-row">
                       <div class="input-icon-wrap" style="flex: 1;">
                         <i class="fa-solid fa-tag"></i>
@@ -1393,26 +1393,26 @@
                         <i class="fa-solid fa-check"></i> Adicionar
                       </button>
                     </div>
-                    <small class="field-hint">Esta nova profissão será salva e adicionada às opções do aplicativo.</small>
+                    <small class="field-hint">Esta nova profissÃ£o serÃ¡ salva e adicionada Ã s opÃ§Ãµes do aplicativo.</small>
                   </div>
                 </div>
 
                 <div class="auth-input-group">
-                  <label>Especialidades e Serviços Oferecidos</label>
+                  <label>Especialidades e ServiÃ§os Oferecidos</label>
                   <div class="tags-selector-wrap" id="pro-specialties-chips">
-                    <span class="selectable-chip" onclick="toggleTagChip(this)">Instalações Novas</span>
-                    <span class="selectable-chip" onclick="toggleTagChip(this)">Manutenção Preventiva</span>
+                    <span class="selectable-chip" onclick="toggleTagChip(this)">InstalaÃ§Ãµes Novas</span>
+                    <span class="selectable-chip" onclick="toggleTagChip(this)">ManutenÃ§Ã£o Preventiva</span>
                     <span class="selectable-chip" onclick="toggleTagChip(this)">Atendimento Emergencial 24h</span>
                     <span class="selectable-chip" onclick="toggleTagChip(this)">Comercial</span>
                     <span class="selectable-chip" onclick="toggleTagChip(this)">Residencial</span>
-                    <span class="selectable-chip" onclick="toggleTagChip(this)">Orçamento com Laudo</span>
+                    <span class="selectable-chip" onclick="toggleTagChip(this)">OrÃ§amento com Laudo</span>
                   </div>
                 </div>
 
-                <!-- Cidade e Estado de Atuação do Profissional (CEP ou Nome da Cidade) -->
+                <!-- Cidade e Estado de AtuaÃ§Ã£o do Profissional (CEP ou Nome da Cidade) -->
                 <div class="auth-input-group">
                   <div class="auth-label-row">
-                    <label>Cidade de Atuação (CEP ou Nome da Cidade)</label>
+                    <label>Cidade de AtuaÃ§Ã£o (CEP ou Nome da Cidade)</label>
                     <button type="button" class="btn-geo-detect" onclick="detectProLocationGPS()" title="Detectar cidade via GPS">
                       <i class="fa-solid fa-location-crosshairs"></i> Usar GPS
                     </button>
@@ -1459,14 +1459,14 @@
                       <input type="text" id="pro-city" placeholder="Ou digite o nome da sua cidade" value="Parauapebas" list="city-picker-datalist">
                     </div>
                   </div>
-                  <small class="field-hint"><i class="fa-solid fa-circle-check" style="color: #10B981;"></i> Sua vitrine ficará visível para clientes de <strong>toda a cidade selecionada</strong>, sem restrição por bairro.</small>
+                  <small class="field-hint"><i class="fa-solid fa-circle-check" style="color: #10B981;"></i> Sua vitrine ficarÃ¡ visÃ­vel para clientes de <strong>toda a cidade selecionada</strong>, sem restriÃ§Ã£o por bairro.</small>
                   <input type="hidden" id="pro-lat" value="">
                   <input type="hidden" id="pro-lng" value="">
                 </div>
 
                 <div class="auth-input-group">
-                  <label for="pro-bio">Descrição Profissional (Bio da Vitrine)</label>
-                  <textarea id="pro-bio" rows="3" placeholder="Apresente sua experiência, garantia dos serviços e qualificações para os clientes..."></textarea>
+                  <label for="pro-bio">DescriÃ§Ã£o Profissional (Bio da Vitrine)</label>
+                  <textarea id="pro-bio" rows="3" placeholder="Apresente sua experiÃªncia, garantia dos serviÃ§os e qualificaÃ§Ãµes para os clientes..."></textarea>
                 </div>
 
                 <div class="wizard-action-footer split">
@@ -1474,7 +1474,7 @@
                     <i class="fa-solid fa-arrow-left"></i> Voltar
                   </button>
                   <button type="button" class="btn-auth-primary" onclick="validateAndGoStep(3)">
-                    <span>Avançar para Vitrine</span>
+                    <span>AvanÃ§ar para Vitrine</span>
                     <i class="fa-solid fa-arrow-right"></i>
                   </button>
                 </div>
@@ -1485,7 +1485,7 @@
                 <div class="auth-intro-text">
                   <h3>Etapa 3: Fotos & Vitrine Digital</h3>
                   <p>Adicione fotos para gerar credibilidade e aumentar o contato de clientes.</p>
-                  <div class="optional-pill-badge"><i class="fa-solid fa-circle-info"></i> Campos opcionais: você pode finalizar e postar mais fotos depois.</div>
+                  <div class="optional-pill-badge"><i class="fa-solid fa-circle-info"></i> Campos opcionais: vocÃª pode finalizar e postar mais fotos depois.</div>
                 </div>
 
                 <!-- Foto de Perfil -->
@@ -1513,8 +1513,8 @@
                 <div class="gallery-upload-box">
                   <div class="gallery-upload-header">
                     <div>
-                      <label class="section-sub-label">Fotos de Trabalhos Realizados (Até 6 fotos)</label>
-                      <small>Exiba instalações, reformas ou serviços finalizados</small>
+                      <label class="section-sub-label">Fotos de Trabalhos Realizados (AtÃ© 6 fotos)</label>
+                      <small>Exiba instalaÃ§Ãµes, reformas ou serviÃ§os finalizados</small>
                     </div>
                     <label class="btn-file-select-sm" for="wizard-gallery-input">
                       <i class="fa-solid fa-plus"></i> Adicionar
@@ -1530,10 +1530,10 @@
                   </div>
                 </div>
 
-                <!-- Descrição Complementar -->
+                <!-- DescriÃ§Ã£o Complementar -->
                 <div class="auth-input-group" style="margin-top: 14px;">
-                  <label for="pro-extra-info">Informações Complementares de Atendimento</label>
-                  <input type="text" id="pro-extra-info" placeholder="ex: Aceita cartão/Pix • Orçamento sem taxa de visita">
+                  <label for="pro-extra-info">InformaÃ§Ãµes Complementares de Atendimento</label>
+                  <input type="text" id="pro-extra-info" placeholder="ex: Aceita cartÃ£o/Pix â€¢ OrÃ§amento sem taxa de visita">
                 </div>
 
                 <div class="wizard-action-footer split">
@@ -1547,10 +1547,10 @@
                 </div>
               </div>
 
-              <!-- ================= ETAPA 4: REVISÃO & CONFIRMAÇÃO ================= -->
+              <!-- ================= ETAPA 4: REVISÃƒO & CONFIRMAÃ‡ÃƒO ================= -->
               <div class="wizard-step-pane" id="step-pane-4">
                 <div class="auth-intro-text">
-                  <h3>Etapa 4: Revisão do Perfil</h3>
+                  <h3>Etapa 4: RevisÃ£o do Perfil</h3>
                   <p>Confira os dados antes de publicar sua vitrine no Trampou.</p>
                 </div>
 
@@ -1563,9 +1563,9 @@
                     <div class="summary-header-info">
                       <h4 id="rev-commercial-name">Nome do Profissional</h4>
                       <span class="summary-badge" id="rev-main-category">Eletricista</span>
-                      <p id="rev-email-phone">—</p>
+                      <p id="rev-email-phone">â€”</p>
                     </div>
-                    <button type="button" class="btn-edit-step" onclick="goStep(2)" title="Editar dados básicos">
+                    <button type="button" class="btn-edit-step" onclick="goStep(2)" title="Editar dados bÃ¡sicos">
                       <i class="fa-solid fa-pen"></i>
                     </button>
                   </div>
@@ -1574,7 +1574,7 @@
 
                   <!-- Detalhes do resumo -->
                   <div class="summary-detail-row">
-                    <span class="detail-label"><i class="fa-solid fa-location-dot"></i> Cidade de atuação:</span>
+                    <span class="detail-label"><i class="fa-solid fa-location-dot"></i> Cidade de atuaÃ§Ã£o:</span>
                     <span class="detail-value" id="rev-neighborhoods">Parauapebas, PA</span>
                   </div>
 
@@ -1585,7 +1585,7 @@
 
                   <div class="summary-detail-row">
                     <span class="detail-label"><i class="fa-solid fa-align-left"></i> Biografia:</span>
-                    <p class="detail-bio" id="rev-bio">Sem descrição informada.</p>
+                    <p class="detail-bio" id="rev-bio">Sem descriÃ§Ã£o informada.</p>
                   </div>
 
                   <div class="summary-detail-row">
@@ -1598,7 +1598,7 @@
 
                 <div class="review-assurance-box">
                   <i class="fa-solid fa-shield-check"></i>
-                  <span>Ao confirmar, você concorda com os <a href="javascript:void(0)" onclick="openTermsOfUseModal()" style="color: inherit; text-decoration: underline; font-weight: 700;">Termos de Uso</a> e a <a href="javascript:void(0)" onclick="openPrivacyPolicyModal()" style="color: inherit; text-decoration: underline; font-weight: 700;">Política de Privacidade (LGPD)</a>. Sua vitrine poderá ser editada ou excluída a qualquer momento.</span>
+                  <span>Ao confirmar, vocÃª concorda com os <a href="javascript:void(0)" onclick="openTermsOfUseModal()" style="color: inherit; text-decoration: underline; font-weight: 700;">Termos de Uso</a> e a <a href="javascript:void(0)" onclick="openPrivacyPolicyModal()" style="color: inherit; text-decoration: underline; font-weight: 700;">PolÃ­tica de Privacidade (LGPD)</a>. Sua vitrine poderÃ¡ ser editada ou excluÃ­da a qualquer momento.</span>
                 </div>
 
                 <div class="wizard-action-footer split">
@@ -1616,7 +1616,7 @@
         </div>
 
         <!-- =========================================================
-             6. MODAL DE EDIÇÃO DE PERFIL DO CLIENTE
+             6. MODAL DE EDIÃ‡ÃƒO DE PERFIL DO CLIENTE
              ========================================================= -->
         <div id="edit-profile-modal" class="modal-overlay">
           <div class="modal-content auth-form-content">
@@ -1693,7 +1693,7 @@
                 </div>
 
                 <button type="submit" class="btn-auth-primary">
-                  <span>Salvar Alterações</span>
+                  <span>Salvar AlteraÃ§Ãµes</span>
                 </button>
               </form>
             </div>
@@ -1704,7 +1704,7 @@
              ========================================================= -->
         <div id="pro-list-overlay" class="modal-overlay">
           <div class="modal-content pro-list-content">
-            <!-- Barra Superior com Voltar e Título -->
+            <!-- Barra Superior com Voltar e TÃ­tulo -->
             <div class="pro-list-header">
               <button class="v-nav-icon-btn" onclick="closeProListModal()" title="Voltar" aria-label="Voltar">
                 <i class="fa-solid fa-arrow-left"></i>
@@ -1716,12 +1716,12 @@
               <div class="pro-list-count-badge" id="pro-list-count">0 encontrados</div>
             </div>
 
-            <!-- Barra de Filtro Rápido de Bairros -->
+            <!-- Barra de Filtro RÃ¡pido de Bairros -->
             <div class="pro-list-filter-bar" id="pro-list-filter-bar">
               <!-- Chips injetados dinamicamente via JS -->
             </div>
 
-            <!-- Corpo Rolável com Cards dos Profissionais -->
+            <!-- Corpo RolÃ¡vel com Cards dos Profissionais -->
             <div class="pro-list-scroll-body" id="pro-list-items-container">
               <!-- Cards dos profissionais injetados dinamicamente -->
             </div>
@@ -1729,7 +1729,7 @@
         </div>
 
         <!-- =========================================================
-             MODAL: TODAS AS CATEGORIAS DE PROFISSIONAIS (OPÇÕES COMPLETAS)
+             MODAL: TODAS AS CATEGORIAS DE PROFISSIONAIS (OPÃ‡Ã•ES COMPLETAS)
              ========================================================= -->
         <div id="all-categories-modal-overlay" class="modal-overlay" style="z-index: 1100;">
           <div class="modal-content all-cats-modal-content">
@@ -1747,7 +1747,7 @@
               </button>
             </div>
 
-            <!-- Campo de Busca Rápida de Categorias -->
+            <!-- Campo de Busca RÃ¡pida de Categorias -->
             <div class="all-cats-search-wrap">
               <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
               <input 
@@ -1763,7 +1763,7 @@
               </button>
             </div>
 
-            <!-- Lista Rolável com Todas as Opções de Categorias -->
+            <!-- Lista RolÃ¡vel com Todas as OpÃ§Ãµes de Categorias -->
             <div class="all-cats-scroll-body" id="all-categories-container">
               <!-- Renderizado dinamicamente via renderAllCategoriesModal() -->
             </div>
@@ -1775,7 +1775,7 @@
              ========================================================= -->
         <div id="favorites-modal-overlay" class="modal-overlay" style="z-index: 1100;">
           <div class="modal-content pro-list-content">
-            <!-- Barra Superior com Voltar e Título -->
+            <!-- Barra Superior com Voltar e TÃ­tulo -->
             <div class="pro-list-header">
               <button class="v-nav-icon-btn" onclick="closeFavoritesModal()" title="Voltar" aria-label="Voltar">
                 <i class="fa-solid fa-arrow-left"></i>
@@ -1786,15 +1786,15 @@
               </div>
             </div>
 
-            <!-- Corpo Rolável com os Favoritos -->
+            <!-- Corpo RolÃ¡vel com os Favoritos -->
             <div class="pro-list-scroll-body" id="favorites-list-container">
-              <!-- Conteúdo injetado via JS -->
+              <!-- ConteÃºdo injetado via JS -->
             </div>
           </div>
         </div>
 
         <!-- =========================================================
-             8. MODAL DE SOLICITAÇÃO DE EMERGÊNCIA SOS
+             8. MODAL DE SOLICITAÃ‡ÃƒO DE EMERGÃŠNCIA SOS
              ========================================================= -->
         <div id="sos-request-modal" class="modal-overlay">
           <div class="modal-content auth-form-content sos-request-modal-content">
@@ -1803,30 +1803,30 @@
                 <i class="fa-solid fa-arrow-left"></i>
               </button>
               <div class="sos-header-text">
-                <div class="sos-pill-mini"><i class="fa-solid fa-bolt"></i> Plantão SOS 24h</div>
-                <h4>Solicitar Emergência</h4>
+                <div class="sos-pill-mini"><i class="fa-solid fa-bolt"></i> PlantÃ£o SOS 24h</div>
+                <h4>Solicitar EmergÃªncia</h4>
               </div>
               <div style="width: 32px;"></div>
             </div>
 
             <div class="auth-form-body sos-form-body">
-              <!-- Seleção do tipo de profissional com Campo de Busca de Profissional Específico -->
+              <!-- SeleÃ§Ã£o do tipo de profissional com Campo de Busca de Profissional EspecÃ­fico -->
               <div class="auth-input-group sos-selection-group">
                 <label style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                  <span>Quem você precisa agora?</span>
+                  <span>Quem vocÃª precisa agora?</span>
                   <span class="sos-search-hint-pill"><i class="fa-solid fa-crosshairs"></i> Alvo Direto ou Categoria</span>
                 </label>
 
-                <!-- Campo de busca de profissional específico ou especialidade -->
+                <!-- Campo de busca de profissional especÃ­fico ou especialidade -->
                 <div class="sos-search-box-wrap">
                   <i class="fa-solid fa-magnifying-glass sos-search-icon"></i>
-                  <input type="text" id="sos-search-input" class="sos-search-input" placeholder="Buscar profissional ou serviço (ex: Eletricista, Guincho...)" oninput="handleSOSSearch(this.value)" autocomplete="off">
+                  <input type="text" id="sos-search-input" class="sos-search-input" placeholder="Buscar profissional ou serviÃ§o (ex: Eletricista, Guincho...)" oninput="handleSOSSearch(this.value)" autocomplete="off">
                   <button type="button" id="sos-search-clear-btn" class="sos-search-clear-btn" style="display: none;" onclick="clearSOSSearch()" title="Limpar busca">
                     <i class="fa-solid fa-xmark"></i>
                   </button>
                 </div>
 
-                <!-- Card de Profissional Específico Selecionado -->
+                <!-- Card de Profissional EspecÃ­fico Selecionado -->
                 <div id="sos-selected-pro-banner" class="sos-selected-pro-card" style="display: none;">
                   <div class="sos-sel-pro-left">
                     <div class="sos-sel-avatar-wrap" id="sos-sel-avatar-wrap">
@@ -1850,7 +1850,7 @@
                 <!-- Lista de Resultados da Busca (Profissionais e Categorias) -->
                 <div id="sos-search-results-list" class="sos-search-results-list" style="display: none;"></div>
 
-                <!-- Categorias Rápidas / Recomendadas -->
+                <!-- Categorias RÃ¡pidas / Recomendadas -->
                 <div id="sos-quick-categories-section">
                   <span class="sos-quick-label">Ou escolha uma categoria recomendada:</span>
                   <div class="sos-pro-chips-grid" id="sos-pro-chips-grid">
@@ -1866,10 +1866,10 @@
                     <button type="button" class="sos-choice-chip" data-pro="Chaveiro" onclick="selectSOSProType('Chaveiro')">
                       <i class="fa-solid fa-key"></i> <span>Chaveiro</span>
                     </button>
-                    <button type="button" class="sos-choice-chip" data-pro="Mecânico" onclick="selectSOSProType('Mecânico')">
-                      <i class="fa-solid fa-wrench"></i> <span>Mecânico</span>
+                    <button type="button" class="sos-choice-chip" data-pro="MecÃ¢nico" onclick="selectSOSProType('MecÃ¢nico')">
+                      <i class="fa-solid fa-wrench"></i> <span>MecÃ¢nico</span>
                     </button>
-                    <button type="button" class="sos-choice-chip" data-pro="Refrigeração" onclick="selectSOSProType('Refrigeração')">
+                    <button type="button" class="sos-choice-chip" data-pro="RefrigeraÃ§Ã£o" onclick="selectSOSProType('RefrigeraÃ§Ã£o')">
                       <i class="fa-solid fa-snowflake"></i> <span>Ar-Condicionado</span>
                     </button>
                     <button type="button" class="sos-choice-chip" data-pro="Pedreiro" onclick="selectSOSProType('Pedreiro')">
@@ -1888,19 +1888,19 @@
                 </div>
               </div>
 
-              <!-- Cidade / Ponto de Referência -->
+              <!-- Cidade / Ponto de ReferÃªncia -->
               <div class="auth-input-group">
-                <label for="sos-bairro-select">Sua Cidade ou Ponto de Referência</label>
+                <label for="sos-bairro-select">Sua Cidade ou Ponto de ReferÃªncia</label>
                 <div class="input-icon-wrap">
                   <i class="fa-solid fa-location-dot"></i>
-                  <input type="text" id="sos-bairro-select" placeholder="Ex: Parauapebas, PA (ou rua/referência)">
+                  <input type="text" id="sos-bairro-select" placeholder="Ex: Parauapebas, PA (ou rua/referÃªncia)">
                 </div>
               </div>
 
-              <!-- Descrição do Problema -->
+              <!-- DescriÃ§Ã£o do Problema -->
               <div class="auth-input-group">
-                <label for="sos-desc-input">Descrição do problema urgente</label>
-                <textarea id="sos-desc-input" class="auth-textarea" rows="3" placeholder="Ex: Disjuntor explodiu e estou sem luz em casa / Cano principal estourou e está alagando..."></textarea>
+                <label for="sos-desc-input">DescriÃ§Ã£o do problema urgente</label>
+                <textarea id="sos-desc-input" class="auth-textarea" rows="3" placeholder="Ex: Disjuntor explodiu e estou sem luz em casa / Cano principal estourou e estÃ¡ alagando..."></textarea>
               </div>
 
               <!-- Telefone de Contato -->
@@ -1914,7 +1914,7 @@
 
               <div class="sos-trust-badge">
                 <i class="fa-solid fa-shield-halved"></i>
-                <span>Chamado transmitido em tempo real aos profissionais com plantão ativo.</span>
+                <span>Chamado transmitido em tempo real aos profissionais com plantÃ£o ativo.</span>
               </div>
 
               <button type="button" class="btn-auth-primary btn-sos-disparar" onclick="launchSOSRadar()">
@@ -1937,9 +1937,9 @@
               </button>
               <div class="radar-header-pill" id="radar-header-pill">
                 <span class="radar-live-blip"></span>
-                <span id="radar-status-caption">Buscando profissionais de plantão...</span>
+                <span id="radar-status-caption">Buscando profissionais de plantÃ£o...</span>
               </div>
-              <button type="button" class="radar-top-btn" onclick="showToast('Plantão SOS: Profissionais no seu raio estão sendo notificados agora!')" title="Informações">
+              <button type="button" class="radar-top-btn" onclick="showToast('PlantÃ£o SOS: Profissionais no seu raio estÃ£o sendo notificados agora!')" title="InformaÃ§Ãµes">
                 <i class="fa-solid fa-info"></i>
               </button>
             </div>
@@ -1969,19 +1969,19 @@
                 <line x1="195" y1="0" x2="195" y2="420" stroke="#334155" stroke-width="10"/>
                 <line x1="195" y1="0" x2="195" y2="420" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="6 6" opacity="0.4"/>
 
-                <!-- Ruas secundárias dos bairros -->
+                <!-- Ruas secundÃ¡rias dos bairros -->
                 <path d="M 50,30 L 50,420 M 110,30 L 110,420 M 280,30 L 280,420 M 340,30 L 340,420" stroke="#1E293B" stroke-width="3" opacity="0.9"/>
                 <path d="M 0,70 L 400,70 M 0,270 L 400,270 M 0,350 L 400,350" stroke="#1E293B" stroke-width="3" opacity="0.9"/>
 
                 <!-- Textos discretos dos bairros de Parauapebas -->
                 <text x="35" y="55" fill="#64748B" font-size="9" font-weight="700" letter-spacing="1">CIDADE NOVA</text>
                 <text x="240" y="65" fill="#64748B" font-size="9" font-weight="700" letter-spacing="1">RIO VERDE</text>
-                <text x="45" y="175" fill="#64748B" font-size="9" font-weight="700" letter-spacing="1">UNIÃO</text>
+                <text x="45" y="175" fill="#64748B" font-size="9" font-weight="700" letter-spacing="1">UNIÃƒO</text>
                 <text x="250" y="185" fill="#64748B" font-size="9" font-weight="700" letter-spacing="1">BEIRA RIO</text>
-                <text x="55" y="315" fill="#64748B" font-size="9" font-weight="700" letter-spacing="1">NOVA CARAJÁS</text>
+                <text x="55" y="315" fill="#64748B" font-size="9" font-weight="700" letter-spacing="1">NOVA CARAJÃS</text>
                 <text x="240" y="325" fill="#64748B" font-size="9" font-weight="700" letter-spacing="1">DA PAZ</text>
 
-                <!-- Anéis do Radar Sonar Pulsando ao redor do cliente (centro) -->
+                <!-- AnÃ©is do Radar Sonar Pulsando ao redor do cliente (centro) -->
                 <circle cx="200" cy="200" r="30" fill="rgba(108, 43, 217, 0.25)" stroke="#A78BFA" stroke-width="1.5" class="radar-sonar-ring ring-1"/>
                 <circle cx="200" cy="200" r="70" fill="rgba(108, 43, 217, 0.15)" stroke="#8B5CF6" stroke-width="1.5" class="radar-sonar-ring ring-2"/>
                 <circle cx="200" cy="200" r="120" fill="rgba(108, 43, 217, 0.08)" stroke="#7C3AED" stroke-width="1.5" stroke-dasharray="5 5" class="radar-sonar-ring ring-3"/>
@@ -1994,10 +1994,10 @@
                 <div class="user-pin-core">
                   <i class="fa-solid fa-person-circle-exclamation"></i>
                 </div>
-                <div class="user-pin-label">Você</div>
+                <div class="user-pin-label">VocÃª</div>
               </div>
 
-              <!-- Container dinâmico dos Profissionais no Mapa -->
+              <!-- Container dinÃ¢mico dos Profissionais no Mapa -->
               <div id="radar-pro-pins-container" class="radar-pro-pins-layer">
                 <!-- Pins dos profissionais online renderizados dinamicamente via JS -->
               </div>
@@ -2014,7 +2014,7 @@
                   <div class="radar-timer-pill" id="radar-countdown-timer">00:05</div>
                 </div>
 
-                <h3 class="radar-sheet-title" id="radar-sheet-title-text">Buscando profissionais de plantão...</h3>
+                <h3 class="radar-sheet-title" id="radar-sheet-title-text">Buscando profissionais de plantÃ£o...</h3>
                 <p class="radar-sheet-subtitle">Notificando prestadores com SOS ativo no bairro <strong id="radar-bairro-name">Cidade Nova</strong>.</p>
 
                 <!-- Barra de progresso animada -->
@@ -2040,7 +2040,7 @@
                   </div>
                   <div>
                     <h4 class="radar-accepted-title">Chamado Aceito!</h4>
-                    <span class="radar-accepted-sub">O profissional está pronto para te atender</span>
+                    <span class="radar-accepted-sub">O profissional estÃ¡ pronto para te atender</span>
                   </div>
                 </div>
 
@@ -2057,7 +2057,7 @@
                     <div class="accepted-pro-specialty-text" id="accepted-pro-spec-text">Eletricista Residencial e Predial</div>
                     <div class="accepted-pro-stats">
                       <span class="stat-star"><i class="fa-solid fa-star"></i> <strong id="accepted-pro-star-text">4.8</strong></span>
-                      <span class="stat-sep">•</span>
+                      <span class="stat-sep">â€¢</span>
                       <span class="stat-eta"><i class="fa-solid fa-clock"></i> Chegada em <strong id="accepted-pro-eta-text">~15-20 min</strong></span>
                     </div>
                   </div>
@@ -2079,7 +2079,7 @@
         </div>
 
         <!-- ==============================================================================
-             MODAL: ALERTA DE NOVO CHAMADO DE EMERGÊNCIA 24h PARA O PROFISSIONAL ACEITAR
+             MODAL: ALERTA DE NOVO CHAMADO DE EMERGÃŠNCIA 24h PARA O PROFISSIONAL ACEITAR
              ============================================================================== -->
         <div id="pro-sos-incoming-modal" class="modal-overlay pro-sos-incoming-overlay" style="z-index: 1400;">
           <div class="modal-content pro-sos-incoming-card">
@@ -2091,9 +2091,9 @@
               </div>
               <div class="pro-sos-title-group">
                 <div class="pro-sos-badge-urgent">
-                  <span class="pro-sos-blip-dot"></span> Plantão 24h • Urgência Imediata
+                  <span class="pro-sos-blip-dot"></span> PlantÃ£o 24h â€¢ UrgÃªncia Imediata
                 </div>
-                <h3>Novo Chamado de Emergência!</h3>
+                <h3>Novo Chamado de EmergÃªncia!</h3>
               </div>
             </div>
 
@@ -2118,7 +2118,7 @@
                   </div>
                 </div>
                 <div class="pro-sos-info-item">
-                  <span class="pro-sos-label">Localização</span>
+                  <span class="pro-sos-label">LocalizaÃ§Ã£o</span>
                   <div class="pro-sos-val" id="pro-sos-bairro-val">
                     <i class="fa-solid fa-location-dot"></i> <span>Cidade Nova (~1,5 km)</span>
                   </div>
@@ -2135,11 +2135,11 @@
                 </p>
                 <div class="pro-sos-client-meta">
                   <span><i class="fa-solid fa-user"></i> <strong id="pro-sos-client-name">Cliente</strong></span>
-                  <span><i class="fa-brands fa-whatsapp"></i> <strong id="pro-sos-client-phone">—</strong></span>
+                  <span><i class="fa-brands fa-whatsapp"></i> <strong id="pro-sos-client-phone">â€”</strong></span>
                 </div>
               </div>
 
-              <!-- Sugestão de Taxa de Socorro Noturno / Emergencial -->
+              <!-- SugestÃ£o de Taxa de Socorro Noturno / Emergencial -->
               <div class="pro-sos-fee-hint">
                 <div class="pro-fee-left">
                   <i class="fa-solid fa-coins"></i>
@@ -2152,7 +2152,7 @@
               </div>
             </div>
 
-            <!-- Botões de Ação do Profissional -->
+            <!-- BotÃµes de AÃ§Ã£o do Profissional -->
             <div class="pro-sos-footer-actions">
               <button type="button" class="btn-pro-reject-sos" onclick="rejectIncomingSOS()">
                 <i class="fa-solid fa-xmark"></i>
@@ -2177,7 +2177,7 @@
                 <i class="fa-solid fa-arrow-left"></i>
               </button>
               
-              <!-- Perfil clicável do profissional no header do chat -->
+              <!-- Perfil clicÃ¡vel do profissional no header do chat -->
               <div class="chat-user-target" id="chat-user-profile-btn" onclick="openProProfileFromChat()" title="Toque para ver o perfil e os trabalhos do profissional" role="button" tabindex="0">
                 <div class="chat-avatar-header" id="chat-contact-avatar">
                   <i class="fa-solid fa-user"></i>
@@ -2188,7 +2188,7 @@
                     <h4 id="chat-contact-name">Profissional</h4>
                     <i class="fa-solid fa-chevron-right chat-view-profile-arrow"></i>
                   </div>
-                  <span id="chat-contact-service">Negociação de Serviço</span>
+                  <span id="chat-contact-service">NegociaÃ§Ã£o de ServiÃ§o</span>
                 </div>
               </div>
 
@@ -2197,13 +2197,13 @@
               </div>
             </div>
 
-            <!-- Faixa de Segurança e Transparência -->
+            <!-- Faixa de SeguranÃ§a e TransparÃªncia -->
             <div class="chat-safety-banner">
               <i class="fa-solid fa-shield-halved"></i>
-              <span>Negocie livremente. Registre o serviço combinado para avaliar ao término.</span>
+              <span>Negocie livremente. Registre o serviÃ§o combinado para avaliar ao tÃ©rmino.</span>
             </div>
 
-            <!-- CONTAINER CONTEXTUAL DO ATENDIMENTO (Barra ou Cartão de Status) -->
+            <!-- CONTAINER CONTEXTUAL DO ATENDIMENTO (Barra ou CartÃ£o de Status) -->
             <div id="chat-attendance-card-wrapper">
               <!-- Renderizado dinamicamente via JS (renderAttendanceCard) -->
             </div>
@@ -2215,7 +2215,7 @@
 
             <!-- Barra de Envio de Mensagem -->
             <div class="chat-input-bar">
-              <button type="button" class="attach-btn" title="Registrar serviço combinado" onclick="openRegisterAttendanceModal()">
+              <button type="button" class="attach-btn" title="Registrar serviÃ§o combinado" onclick="openRegisterAttendanceModal()">
                 <i class="fa-solid fa-handshake" style="color: var(--primary-purple);"></i>
               </button>
               <input type="text" id="chat-input" placeholder="Digite uma mensagem..." autocomplete="off">
@@ -2226,26 +2226,26 @@
           </div>
         </div>
 
-        <!-- MODAL: REGISTRAR SERVIÇO COMBINADO -->
+        <!-- MODAL: REGISTRAR SERVIÃ‡O COMBINADO -->
         <div id="modal-register-attendance" class="modal-overlay" style="z-index: 1100;">
           <div class="modal-content quote-modal-box">
             <div class="modal-header">
               <div style="display: flex; align-items: center; gap: 8px;">
                 <i class="fa-solid fa-handshake" style="color: #4F46E5; font-size: 18px;"></i>
-                <h4 style="margin: 0; font-size: 15px;">Registrar Serviço Combinado</h4>
+                <h4 style="margin: 0; font-size: 15px;">Registrar ServiÃ§o Combinado</h4>
               </div>
               <button type="button" class="close-x-btn" onclick="closeRegisterAttendanceModal()"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body" style="padding: 16px;">
               <p style="font-size: 12px; color: #64748B; margin-bottom: 14px; line-height: 1.45;">
-                O registro permite que o cliente avalie com selo verificado após a conclusão. Não exigimos pagamento pelo app nem cadastro de orçamento complexo.
+                O registro permite que o cliente avalie com selo verificado apÃ³s a conclusÃ£o. NÃ£o exigimos pagamento pelo app nem cadastro de orÃ§amento complexo.
               </p>
               
-              <label style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Descrição resumida do serviço (opcional):</label>
-              <input type="text" id="reg-att-title-input" placeholder="Ex: Instalação de Ar Split ou Manutenção Elétrica" style="width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 13px; margin-bottom: 14px;">
+              <label style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">DescriÃ§Ã£o resumida do serviÃ§o (opcional):</label>
+              <input type="text" id="reg-att-title-input" placeholder="Ex: InstalaÃ§Ã£o de Ar Split ou ManutenÃ§Ã£o ElÃ©trica" style="width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 13px; margin-bottom: 14px;">
               
               <div style="background: #F1F5F9; border-radius: 8px; padding: 10px 12px; font-size: 11px; color: #475569;">
-                <i class="fa-solid fa-circle-info" style="color: #4F46E5;"></i> O outro participante receberá a solicitação para confirmar antes de registrar como combinado.
+                <i class="fa-solid fa-circle-info" style="color: #4F46E5;"></i> O outro participante receberÃ¡ a solicitaÃ§Ã£o para confirmar antes de registrar como combinado.
               </div>
             </div>
             <div class="modal-footer" style="padding: 12px 16px; display: flex; justify-content: flex-end; gap: 8px;">
@@ -2255,13 +2255,13 @@
           </div>
         </div>
 
-        <!-- MODAL: CONTESTAR CONCLUSÃO DO SERVIÇO -->
+        <!-- MODAL: CONTESTAR CONCLUSÃƒO DO SERVIÃ‡O -->
         <div id="modal-dispute-attendance" class="modal-overlay" style="z-index: 1100;">
           <div class="modal-content quote-modal-box">
             <div class="modal-header">
               <div style="display: flex; align-items: center; gap: 8px;">
                 <i class="fa-solid fa-triangle-exclamation" style="color: #DC2626; font-size: 18px;"></i>
-                <h4 style="margin: 0; font-size: 15px;">Contestar Conclusão do Serviço</h4>
+                <h4 style="margin: 0; font-size: 15px;">Contestar ConclusÃ£o do ServiÃ§o</h4>
               </div>
               <button type="button" class="close-x-btn" onclick="closeDisputeModal()"><i class="fa-solid fa-xmark"></i></button>
             </div>
@@ -2270,17 +2270,17 @@
                 Explique o que ficou pendente ou divergente para que o profissional possa resolver antes de concluir.
               </p>
               
-              <label style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Motivo da contestação:</label>
-              <textarea id="dispute-reason-input" rows="3" placeholder="Ex: O acabamento da tomada ainda não foi fechado..." style="width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 13px; margin-bottom: 10px;"></textarea>
+              <label style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Motivo da contestaÃ§Ã£o:</label>
+              <textarea id="dispute-reason-input" rows="3" placeholder="Ex: O acabamento da tomada ainda nÃ£o foi fechado..." style="width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 13px; margin-bottom: 10px;"></textarea>
             </div>
             <div class="modal-footer" style="padding: 12px 16px; display: flex; justify-content: flex-end; gap: 8px;">
               <button type="button" class="btn-cancel" onclick="closeDisputeModal()">Voltar</button>
-              <button type="button" class="btn-att-danger" onclick="submitDisputeAttendance()" style="padding: 8px 14px; border-radius: 8px; font-weight: 700;">Confirmar Contestação</button>
+              <button type="button" class="btn-att-danger" onclick="submitDisputeAttendance()" style="padding: 8px 14px; border-radius: 8px; font-weight: 700;">Confirmar ContestaÃ§Ã£o</button>
             </div>
           </div>
         </div>
 
-        <!-- MODAL: AVALIAÇÃO VERIFICADA -->
+        <!-- MODAL: AVALIAÃ‡ÃƒO VERIFICADA -->
         <div id="modal-verified-review" class="modal-overlay" style="z-index: 1100;">
           <div class="modal-content quote-modal-box">
             <div class="modal-header">
@@ -2292,11 +2292,11 @@
             </div>
             <div class="modal-body" style="padding: 16px;">
               <div class="verified-tag-badge">
-                <i class="fa-solid fa-certificate"></i> Avaliação Verificada por Atendimento Confirmado
+                <i class="fa-solid fa-certificate"></i> AvaliaÃ§Ã£o Verificada por Atendimento Confirmado
               </div>
 
               <p style="font-size: 12px; color: #475569; margin-bottom: 12px;">
-                Como foi a realização do serviço com <strong id="review-modal-pro-name">o profissional</strong>?
+                Como foi a realizaÃ§Ã£o do serviÃ§o com <strong id="review-modal-pro-name">o profissional</strong>?
               </p>
 
               <!-- Seletor de Estrelas -->
@@ -2311,18 +2311,18 @@
                 </div>
               </div>
 
-              <label style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Comentário sobre o serviço:</label>
+              <label style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">ComentÃ¡rio sobre o serviÃ§o:</label>
               <textarea id="review-comment-input" rows="3" placeholder="Pontualidade, qualidade, limpeza do local, postura profissional..." style="width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 13px;"></textarea>
             </div>
             <div class="modal-footer" style="padding: 12px 16px; display: flex; justify-content: flex-end; gap: 8px;">
               <button type="button" class="btn-cancel" onclick="closeVerifiedReviewModal()">Depois</button>
-              <button type="button" class="btn-submit" onclick="submitVerifiedReview()" style="background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none; font-weight: 700;">Publicar Avaliação</button>
+              <button type="button" class="btn-submit" onclick="submitVerifiedReview()" style="background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none; font-weight: 700;">Publicar AvaliaÃ§Ã£o</button>
             </div>
           </div>
         </div>
 
         <!-- =========================================================
-             MODAL: COMPARTILHAMENTO VIRAL / CARTÃO DIGITAL / RECOMENDAÇÃO
+             MODAL: COMPARTILHAMENTO VIRAL / CARTÃƒO DIGITAL / RECOMENDAÃ‡ÃƒO
              ========================================================= -->
         <div id="share-pro-modal-overlay" class="modal-overlay" style="z-index: 1350;" onclick="if(event.target === this) closeShareProModal()">
           <div class="modal-content share-modal-box">
@@ -2343,7 +2343,7 @@
                 <span id="share-banner-text">Envie este perfil para clientes e contatos no WhatsApp.</span>
               </div>
 
-              <!-- Cartão Digital de Apresentação (Visual Card) -->
+              <!-- CartÃ£o Digital de ApresentaÃ§Ã£o (Visual Card) -->
               <div class="digital-pro-card-preview" id="share-card-preview">
                 <div class="digital-card-top">
                   <div class="digital-card-avatar-wrap" id="share-avatar-wrap">
@@ -2361,7 +2361,7 @@
                     </div>
                     <div class="digital-meta-line">
                       <span class="digital-rating-stars"><i class="fa-solid fa-star"></i> <strong id="share-rating-val">5.0</strong> (<span id="share-reviews-cnt">28</span>)</span>
-                      <span class="digital-dot">•</span>
+                      <span class="digital-dot">â€¢</span>
                       <span class="digital-loc"><i class="fa-solid fa-location-dot"></i> <span id="share-pro-loc">Parauapebas, PA</span></span>
                     </div>
                   </div>
@@ -2371,7 +2371,7 @@
                 </div>
               </div>
 
-              <!-- Botão Principal: WhatsApp (Alta conversão viral) -->
+              <!-- BotÃ£o Principal: WhatsApp (Alta conversÃ£o viral) -->
               <button type="button" class="btn-share-whatsapp" onclick="shareProViaWhatsApp()">
                 <i class="fa-brands fa-whatsapp"></i>
                 <div class="btn-share-texts">
@@ -2380,7 +2380,7 @@
                 </div>
               </button>
 
-              <!-- Caixa de Link com Botão Copiar -->
+              <!-- Caixa de Link com BotÃ£o Copiar -->
               <div class="share-link-group">
                 <label class="share-link-label">Link direto do perfil:</label>
                 <div class="share-link-input-wrap">
@@ -2392,12 +2392,12 @@
                 </div>
               </div>
 
-              <!-- Seção do QR Code (para cartões de visita e impressos) -->
+              <!-- SeÃ§Ã£o do QR Code (para cartÃµes de visita e impressos) -->
               <div class="share-qrcode-section">
                 <button type="button" class="btn-toggle-qrcode" onclick="toggleShareQrCode()">
                   <div style="display: flex; align-items: center; gap: 8px;">
                     <i class="fa-solid fa-qrcode"></i>
-                    <span>QR Code para Impressão e Cartão</span>
+                    <span>QR Code para ImpressÃ£o e CartÃ£o</span>
                   </div>
                   <i class="fa-solid fa-chevron-down" id="icon-toggle-qrcode"></i>
                 </button>
@@ -2408,7 +2408,7 @@
                   </div>
                   <p class="qrcode-tip">
                     <i class="fa-regular fa-lightbulb"></i>
-                    <span>Imprima este QR Code em seus <strong>cartões de visita, panfletos, camisa</strong> ou no <strong>adesivo do carro</strong>. Os clientes apontam a câmera e abrem sua vitrine instantaneamente!</span>
+                    <span>Imprima este QR Code em seus <strong>cartÃµes de visita, panfletos, camisa</strong> ou no <strong>adesivo do carro</strong>. Os clientes apontam a cÃ¢mera e abrem sua vitrine instantaneamente!</span>
                   </p>
                   <button type="button" class="btn-download-qrcode" onclick="downloadProQrCode()">
                     <i class="fa-solid fa-arrow-down"></i> Salvar Imagem do QR Code
@@ -2416,10 +2416,10 @@
                 </div>
               </div>
 
-              <!-- Outras Opções (Nativo navigator.share) -->
+              <!-- Outras OpÃ§Ãµes (Nativo navigator.share) -->
               <div id="share-native-wrap" style="margin-top: 12px; text-align: center;">
                 <button type="button" class="btn-share-more-options" onclick="shareProViaNative()">
-                  <i class="fa-solid fa-arrow-up-from-bracket"></i> Mais opções de compartilhamento
+                  <i class="fa-solid fa-arrow-up-from-bracket"></i> Mais opÃ§Ãµes de compartilhamento
                 </button>
               </div>
             </div>
@@ -2427,7 +2427,7 @@
         </div>
 
         <!-- =========================================================
-             MODAL: CELEBRAÇÃO PÓS-AVALIAÇÃO & RECOMENDAÇÃO VIRAL
+             MODAL: CELEBRAÃ‡ÃƒO PÃ“S-AVALIAÃ‡ÃƒO & RECOMENDAÃ‡ÃƒO VIRAL
              ========================================================= -->
         <div id="post-review-celebration-modal" class="modal-overlay" style="z-index: 1400;" onclick="if(event.target === this) closePostReviewCelebration()">
           <div class="modal-content celebration-modal-box">
@@ -2436,17 +2436,17 @@
                 <i class="fa-solid fa-star"></i>
               </div>
               <div class="celeb-badge-pill">
-                <i class="fa-solid fa-certificate"></i> Avaliação Verificada Publicada!
+                <i class="fa-solid fa-certificate"></i> AvaliaÃ§Ã£o Verificada Publicada!
               </div>
             </div>
 
             <div class="modal-body" style="padding: 0 18px 20px; text-align: center;">
               <h3 class="celebration-title">Obrigado por apoiar profissionais locais!</h3>
               <p class="celebration-sub">
-                Em Parauapebas, os melhores profissionais crescem com a indicação de vizinhos satisfeitos. Que tal indicar o trabalho de <strong id="celeb-pro-name">o profissional</strong> no WhatsApp da sua família e condomínio?
+                Em Parauapebas, os melhores profissionais crescem com a indicaÃ§Ã£o de vizinhos satisfeitos. Que tal indicar o trabalho de <strong id="celeb-pro-name">o profissional</strong> no WhatsApp da sua famÃ­lia e condomÃ­nio?
               </p>
 
-              <!-- Mini Card de Citação da Avaliação -->
+              <!-- Mini Card de CitaÃ§Ã£o da AvaliaÃ§Ã£o -->
               <div class="celeb-review-card-snippet">
                 <div class="celeb-stars-row">
                   <i class="fa-solid fa-star"></i>
@@ -2456,10 +2456,10 @@
                   <i class="fa-solid fa-star"></i>
                 </div>
                 <p class="celeb-quote-text" id="celeb-quote-text">"Excelente trabalho realizado em Parauapebas. Super recomendo!"</p>
-                <span class="celeb-quote-author">Sua recomendação verificada</span>
+                <span class="celeb-quote-author">Sua recomendaÃ§Ã£o verificada</span>
               </div>
 
-              <!-- Ações de Recomendação -->
+              <!-- AÃ§Ãµes de RecomendaÃ§Ã£o -->
               <div class="celebration-actions-wrap">
                 <button type="button" class="btn-celebration-whatsapp" onclick="recommendPostReviewViaWhatsApp()">
                   <i class="fa-brands fa-whatsapp"></i>
@@ -2468,7 +2468,7 @@
 
                 <button type="button" class="btn-celebration-copy" onclick="copyPostReviewShareLink()">
                   <i class="fa-regular fa-copy"></i>
-                  <span id="label-celeb-copy">Copiar Link de Recomendação</span>
+                  <span id="label-celeb-copy">Copiar Link de RecomendaÃ§Ã£o</span>
                 </button>
               </div>
             </div>
@@ -2476,7 +2476,7 @@
         </div>
 
         <!-- =========================================================
-             MODAL: PUBLICAR ANTES & DEPOIS (COM MONETIZAÇÃO TRAMPOU PRO)
+             MODAL: PUBLICAR ANTES & DEPOIS (COM MONETIZAÃ‡ÃƒO TRAMPOU PRO)
              ========================================================= -->
         <div id="modal-publish-showcase" class="modal-overlay" style="z-index: 2500;" onclick="if(event.target === this) closePublishShowcaseModal()">
           <div class="modal-content publish-showcase-content">
@@ -2490,18 +2490,18 @@
 
             <div class="publish-showcase-body">
               <form id="form-publish-showcase" onsubmit="handlePublishShowcaseSubmit(event)">
-                <!-- Banner Promocional de Lançamento / Futuro Trampou PRO -->
+                <!-- Banner Promocional de LanÃ§amento / Futuro Trampou PRO -->
                 <div class="launch-promo-card">
                   <div class="launch-promo-badge-row">
-                    <span class="launch-promo-tag"><i class="fa-solid fa-rocket"></i> FASE DE LANÇAMENTO</span>
-                    <span class="launch-promo-tag-free">100% GRÁTIS</span>
+                    <span class="launch-promo-tag"><i class="fa-solid fa-rocket"></i> FASE DE LANÃ‡AMENTO</span>
+                    <span class="launch-promo-tag-free">100% GRÃTIS</span>
                   </div>
                   <h4 class="launch-promo-title">Destaque no Carrossel da Home</h4>
-                  <p class="launch-promo-text">Suas fotos de transformações em destaque para toda Parauapebas. <strong>Em breve exclusivo no plano Trampou PRO.</strong></p>
+                  <p class="launch-promo-text">Suas fotos de transformaÃ§Ãµes em destaque para toda Parauapebas. <strong>Em breve exclusivo no plano Trampou PRO.</strong></p>
                 </div>
 
                 <div class="auth-input-group">
-                  <label for="showcase-title">Título do Serviço Realizado</label>
+                  <label for="showcase-title">TÃ­tulo do ServiÃ§o Realizado</label>
                   <div class="input-icon-wrap">
                     <i class="fa-solid fa-wand-magic-sparkles"></i>
                     <input type="text" id="showcase-title" placeholder="Ex: Banheiro em Porcelanato 84x84 com Nicho LED" required minlength="5">
@@ -2509,17 +2509,17 @@
                 </div>
 
                 <div class="auth-input-group">
-                  <label for="showcase-category">Categoria do Serviço</label>
+                  <label for="showcase-category">Categoria do ServiÃ§o</label>
                   <div class="input-icon-wrap select-wrap">
                     <i class="fa-solid fa-briefcase"></i>
                     <select id="showcase-category" required>
                       <option value="Pedreiro & Porcelanato">Pedreiro & Porcelanato</option>
                       <option value="Eletricista Residencial">Eletricista Residencial</option>
-                      <option value="Refrigeração & Ar">Refrigeração & Ar</option>
+                      <option value="RefrigeraÃ§Ã£o & Ar">RefrigeraÃ§Ã£o & Ar</option>
                       <option value="Pintor & Grafiato">Pintor & Grafiato</option>
-                      <option value="Diarista & Pós-Obra">Diarista & Pós-Obra</option>
-                      <option value="Mecânica & Auto Socorro">Mecânica & Auto Socorro</option>
-                      <option value="Marcenaria & Móveis">Marcenaria & Móveis</option>
+                      <option value="Diarista & PÃ³s-Obra">Diarista & PÃ³s-Obra</option>
+                      <option value="MecÃ¢nica & Auto Socorro">MecÃ¢nica & Auto Socorro</option>
+                      <option value="Marcenaria & MÃ³veis">Marcenaria & MÃ³veis</option>
                     </select>
                   </div>
                 </div>
@@ -2561,7 +2561,7 @@
                   </div>
                 </div>
 
-                <!-- Box de Monetização / Destaque PRO -->
+                <!-- Box de MonetizaÃ§Ã£o / Destaque PRO -->
                 <div class="pro-boost-monetization-box">
                   <div class="boost-header-row">
                     <div class="boost-icon-badge">
@@ -2569,7 +2569,7 @@
                     </div>
                     <div class="boost-title-wrap">
                       <h6>Impulsionar no Carrossel da Home de Parauapebas</h6>
-                      <span>Apareça no topo da página inicial para toda a cidade</span>
+                      <span>ApareÃ§a no topo da pÃ¡gina inicial para toda a cidade</span>
                     </div>
                     <div class="boost-toggle-wrap">
                       <label class="custom-switch">
@@ -2579,18 +2579,18 @@
                     </div>
                   </div>
                   <div class="boost-price-pill-row">
-                    <span class="price-strikethrough">R$ 39,90/mês</span>
-                    <span class="price-free-launch">GRÁTIS NO LANÇAMENTO</span>
+                    <span class="price-strikethrough">R$ 39,90/mÃªs</span>
+                    <span class="price-free-launch">GRÃTIS NO LANÃ‡AMENTO</span>
                   </div>
                   <div class="boost-notice-box">
                     <i class="fa-solid fa-circle-info"></i>
-                    <span><strong>Aviso de Monetização Futura:</strong> Esta publicação ficará em destaque no carrossel da Home gratuitamente durante o lançamento do Trampou. Em breve, novos destaques serão exclusivos do plano <strong>Trampou PRO</strong>.</span>
+                    <span><strong>Aviso de MonetizaÃ§Ã£o Futura:</strong> Esta publicaÃ§Ã£o ficarÃ¡ em destaque no carrossel da Home gratuitamente durante o lanÃ§amento do Trampou. Em breve, novos destaques serÃ£o exclusivos do plano <strong>Trampou PRO</strong>.</span>
                   </div>
                 </div>
               </form>
             </div>
 
-            <!-- Footer Fixo e Visível do Modal -->
+            <!-- Footer Fixo e VisÃ­vel do Modal -->
             <div class="publish-actions-footer">
               <button type="button" class="btn-auth-secondary" onclick="closePublishShowcaseModal()">Cancelar</button>
               <button type="submit" form="form-publish-showcase" id="btn-submit-publish-showcase" class="btn-auth-primary success-gradient">
@@ -2610,7 +2610,7 @@
               <button class="v-nav-icon-btn" onclick="closeShowcaseViewer()" title="Fechar">
                 <i class="fa-solid fa-arrow-left"></i>
               </button>
-              <h4>Transformação Real</h4>
+              <h4>TransformaÃ§Ã£o Real</h4>
               <button class="v-nav-icon-btn" onclick="shareCurrentShowcase()" title="Compartilhar">
                 <i class="fa-solid fa-share-nodes"></i>
               </button>
@@ -2619,7 +2619,7 @@
             <div class="showcase-viewer-body">
               <div class="viewer-badge-top">
                 <span class="viewer-bairro-pill" id="viewer-bairro"><i class="fa-solid fa-location-dot"></i> Cidade Nova</span>
-                <span class="viewer-pro-pill" id="viewer-pro-badge"><i class="fa-solid fa-certificate"></i> Transformação Verificada</span>
+                <span class="viewer-pro-pill" id="viewer-pro-badge"><i class="fa-solid fa-certificate"></i> TransformaÃ§Ã£o Verificada</span>
               </div>
 
               <h3 class="viewer-title" id="viewer-title">Banheiro em Porcelanato Polido 84x84</h3>
@@ -2631,7 +2631,7 @@
                   <div class="compare-img-wrap" id="viewer-img-before-wrap">
                     <div class="compare-art-gradient" id="viewer-gradient-before"></div>
                   </div>
-                  <p class="compare-caption" id="viewer-desc-before">Piso antigo solto e infiltração no ralo</p>
+                  <p class="compare-caption" id="viewer-desc-before">Piso antigo solto e infiltraÃ§Ã£o no ralo</p>
                 </div>
 
                 <div class="compare-divider-arrow">
@@ -2647,25 +2647,25 @@
                 </div>
               </div>
 
-              <!-- Cartão do Profissional que executou -->
+              <!-- CartÃ£o do Profissional que executou -->
               <div class="viewer-pro-credit-card">
                 <div class="credit-avatar" id="viewer-pro-avatar">
                   <i class="fa-solid fa-user-tie"></i>
                 </div>
                 <div class="credit-info">
-                  <span class="credit-role">Profissional Responsável</span>
+                  <span class="credit-role">Profissional ResponsÃ¡vel</span>
                   <h5 id="viewer-pro-name">Profissional</h5>
-                  <span class="credit-spec" id="viewer-pro-spec">Serviços em Parauapebas</span>
+                  <span class="credit-spec" id="viewer-pro-spec">ServiÃ§os em Parauapebas</span>
                 </div>
                 <button type="button" class="btn-credit-profile" onclick="viewProFromShowcase()" title="Ver vitrine completa">
                   Ver Perfil
                 </button>
               </div>
 
-              <!-- CTA de Alta Conversão -->
+              <!-- CTA de Alta ConversÃ£o -->
               <button type="button" class="btn-viewer-hire" id="btn-viewer-hire" onclick="requestQuoteFromViewer()">
                 <i class="fa-solid fa-wand-magic-sparkles"></i>
-                <span>Quero um resultado assim (Solicitar Orçamento)</span>
+                <span>Quero um resultado assim (Solicitar OrÃ§amento)</span>
               </button>
             </div>
           </div>
@@ -2673,7 +2673,7 @@
 
       
         <!-- =========================================================
-             MODAL: SELETOR DE LOCALIZAÇÃO / CIDADE & GPS (EXPANSÃO NACIONAL)
+             MODAL: SELETOR DE LOCALIZAÃ‡ÃƒO / CIDADE & GPS (EXPANSÃƒO NACIONAL)
              ========================================================= -->
         <div id="modal-location-picker" class="modal-overlay">
           <div class="modal-content auth-form-content location-picker-content">
@@ -2681,24 +2681,24 @@
               <button class="v-nav-icon-btn" onclick="closeLocationPickerModal()" title="Fechar">
                 <i class="fa-solid fa-xmark"></i>
               </button>
-              <h4>Onde você procura serviço?</h4>
+              <h4>Onde vocÃª procura serviÃ§o?</h4>
               <div style="width: 32px;"></div>
             </div>
 
             <div class="location-picker-body">
-              <!-- Botão GPS em destaque -->
+              <!-- BotÃ£o GPS em destaque -->
               <div class="location-gps-card" onclick="detectUserLocationGPS()" role="button" tabindex="0">
                 <div class="location-gps-icon">
                   <i class="fa-solid fa-location-crosshairs" id="picker-gps-icon"></i>
                 </div>
                 <div class="location-gps-text">
-                  <strong>Usar minha localização atual (GPS)</strong>
+                  <strong>Usar minha localizaÃ§Ã£o atual (GPS)</strong>
                   <span id="picker-gps-status">Detectar cidade e ordenar profissionais por proximidade</span>
                 </div>
                 <i class="fa-solid fa-chevron-right loc-arrow"></i>
               </div>
 
-              <!-- Seleção por CEP ou UF + Nome da Cidade -->
+              <!-- SeleÃ§Ã£o por CEP ou UF + Nome da Cidade -->
               <div class="location-picker-section">
                 <h6><i class="fa-solid fa-envelopes-bulk icon-purple"></i> Buscar por CEP ou Nome da Cidade</h6>
                 <div class="input-icon-wrap" style="margin-bottom: 8px;">
@@ -2754,13 +2754,13 @@
                 <h6><i class="fa-solid fa-fire icon-amber"></i> Cidades Populares</h6>
                 <div class="location-chips-grid" id="popular-cities-chips">
                   <button type="button" class="loc-chip active" onclick="selectCityOption('Parauapebas', 'PA')">Parauapebas, PA</button>
-                  <button type="button" class="loc-chip" onclick="selectCityOption('Belém', 'PA')">Belém, PA</button>
-                  <button type="button" class="loc-chip" onclick="selectCityOption('Marabá', 'PA')">Marabá, PA</button>
-                  <button type="button" class="loc-chip" onclick="selectCityOption('São Paulo', 'SP')">São Paulo, SP</button>
+                  <button type="button" class="loc-chip" onclick="selectCityOption('BelÃ©m', 'PA')">BelÃ©m, PA</button>
+                  <button type="button" class="loc-chip" onclick="selectCityOption('MarabÃ¡', 'PA')">MarabÃ¡, PA</button>
+                  <button type="button" class="loc-chip" onclick="selectCityOption('SÃ£o Paulo', 'SP')">SÃ£o Paulo, SP</button>
                   <button type="button" class="loc-chip" onclick="selectCityOption('Rio de Janeiro', 'RJ')">Rio de Janeiro, RJ</button>
                   <button type="button" class="loc-chip" onclick="selectCityOption('Belo Horizonte', 'MG')">Belo Horizonte, MG</button>
-                  <button type="button" class="loc-chip" onclick="selectCityOption('Brasília', 'DF')">Brasília, DF</button>
-                  <button type="button" class="loc-chip" onclick="selectCityOption('Goiânia', 'GO')">Goiânia, GO</button>
+                  <button type="button" class="loc-chip" onclick="selectCityOption('BrasÃ­lia', 'DF')">BrasÃ­lia, DF</button>
+                  <button type="button" class="loc-chip" onclick="selectCityOption('GoiÃ¢nia', 'GO')">GoiÃ¢nia, GO</button>
                   <button type="button" class="loc-chip" onclick="selectCityOption('Curitiba', 'PR')">Curitiba, PR</button>
                   <button type="button" class="loc-chip" onclick="selectCityOption('Fortaleza', 'CE')">Fortaleza, CE</button>
                   <button type="button" class="loc-chip" onclick="selectCityOption('Salvador', 'BA')">Salvador, BA</button>
@@ -2773,7 +2773,7 @@
         </div>
 
         <!-- =========================================================
-             MODAL: ENVIAR SUGESTÕES & FEEDBACK SOBRE O APP
+             MODAL: ENVIAR SUGESTÃ•ES & FEEDBACK SOBRE O APP
              ========================================================= -->
         <div id="modal-app-feedback" class="modal-overlay">
           <div class="modal-content auth-form-content feedback-modal-content" style="margin: 0 auto !important; max-width: 480px !important;">
@@ -2781,7 +2781,7 @@
               <button class="v-nav-icon-btn" onclick="closeAppFeedbackModal()" title="Fechar">
                 <i class="fa-solid fa-xmark"></i>
               </button>
-              <h4>Sugestões & Feedback</h4>
+              <h4>SugestÃµes & Feedback</h4>
               <div style="width: 32px;"></div>
             </div>
 
@@ -2791,7 +2791,7 @@
                   <i class="fa-solid fa-lightbulb"></i>
                 </div>
                 <div class="feedback-header-info">
-                  <strong>Sua opinião molda o Trampou!</strong>
+                  <strong>Sua opiniÃ£o molda o Trampou!</strong>
                   <p>Envie ideias de melhorias, elogios ou relate problemas para nossa equipe de desenvolvimento.</p>
                 </div>
               </div>
@@ -2802,7 +2802,7 @@
                   <label class="feedback-field-label">Tipo de Mensagem</label>
                   <div class="feedback-type-chips">
                     <button type="button" class="fb-type-chip active" data-type="sugestao" onclick="setFeedbackType('sugestao')">
-                      <i class="fa-solid fa-lightbulb"></i> Sugestão
+                      <i class="fa-solid fa-lightbulb"></i> SugestÃ£o
                     </button>
                     <button type="button" class="fb-type-chip" data-type="elogio" onclick="setFeedbackType('elogio')">
                       <i class="fa-solid fa-star"></i> Elogio
@@ -2817,9 +2817,9 @@
                   <input type="hidden" id="feedback-type-val" value="sugestao">
                 </div>
 
-                <!-- 2. Avaliação de Experiência com Estrelas -->
+                <!-- 2. AvaliaÃ§Ã£o de ExperiÃªncia com Estrelas -->
                 <div class="feedback-group">
-                  <label class="feedback-field-label">Como avalia sua experiência com o app?</label>
+                  <label class="feedback-field-label">Como avalia sua experiÃªncia com o app?</label>
                   <div class="feedback-rating-box">
                     <div class="feedback-stars-row" id="fb-stars-container">
                       <button type="button" class="fb-star active" data-star="1" onclick="setFeedbackRating(1)"><i class="fa-solid fa-star"></i></button>
@@ -2828,14 +2828,14 @@
                       <button type="button" class="fb-star active" data-star="4" onclick="setFeedbackRating(4)"><i class="fa-solid fa-star"></i></button>
                       <button type="button" class="fb-star active" data-star="5" onclick="setFeedbackRating(5)"><i class="fa-solid fa-star"></i></button>
                     </div>
-                    <span class="fb-rating-text" id="fb-rating-text">Excelente (5/5) ⭐</span>
+                    <span class="fb-rating-text" id="fb-rating-text">Excelente (5/5) â­</span>
                     <input type="hidden" id="feedback-rating-val" value="5">
                   </div>
                 </div>
 
-                <!-- 3. Título / Assunto -->
+                <!-- 3. TÃ­tulo / Assunto -->
                 <div class="feedback-group">
-                  <label class="feedback-field-label" for="feedback-title-input">Título da Sugestão ou Assunto</label>
+                  <label class="feedback-field-label" for="feedback-title-input">TÃ­tulo da SugestÃ£o ou Assunto</label>
                   <div class="input-icon-wrap">
                     <i class="fa-solid fa-heading"></i>
                     <input type="text" id="feedback-title-input" placeholder="Ex: Adicionar pagamento Pix direto no app">
@@ -2845,20 +2845,20 @@
                 <!-- 4. Mensagem detalhada -->
                 <div class="feedback-group">
                   <label class="feedback-field-label" for="feedback-message-input">Mensagem / Ideia *</label>
-                  <textarea id="feedback-message-input" class="feedback-textarea" rows="4" required placeholder="Conte-nos em detalhes o que você gostaria de ver no Trampou ou o que podemos aprimorar..."></textarea>
+                  <textarea id="feedback-message-input" class="feedback-textarea" rows="4" required placeholder="Conte-nos em detalhes o que vocÃª gostaria de ver no Trampou ou o que podemos aprimorar..."></textarea>
                 </div>
 
-                <!-- 5. Dados do Usuário (Vinculados automaticamente à Conta Verificada) -->
+                <!-- 5. Dados do UsuÃ¡rio (Vinculados automaticamente Ã  Conta Verificada) -->
                 <div class="feedback-row-inputs">
                   <div class="feedback-group" style="flex: 1;">
-                    <label class="feedback-field-label" for="feedback-user-name">Conta Identificada <i class="fa-solid fa-lock" style="font-size: 10px; color: #6825B3;" title="Vinculado automaticamente à sua conta"></i></label>
+                    <label class="feedback-field-label" for="feedback-user-name">Conta Identificada <i class="fa-solid fa-lock" style="font-size: 10px; color: #6825B3;" title="Vinculado automaticamente Ã  sua conta"></i></label>
                     <div class="input-icon-wrap">
                       <i class="fa-solid fa-user-check"></i>
                       <input type="text" id="feedback-user-name" readonly style="background: #F1F5F9; color: #475569; cursor: not-allowed;" required placeholder="Nome da sua conta">
                     </div>
                   </div>
                   <div class="feedback-group" style="flex: 1;">
-                    <label class="feedback-field-label" for="feedback-user-contact">E-mail / WhatsApp da Conta <i class="fa-solid fa-lock" style="font-size: 10px; color: #6825B3;" title="Vinculado automaticamente à sua conta"></i></label>
+                    <label class="feedback-field-label" for="feedback-user-contact">E-mail / WhatsApp da Conta <i class="fa-solid fa-lock" style="font-size: 10px; color: #6825B3;" title="Vinculado automaticamente Ã  sua conta"></i></label>
                     <div class="input-icon-wrap">
                       <i class="fa-solid fa-envelope-circle-check"></i>
                       <input type="text" id="feedback-user-contact" readonly style="background: #F1F5F9; color: #475569; cursor: not-allowed;" placeholder="E-mail da conta">
@@ -2872,7 +2872,7 @@
                   <span id="feedback-submit-alert-text"></span>
                 </div>
 
-                <!-- Botão Enviar -->
+                <!-- BotÃ£o Enviar -->
                 <button type="submit" class="btn-auth-submit" id="btn-submit-feedback">
                   <span id="btn-feedback-text"><i class="fa-solid fa-paper-plane" style="margin-right: 6px;"></i> Enviar para a Equipe</span>
                   <i class="fa-solid fa-circle-notch fa-spin" id="btn-feedback-spinner" style="display: none;"></i>
@@ -2903,11 +2903,11 @@
           </div>
           <div>
             <h5>Seus Direitos Garantidos por Lei</h5>
-            <p>Em conformidade com a <strong>LGPD (Lei nº 13.709/2018)</strong>, você tem total controle sobre seus dados pessoais armazenados na plataforma Trampou.</p>
+            <p>Em conformidade com a <strong>LGPD (Lei nÂº 13.709/2018)</strong>, vocÃª tem total controle sobre seus dados pessoais armazenados na plataforma Trampou.</p>
           </div>
         </div>
 
-        <!-- Seção: Documentos Legais -->
+        <!-- SeÃ§Ã£o: Documentos Legais -->
         <div class="privacy-section-group">
           <h6 class="privacy-group-title"><i class="fa-solid fa-file-contract"></i> Documentos Oficiais</h6>
           <div class="privacy-card-list">
@@ -2915,7 +2915,7 @@
               <div class="privacy-row-left">
                 <i class="fa-solid fa-shield-check icon-green"></i>
                 <div>
-                  <strong>Política de Privacidade</strong>
+                  <strong>PolÃ­tica de Privacidade</strong>
                   <small>Como tratamos, protegemos e armazenamos seus dados</small>
                 </div>
               </div>
@@ -2935,14 +2935,14 @@
           </div>
         </div>
 
-        <!-- Seção: Proteção da Localização GPS -->
+        <!-- SeÃ§Ã£o: ProteÃ§Ã£o da LocalizaÃ§Ã£o GPS -->
         <div class="privacy-section-group">
-          <h6 class="privacy-group-title"><i class="fa-solid fa-location-dot"></i> Proteção de Localização</h6>
+          <h6 class="privacy-group-title"><i class="fa-solid fa-location-dot"></i> ProteÃ§Ã£o de LocalizaÃ§Ã£o</h6>
           <div class="privacy-card-box">
             <div class="privacy-toggle-row">
               <div>
-                <strong>Localização Precisa via GPS</strong>
-                <p>Usada exclusivamente para ordenar profissionais mais próximos no mapa do seu bairro. Sua localização exata <strong>nunca é pública nem compartilhada com terceiros</strong>.</p>
+                <strong>LocalizaÃ§Ã£o Precisa via GPS</strong>
+                <p>Usada exclusivamente para ordenar profissionais mais prÃ³ximos no mapa do seu bairro. Sua localizaÃ§Ã£o exata <strong>nunca Ã© pÃºblica nem compartilhada com terceiros</strong>.</p>
               </div>
               <label class="switch-toggle-label">
                 <input type="checkbox" id="pref-gps-toggle" onchange="toggleGpsPreference(this.checked)">
@@ -2951,12 +2951,12 @@
             </div>
             <div class="privacy-note-badge">
               <i class="fa-solid fa-circle-info"></i>
-              <span>Se desativado, o app utilizará apenas a seleção manual do seu bairro em Parauapebas.</span>
+              <span>Se desativado, o app utilizarÃ¡ apenas a seleÃ§Ã£o manual do seu bairro em Parauapebas.</span>
             </div>
           </div>
         </div>
 
-        <!-- Seção: Portabilidade & Gerenciamento de Dados -->
+        <!-- SeÃ§Ã£o: Portabilidade & Gerenciamento de Dados -->
         <div class="privacy-section-group">
           <h6 class="privacy-group-title"><i class="fa-solid fa-download"></i> Gerenciamento e Portabilidade (Art. 18, LGPD)</h6>
           <div class="privacy-card-list">
@@ -2965,7 +2965,7 @@
                 <i class="fa-solid fa-file-export icon-purple"></i>
                 <div>
                   <strong>Exportar Meus Dados (Portabilidade)</strong>
-                  <small>Baixe uma cópia dos seus dados cadastrais em formato JSON</small>
+                  <small>Baixe uma cÃ³pia dos seus dados cadastrais em formato JSON</small>
                 </div>
               </div>
               <i class="fa-solid fa-download arrow-icon"></i>
@@ -2975,8 +2975,8 @@
               <div class="privacy-row-left">
                 <i class="fa-solid fa-broom icon-amber"></i>
                 <div>
-                  <strong>Limpar Histórico Local do Aparelho</strong>
-                  <small>Apaga histórico de buscas e cache mantidos neste celular</small>
+                  <strong>Limpar HistÃ³rico Local do Aparelho</strong>
+                  <small>Apaga histÃ³rico de buscas e cache mantidos neste celular</small>
                 </div>
               </div>
               <i class="fa-solid fa-rotate-left arrow-icon"></i>
@@ -2984,7 +2984,7 @@
           </div>
         </div>
 
-        <!-- Seção: Canal do Encarregado (DPO) & Incidentes -->
+        <!-- SeÃ§Ã£o: Canal do Encarregado (DPO) & Incidentes -->
         <div class="privacy-section-group">
           <h6 class="privacy-group-title"><i class="fa-solid fa-user-shield"></i> Encarregado de Dados (DPO) & Incidentes</h6>
           <div class="privacy-card-list">
@@ -2992,8 +2992,8 @@
               <div class="privacy-row-left">
                 <i class="fa-solid fa-envelope-open-text icon-blue"></i>
                 <div>
-                  <strong>Canal de Solicitações LGPD (DPO)</strong>
-                  <small>Fale diretamente com nosso Encarregado de Proteção de Dados</small>
+                  <strong>Canal de SolicitaÃ§Ãµes LGPD (DPO)</strong>
+                  <small>Fale diretamente com nosso Encarregado de ProteÃ§Ã£o de Dados</small>
                 </div>
               </div>
               <i class="fa-solid fa-chevron-right arrow-icon"></i>
@@ -3001,12 +3001,12 @@
           </div>
         </div>
 
-        <!-- Seção: Exclusão Definitiva de Conta (Direito ao Esquecimento) -->
+        <!-- SeÃ§Ã£o: ExclusÃ£o Definitiva de Conta (Direito ao Esquecimento) -->
         <div class="privacy-section-group danger-zone">
-          <h6 class="privacy-group-title danger"><i class="fa-solid fa-triangle-exclamation"></i> Zona de Exclusão de Conta</h6>
+          <h6 class="privacy-group-title danger"><i class="fa-solid fa-triangle-exclamation"></i> Zona de ExclusÃ£o de Conta</h6>
           <div class="privacy-card-box danger-box">
-            <strong>Exclusão de Conta e Dados Pessoais (Art. 18, VI)</strong>
-            <p>Você pode solicitar a exclusão permanente da sua conta e de todos os dados vinculados a ela em nossa base de dados.</p>
+            <strong>ExclusÃ£o de Conta e Dados Pessoais (Art. 18, VI)</strong>
+            <p>VocÃª pode solicitar a exclusÃ£o permanente da sua conta e de todos os dados vinculados a ela em nossa base de dados.</p>
             <button type="button" class="btn-delete-account" onclick="openDeleteAccountModal()">
               <i class="fa-solid fa-trash-can"></i>
               <span>Excluir Minha Conta e Meus Dados</span>
@@ -3018,7 +3018,7 @@
   </div>
 
   <!-- =========================================================
-       2. MODAL DE CONFIRMAÇÃO DE EXCLUSÃO DE CONTA (LGPD)
+       2. MODAL DE CONFIRMAÃ‡ÃƒO DE EXCLUSÃƒO DE CONTA (LGPD)
        ========================================================= -->
   <div id="delete-account-confirm-modal" class="modal-overlay">
     <div class="modal-content auth-form-content delete-account-dialog">
@@ -3027,7 +3027,7 @@
       </div>
       <h4>Excluir Conta Definitivamente?</h4>
       <p class="delete-warning-text">
-        Esta ação é <strong>irreversível</strong> conforme a LGPD. Todos os seus dados pessoais, telefone, fotos, vitrine e histórico serão <strong>permanentemente eliminados</strong> dos nossos servidores.
+        Esta aÃ§Ã£o Ã© <strong>irreversÃ­vel</strong> conforme a LGPD. Todos os seus dados pessoais, telefone, fotos, vitrine e histÃ³rico serÃ£o <strong>permanentemente eliminados</strong> dos nossos servidores.
       </p>
 
       <div class="delete-confirmation-prompt">
@@ -3046,7 +3046,7 @@
   </div>
 
   <!-- =========================================================
-       3. MODAL DE POLÍTICA DE PRIVACIDADE COMPLETA
+       3. MODAL DE POLÃTICA DE PRIVACIDADE COMPLETA
        ========================================================= -->
   <div id="privacy-policy-modal" class="modal-overlay">
     <div class="modal-content auth-form-content legal-text-content">
@@ -3054,88 +3054,88 @@
         <button class="v-nav-icon-btn" onclick="closeAuthModal('privacy-policy-modal')" title="Voltar">
           <i class="fa-solid fa-arrow-left"></i>
         </button>
-        <h4>Política de Privacidade</h4>
+        <h4>PolÃ­tica de Privacidade</h4>
         <div style="width: 32px;"></div>
       </div>
 
       <div class="legal-text-body">
         <div class="legal-meta-badge">
-          <span>Última atualização: Outubro de 2026 • Em conformidade com a Lei Federal nº 13.709/2018 (LGPD)</span>
+          <span>Ãšltima atualizaÃ§Ã£o: Outubro de 2026 â€¢ Em conformidade com a Lei Federal nÂº 13.709/2018 (LGPD)</span>
         </div>
 
         <section class="legal-section">
-          <h5>1. Identificação do Controlador</h5>
-          <p>O aplicativo <strong>Trampou</strong> ("Plataforma"), operado no município de Parauapebas, Estado do Pará, atua como <strong>Controlador de Dados Pessoais</strong> nos termos do art. 5º, VI da LGPD, sendo responsável pelas decisões referentes ao tratamento de dados pessoais de seus Usuários (Clientes e Profissionais Autônomos).</p>
+          <h5>1. IdentificaÃ§Ã£o do Controlador</h5>
+          <p>O aplicativo <strong>Trampou</strong> ("Plataforma"), operado no municÃ­pio de Parauapebas, Estado do ParÃ¡, atua como <strong>Controlador de Dados Pessoais</strong> nos termos do art. 5Âº, VI da LGPD, sendo responsÃ¡vel pelas decisÃµes referentes ao tratamento de dados pessoais de seus UsuÃ¡rios (Clientes e Profissionais AutÃ´nomos).</p>
         </section>
 
         <section class="legal-section">
           <h5>2. Dados Pessoais Coletados e Finalidade</h5>
-          <p>Coletamos exclusivamente os dados necessários para viabilizar a conexão entre clientes e profissionais em Parauapebas:</p>
+          <p>Coletamos exclusivamente os dados necessÃ¡rios para viabilizar a conexÃ£o entre clientes e profissionais em Parauapebas:</p>
           <ul>
-            <li><strong>Clientes:</strong> Nome completo, endereço de e-mail e número de telefone/WhatsApp (para permitir o contato direto com o prestador escolhido).</li>
-            <li><strong>Profissionais:</strong> Nome comercial ou individual, telefone/WhatsApp de atendimento, categoria profissional, especialidades, fotos da vitrine e bairros de atuação em Parauapebas.</li>
-            <li><strong>Localização e GPS:</strong> Utilizada sob consentimento exclusivamente para ordenar prestadores por proximidade geográfica na cidade. A localização exata nunca é disponibilizada publicamente.</li>
+            <li><strong>Clientes:</strong> Nome completo, endereÃ§o de e-mail e nÃºmero de telefone/WhatsApp (para permitir o contato direto com o prestador escolhido).</li>
+            <li><strong>Profissionais:</strong> Nome comercial ou individual, telefone/WhatsApp de atendimento, categoria profissional, especialidades, fotos da vitrine e bairros de atuaÃ§Ã£o em Parauapebas.</li>
+            <li><strong>LocalizaÃ§Ã£o e GPS:</strong> Utilizada sob consentimento exclusivamente para ordenar prestadores por proximidade geogrÃ¡fica na cidade. A localizaÃ§Ã£o exata nunca Ã© disponibilizada publicamente.</li>
           </ul>
         </section>
 
         <section class="legal-section">
-          <h5>3. Bases Legais para o Tratamento (Art. 7º da LGPD)</h5>
+          <h5>3. Bases Legais para o Tratamento (Art. 7Âº da LGPD)</h5>
           <p>O tratamento de dados pessoais no Trampou apoia-se nas seguintes bases legais:</p>
           <ul>
-            <li><strong>Execução de Contrato e Diligências Pré-contratuais (Art. 7º, V):</strong> Necessário para possibilitar o anúncio de serviços e o contato entre contratante e prestador.</li>
-            <li><strong>Consentimento do Titular (Art. 7º, I):</strong> Coleta de localização via GPS e envio de notificações locais.</li>
-            <li><strong>Legítimo Interesse (Art. 7º, IX):</strong> Melhorias na segurança, prevenção a fraudes e garantia da estabilidade do sistema.</li>
+            <li><strong>ExecuÃ§Ã£o de Contrato e DiligÃªncias PrÃ©-contratuais (Art. 7Âº, V):</strong> NecessÃ¡rio para possibilitar o anÃºncio de serviÃ§os e o contato entre contratante e prestador.</li>
+            <li><strong>Consentimento do Titular (Art. 7Âº, I):</strong> Coleta de localizaÃ§Ã£o via GPS e envio de notificaÃ§Ãµes locais.</li>
+            <li><strong>LegÃ­timo Interesse (Art. 7Âº, IX):</strong> Melhorias na seguranÃ§a, prevenÃ§Ã£o a fraudes e garantia da estabilidade do sistema.</li>
           </ul>
         </section>
 
         <section class="legal-section">
-          <h5>4. Não Comercialização e Compartilhamento de Dados</h5>
-          <p>O Trampou <strong>NUNCA comercializa, aluga ou cede dados pessoais de seus usuários</strong> a terceiros para fins de marketing. O compartilhamento ocorre estritamente:</p>
+          <h5>4. NÃ£o ComercializaÃ§Ã£o e Compartilhamento de Dados</h5>
+          <p>O Trampou <strong>NUNCA comercializa, aluga ou cede dados pessoais de seus usuÃ¡rios</strong> a terceiros para fins de marketing. O compartilhamento ocorre estritamente:</p>
           <ul>
-            <li>Entre Cliente e Profissional, no momento em que o usuário decide deliberadamente iniciar contato via WhatsApp ou mensagem na plataforma.</li>
-            <li>Com provedores de infraestrutura técnica de alta segurança (ex: banco de dados em nuvem Supabase e hospedagem Vercel) que atuam como operadores e atendem a padrões internacionais de segurança (ISO 27001, SOC 2).</li>
-            <li>Por ordem judicial ou determinação legal de autoridade competente.</li>
+            <li>Entre Cliente e Profissional, no momento em que o usuÃ¡rio decide deliberadamente iniciar contato via WhatsApp ou mensagem na plataforma.</li>
+            <li>Com provedores de infraestrutura tÃ©cnica de alta seguranÃ§a (ex: banco de dados em nuvem Supabase e hospedagem Vercel) que atuam como operadores e atendem a padrÃµes internacionais de seguranÃ§a (ISO 27001, SOC 2).</li>
+            <li>Por ordem judicial ou determinaÃ§Ã£o legal de autoridade competente.</li>
           </ul>
         </section>
 
         <section class="legal-section">
           <h5>5. Armazenamento Local, Cookies e PWA</h5>
-          <p>Como Progressive Web App (PWA), o Trampou armazena informações locais no seu dispositivo (Service Worker e <code>localStorage</code>) para permitir funcionamento rápido mesmo em conexões lentas ou instáveis de Parauapebas. Você pode limpar estes dados a qualquer momento na Central de Privacidade do aplicativo.</p>
+          <p>Como Progressive Web App (PWA), o Trampou armazena informaÃ§Ãµes locais no seu dispositivo (Service Worker e <code>localStorage</code>) para permitir funcionamento rÃ¡pido mesmo em conexÃµes lentas ou instÃ¡veis de Parauapebas. VocÃª pode limpar estes dados a qualquer momento na Central de Privacidade do aplicativo.</p>
         </section>
 
         <section class="legal-section">
           <h5>6. Direitos do Titular de Dados (Art. 18 da LGPD)</h5>
-          <p>Você pode exercer a qualquer momento, de forma gratuita e simplificada:</p>
+          <p>VocÃª pode exercer a qualquer momento, de forma gratuita e simplificada:</p>
           <ul>
-            <li><strong>Confirmação e Acesso:</strong> Saber quais dados temos sobre você.</li>
-            <li><strong>Correção:</strong> Atualizar dados incompletos ou inexatos.</li>
-            <li><strong>Portabilidade:</strong> Exportar seus dados em formato legível por máquina (JSON) direto no app.</li>
-            <li><strong>Eliminação e Direito ao Esquecimento:</strong> Excluir sua conta e apagar seus dados permanentemente.</li>
-            <li><strong>Revogação do Consentimento:</strong> Desativar o uso de localização GPS ou notificações a qualquer momento.</li>
+            <li><strong>ConfirmaÃ§Ã£o e Acesso:</strong> Saber quais dados temos sobre vocÃª.</li>
+            <li><strong>CorreÃ§Ã£o:</strong> Atualizar dados incompletos ou inexatos.</li>
+            <li><strong>Portabilidade:</strong> Exportar seus dados em formato legÃ­vel por mÃ¡quina (JSON) direto no app.</li>
+            <li><strong>EliminaÃ§Ã£o e Direito ao Esquecimento:</strong> Excluir sua conta e apagar seus dados permanentemente.</li>
+            <li><strong>RevogaÃ§Ã£o do Consentimento:</strong> Desativar o uso de localizaÃ§Ã£o GPS ou notificaÃ§Ãµes a qualquer momento.</li>
           </ul>
         </section>
 
         <section class="legal-section">
-          <h5>7. Retenção e Ciclo de Vida dos Dados</h5>
-          <p>Os dados pessoais são retidos enquanto a conta do usuário permanecer ativa. Mediante solicitação de exclusão, todos os registros são imediatamente apagados de nossos bancos de dados ativos, ressalvadas hipóteses legais de guarda obrigatória (como registros de acesso a aplicações de internet pelo prazo de 6 meses, conforme o art. 15 do Marco Civil da Internet - Lei nº 12.965/2014).</p>
+          <h5>7. RetenÃ§Ã£o e Ciclo de Vida dos Dados</h5>
+          <p>Os dados pessoais sÃ£o retidos enquanto a conta do usuÃ¡rio permanecer ativa. Mediante solicitaÃ§Ã£o de exclusÃ£o, todos os registros sÃ£o imediatamente apagados de nossos bancos de dados ativos, ressalvadas hipÃ³teses legais de guarda obrigatÃ³ria (como registros de acesso a aplicaÃ§Ãµes de internet pelo prazo de 6 meses, conforme o art. 15 do Marco Civil da Internet - Lei nÂº 12.965/2014).</p>
         </section>
 
         <section class="legal-section">
-          <h5>8. Procedimento para Incidentes e Vazamentos de Segurança (Art. 48)</h5>
-          <p>Em conformidade com as diretrizes da Autoridade Nacional de Proteção de Dados (ANPD), mantemos um Plano de Resposta a Incidentes de Segurança:</p>
+          <h5>8. Procedimento para Incidentes e Vazamentos de SeguranÃ§a (Art. 48)</h5>
+          <p>Em conformidade com as diretrizes da Autoridade Nacional de ProteÃ§Ã£o de Dados (ANPD), mantemos um Plano de Resposta a Incidentes de SeguranÃ§a:</p>
           <ul>
-            <li>Monitoramento contínuo e uso de criptografia de ponta a ponta nas conexões (HTTPS/TLS).</li>
-            <li>Em caso de incidente relevante de segurança que possa acarretar risco ou dano aos titulares, o Trampou comunicará a ANPD e os usuários afetados em prazo razoável, informando a natureza dos dados, as medidas de mitigação adotadas e as recomendações de segurança.</li>
+            <li>Monitoramento contÃ­nuo e uso de criptografia de ponta a ponta nas conexÃµes (HTTPS/TLS).</li>
+            <li>Em caso de incidente relevante de seguranÃ§a que possa acarretar risco ou dano aos titulares, o Trampou comunicarÃ¡ a ANPD e os usuÃ¡rios afetados em prazo razoÃ¡vel, informando a natureza dos dados, as medidas de mitigaÃ§Ã£o adotadas e as recomendaÃ§Ãµes de seguranÃ§a.</li>
           </ul>
         </section>
 
         <section class="legal-section">
           <h5>9. Canal do Encarregado de Dados (DPO)</h5>
-          <p>Para exercer qualquer direito previsto na LGPD ou esclarecer dúvidas sobre esta Política, entre em contato com nosso Encarregado de Proteção de Dados:</p>
+          <p>Para exercer qualquer direito previsto na LGPD ou esclarecer dÃºvidas sobre esta PolÃ­tica, entre em contato com nosso Encarregado de ProteÃ§Ã£o de Dados:</p>
           <div class="legal-contact-box">
             <div><i class="fa-solid fa-envelope"></i> <strong>E-mail Oficial (DPO / Contato):</strong> vertextecnologia001@gmail.com</div>
             <div><i class="fa-brands fa-whatsapp"></i> <strong>WhatsApp / Telefone:</strong> (94) 8449-0987</div>
-            <div><i class="fa-solid fa-location-dot"></i> <strong>Jurisdição:</strong> Parauapebas — Pará, Brasil</div>
+            <div><i class="fa-solid fa-location-dot"></i> <strong>JurisdiÃ§Ã£o:</strong> Parauapebas â€” ParÃ¡, Brasil</div>
           </div>
         </section>
       </div>
@@ -3163,37 +3163,37 @@
 
       <div class="legal-text-body">
         <div class="legal-meta-badge">
-          <span>Termos e Condições Gerais de Uso da Plataforma Trampou — Parauapebas/PA</span>
+          <span>Termos e CondiÃ§Ãµes Gerais de Uso da Plataforma Trampou â€” Parauapebas/PA</span>
         </div>
 
         <section class="legal-section">
           <h5>1. Natureza da Plataforma</h5>
-          <p>O <strong>Trampou</strong> é uma plataforma digital que funciona como um catálogo inteligente de busca e visibilidade para conectar clientes a profissionais autônomos e prestadores de serviços no município de Parauapebas e região.</p>
+          <p>O <strong>Trampou</strong> Ã© uma plataforma digital que funciona como um catÃ¡logo inteligente de busca e visibilidade para conectar clientes a profissionais autÃ´nomos e prestadores de serviÃ§os no municÃ­pio de Parauapebas e regiÃ£o.</p>
         </section>
 
         <section class="legal-section">
-          <h5>2. Relação entre Clientes e Profissionais</h5>
-          <p>O Trampou <strong>NÃO é empregador, intermediador financeiro nem prestador dos serviços contratados</strong>. Toda a negociação, orçamento, execução, garantia e pagamento é acordada livre e diretamente entre o Cliente e o Profissional.</p>
+          <h5>2. RelaÃ§Ã£o entre Clientes e Profissionais</h5>
+          <p>O Trampou <strong>NÃƒO Ã© empregador, intermediador financeiro nem prestador dos serviÃ§os contratados</strong>. Toda a negociaÃ§Ã£o, orÃ§amento, execuÃ§Ã£o, garantia e pagamento Ã© acordada livre e diretamente entre o Cliente e o Profissional.</p>
         </section>
 
         <section class="legal-section">
-          <h5>3. Cadastro e Veracidade das Informações</h5>
-          <p>O usuário se compromete a fornecer informações verdadeiras e atualizadas. É estritamente proibido criar perfis falsos, utilizar fotos de terceiros sem autorização ou simular qualificações que não possua. Perfis fraudulentos serão suspensos sem aviso prévio.</p>
+          <h5>3. Cadastro e Veracidade das InformaÃ§Ãµes</h5>
+          <p>O usuÃ¡rio se compromete a fornecer informaÃ§Ãµes verdadeiras e atualizadas. Ã‰ estritamente proibido criar perfis falsos, utilizar fotos de terceiros sem autorizaÃ§Ã£o ou simular qualificaÃ§Ãµes que nÃ£o possua. Perfis fraudulentos serÃ£o suspensos sem aviso prÃ©vio.</p>
         </section>
 
         <section class="legal-section">
-          <h5>4. Selo de Verificação</h5>
-          <p>O selo "Verificado" indica que o profissional confirmou dados de contato e atuação em Parauapebas perante os critérios da plataforma, buscando aumentar a segurança da comunidade, não constituindo garantia técnica irrestrita.</p>
+          <h5>4. Selo de VerificaÃ§Ã£o</h5>
+          <p>O selo "Verificado" indica que o profissional confirmou dados de contato e atuaÃ§Ã£o em Parauapebas perante os critÃ©rios da plataforma, buscando aumentar a seguranÃ§a da comunidade, nÃ£o constituindo garantia tÃ©cnica irrestrita.</p>
         </section>
 
         <section class="legal-section">
-          <h5>5. Conduta e Proibições</h5>
-          <p>É expressamente proibido veicular conteúdos discriminatórios, ilegais, difamatórios, pornografia, anúncios enganosos ou utilizar os canais do Trampou para assédio. A violação resultará na exclusão definitiva da conta.</p>
+          <h5>5. Conduta e ProibiÃ§Ãµes</h5>
+          <p>Ã‰ expressamente proibido veicular conteÃºdos discriminatÃ³rios, ilegais, difamatÃ³rios, pornografia, anÃºncios enganosos ou utilizar os canais do Trampou para assÃ©dio. A violaÃ§Ã£o resultarÃ¡ na exclusÃ£o definitiva da conta.</p>
         </section>
 
         <section class="legal-section">
-          <h5>6. Foro e Legislação Aplicável</h5>
-          <p>Estes Termos são regidos pelas leis da República Federativa do Brasil, em especial o Marco Civil da Internet (Lei 12.965/2014) e a LGPD (Lei 13.709/2018). Fica eleito o Foro da Comarca de Parauapebas, Estado do Pará, para dirimir eventuais controvérsias.</p>
+          <h5>6. Foro e LegislaÃ§Ã£o AplicÃ¡vel</h5>
+          <p>Estes Termos sÃ£o regidos pelas leis da RepÃºblica Federativa do Brasil, em especial o Marco Civil da Internet (Lei 12.965/2014) e a LGPD (Lei 13.709/2018). Fica eleito o Foro da Comarca de Parauapebas, Estado do ParÃ¡, para dirimir eventuais controvÃ©rsias.</p>
         </section>
       </div>
 
@@ -3206,7 +3206,7 @@
   </div>
 
   <!-- =========================================================
-       5. MODAL DE CANAL DE SOLICITAÇÃO AO ENCARREGADO (DPO)
+       5. MODAL DE CANAL DE SOLICITAÃ‡ÃƒO AO ENCARREGADO (DPO)
        ========================================================= -->
   <div id="dpo-channel-modal" class="modal-overlay">
     <div class="modal-content auth-form-content">
@@ -3225,7 +3225,7 @@
           </div>
           <div>
             <h5>Atendimento Oficial LGPD</h5>
-            <p>Envie sua solicitação formal de direitos (acesso, retificação, revogação) ou reporte uma suspeita de incidente.</p>
+            <p>Envie sua solicitaÃ§Ã£o formal de direitos (acesso, retificaÃ§Ã£o, revogaÃ§Ã£o) ou reporte uma suspeita de incidente.</p>
           </div>
         </div>
 
@@ -3242,15 +3242,15 @@
             <i class="fa-brands fa-whatsapp icon-green"></i>
             <div class="channel-text">
               <strong>Atendimento via WhatsApp</strong>
-              <span>(94) 8449-0987 • Atendimento direto em Parauapebas</span>
+              <span>(94) 8449-0987 â€¢ Atendimento direto em Parauapebas</span>
             </div>
           </button>
 
           <button type="button" class="btn-dpo-channel-option" onclick="sendDpoEmail('incidente_seguranca')">
             <i class="fa-solid fa-bug icon-amber"></i>
             <div class="channel-text">
-              <strong>Reportar Incidente ou Falha de Segurança</strong>
-              <span>Canal prioritário para vulnerabilidades e vazamentos</span>
+              <strong>Reportar Incidente ou Falha de SeguranÃ§a</strong>
+              <span>Canal prioritÃ¡rio para vulnerabilidades e vazamentos</span>
             </div>
           </button>
         </div>
@@ -3259,11 +3259,11 @@
   </div>
       </div>
 
-      <!-- BARRA DE NAVEGAÇÃO INFERIOR ÚNICA (Início, Buscar, Pedidos, Conversas, Perfil) -->
+      <!-- BARRA DE NAVEGAÃ‡ÃƒO INFERIOR ÃšNICA (InÃ­cio, Buscar, Pedidos, Conversas, Perfil) -->
       <nav class="app-bottom-nav">
         <button class="nav-btn active" data-tab="home" onclick="switchTab('home')">
           <i class="fa-solid fa-house"></i>
-          <span>Início</span>
+          <span>InÃ­cio</span>
         </button>
         <button class="nav-btn" data-tab="search" onclick="switchTab('search')">
           <i class="fa-solid fa-compass"></i>
@@ -3288,7 +3288,7 @@
   <div id="toast-message" class="toast">Mensagem</div>
 
   <!-- =========================================================
-       BANNER DE CONSENTIMENTO LGPD & COOKIES (RODAPÉ)
+       BANNER DE CONSENTIMENTO LGPD & COOKIES (RODAPÃ‰)
        ========================================================= -->
   <aside id="lgpd-consent-banner" class="lgpd-banner" style="display: none;" role="region" aria-label="Consentimento de privacidade">
     <div class="lgpd-banner-content">
@@ -3296,16 +3296,16 @@
         <i class="fa-solid fa-shield-halved"></i>
       </div>
       <div class="lgpd-banner-text">
-        <strong>Privacidade & Proteção de Dados (LGPD)</strong>
-        <p>O Trampou utiliza armazenamento local para conectar você aos melhores profissionais de Parauapebas com rapidez e segurança. Seus dados nunca são vendidos a terceiros.</p>
+        <strong>Privacidade & ProteÃ§Ã£o de Dados (LGPD)</strong>
+        <p>O Trampou utiliza armazenamento local para conectar vocÃª aos melhores profissionais de Parauapebas com rapidez e seguranÃ§a. Seus dados nunca sÃ£o vendidos a terceiros.</p>
       </div>
       <div class="lgpd-banner-actions">
-        <button type="button" class="btn-lgpd-link" onclick="openPrivacyPolicyModal()">Ler Política</button>
+        <button type="button" class="btn-lgpd-link" onclick="openPrivacyPolicyModal()">Ler PolÃ­tica</button>
         <button type="button" class="btn-lgpd-accept" onclick="acceptLgpdConsent()">Concordar e Continuar</button>
       </div>
     </div>
   </aside>
 
-  <script src="app.js?v=31"></script>
+  <script src="app.js?v=32"></script>
 </body>
 </html>

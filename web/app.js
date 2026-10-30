@@ -673,10 +673,48 @@ function initPWA() {
   }
 
   if ('serviceWorker' in navigator) {
+    // Só consideramos "atualização" se já havia um SW controlando a página ao abrir
+    const hadControllerOnLoad = !!navigator.serviceWorker.controller;
+    let pendingAppUpdate = false;
+    let isReloadingForUpdate = false;
+
+    const reloadForUpdate = () => {
+      if (isReloadingForUpdate) return;
+      isReloadingForUpdate = true;
+      window.location.reload();
+    };
+
+    // Nova versão ativada pelo SW (skipWaiting + clients.claim)
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadControllerOnLoad) return;
+      if (document.visibilityState === 'hidden') {
+        reloadForUpdate();
+      } else {
+        pendingAppUpdate = true;
+        showAppUpdateBar(reloadForUpdate);
+      }
+    });
+
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js')
         .then((reg) => {
           console.log('✅ Trampou PWA Service Worker registrado:', reg.scope);
+
+          const checkForUpdate = () => { reg.update().catch(() => {}); };
+
+          // Verifica nova versão ao voltar para o app e a cada 60 segundos
+          document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+              checkForUpdate();
+            } else if (pendingAppUpdate) {
+              // Usuário saiu do app: recarrega em segundo plano sem atrapalhar
+              reloadForUpdate();
+            }
+          });
+          window.addEventListener('online', checkForUpdate);
+          setInterval(() => {
+            if (document.visibilityState === 'visible') checkForUpdate();
+          }, 60000);
         })
         .catch((err) => {
           console.warn('⚠️ Erro ao registrar Service Worker:', err);
@@ -708,6 +746,24 @@ function initPWA() {
     if (installCard) installCard.style.display = 'none';
     showToast('Trampou instalado com sucesso!');
   });
+}
+
+// Barra discreta "Nova versão disponível" com botão para atualizar na hora
+function showAppUpdateBar(onUpdate) {
+  if (document.getElementById('app-update-bar')) return;
+  const bar = document.createElement('div');
+  bar.id = 'app-update-bar';
+  bar.setAttribute('role', 'status');
+  bar.style.cssText = 'position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:99999;display:flex;align-items:center;gap:10px;background:#1E1B4B;color:#FFFFFF;padding:10px 12px 10px 14px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.25);font-size:12.5px;font-weight:600;max-width:calc(100% - 32px);';
+  bar.innerHTML = `
+    <i class="fa-solid fa-rotate" style="color:#A78BFA;"></i>
+    <span>Nova versão do Trampou disponível</span>
+    <button type="button" style="background:#7C3AED;color:#FFFFFF;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;">Atualizar</button>
+  `;
+  bar.querySelector('button').addEventListener('click', () => {
+    if (typeof onUpdate === 'function') onUpdate();
+  });
+  document.body.appendChild(bar);
 }
 
 function triggerPWAInstall() {
@@ -802,7 +858,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Renderiza Carrossel de Anúncios antes das categorias (Integrado com Supabase + Painel Admin)
-async function renderAdBannerCarousel() {
+async function renderAdBannerCarousel(refreshOnly = false) {
   const track = document.getElementById('home-banner-track');
   const dotsContainer = document.getElementById('carousel-dots');
   if (!track) return;
@@ -976,8 +1032,10 @@ async function renderAdBannerCarousel() {
     }
   }
 
-  // Renderização inicial rápida com fallback
-  applyBanners(defaultBanners);
+  // Renderização inicial rápida com fallback (apenas na primeira carga)
+  if (!refreshOnly) {
+    applyBanners(defaultBanners);
+  }
 
   // Busca banners ativos em tempo real do Supabase
   try {
@@ -985,12 +1043,17 @@ async function renderAdBannerCarousel() {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-      }
+      },
+      cache: 'no-store'
     });
     if (res.ok) {
       const dbBanners = await res.json();
-      if (Array.isArray(dbBanners) && dbBanners.length > 0) {
-        applyBanners(dbBanners);
+      const list = (Array.isArray(dbBanners) && dbBanners.length > 0) ? dbBanners : defaultBanners;
+      const signature = JSON.stringify(list.map(b => [b.id, b.image_url, b.cta_link, b.title, b.sort_order, b.updated_at]));
+      // Só re-renderiza se algo mudou (evita "piscar" o carrossel)
+      if (signature !== window._lastBannersSignature) {
+        window._lastBannersSignature = signature;
+        applyBanners(list);
       }
     }
   } catch (err) {
@@ -3236,6 +3299,9 @@ async function triggerRealtimeDbRefresh(force = false) {
   if (typeof syncCurrentUserProfileFromSupabase === 'function') {
     await syncCurrentUserProfileFromSupabase();
   }
+  if (typeof renderAdBannerCarousel === 'function') {
+    await renderAdBannerCarousel(true);
+  }
 }
 
 function initRealtimeDatabaseSync() {
@@ -3256,7 +3322,8 @@ function initRealtimeDatabaseSync() {
             postgres_changes: [
               { event: '*', schema: 'public', table: 'profiles' },
               { event: '*', schema: 'public', table: 'professional_profiles' },
-              { event: '*', schema: 'public', table: 'portfolio_items' }
+              { event: '*', schema: 'public', table: 'portfolio_items' },
+              { event: '*', schema: 'public', table: 'banners' }
             ]
           }
         },
