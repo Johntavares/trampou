@@ -969,22 +969,35 @@ async function renderAdBannerCarousel(refreshOnly = false) {
     }
   };
 
-  function startBannerAutoPlay(totalSlides) {
-    if (window._bannerCarouselInterval) clearInterval(window._bannerCarouselInterval);
-    if (totalSlides <= 1) return;
+  let activeBannersCurrentList = defaultBanners;
 
-    window._bannerCarouselInterval = setInterval(() => {
+  function scheduleNextBannerSlide() {
+    if (window._bannerCarouselInterval) clearTimeout(window._bannerCarouselInterval);
+    if (!activeBannersCurrentList || activeBannersCurrentList.length <= 1) return;
+
+    // Tempo de exibição configurado no admin para o banner atual (padrão: 5s, mín 2s, máx 60s)
+    const currentBanner = activeBannersCurrentList[currentBannerIdx] || {};
+    const seconds = Math.min(60, Math.max(2, parseInt(currentBanner.display_seconds, 10) || 5));
+    const delayMs = seconds * 1000;
+
+    window._bannerCarouselInterval = setTimeout(() => {
       const slides = track.querySelectorAll('.ad-slide-card');
       if (slides.length <= 1) return;
       currentBannerIdx = (currentBannerIdx + 1) % slides.length;
       goToBannerSlide(currentBannerIdx);
-    }, 3000); // Rotação a cada 3 segundos
+      scheduleNextBannerSlide();
+    }, delayMs);
+  }
+
+  function startBannerAutoPlay() {
+    scheduleNextBannerSlide();
   }
 
   function applyBanners(bannersList) {
     if (!bannersList || bannersList.length === 0) {
       bannersList = defaultBanners;
     }
+    activeBannersCurrentList = bannersList;
 
     track.innerHTML = bannersList.map((b, idx) => buildBannerHtml(b, idx)).join('');
 
@@ -1001,14 +1014,17 @@ async function renderAdBannerCarousel(refreshOnly = false) {
     if (dotsContainer) {
       if (bannersList.length > 1) {
         dotsContainer.style.display = 'flex';
-        dotsContainer.innerHTML = bannersList.map((_, i) => `<span class="carousel-dot ${i === 0 ? 'active' : ''}" data-dot-index="${i}" onclick="goToBannerSlide(${i})"></span>`).join('');
+        dotsContainer.innerHTML = bannersList.map((_, i) => `<span class="carousel-dot ${i === 0 ? 'active' : ''}" data-dot-index="${i}" onclick="goToBannerSlide(${i}); scheduleNextBannerSlide();"></span>`).join('');
 
         track.onscroll = () => {
           const scrollLeft = track.scrollLeft;
           const slides = track.querySelectorAll('.ad-slide-card');
           slides.forEach((slide, i) => {
             if (Math.abs(slide.offsetLeft - scrollLeft) < 40) {
-              currentBannerIdx = i;
+              if (currentBannerIdx !== i) {
+                currentBannerIdx = i;
+                scheduleNextBannerSlide();
+              }
               dotsContainer.querySelectorAll('.carousel-dot').forEach((d, idx) => {
                 d.classList.toggle('active', idx === i);
               });
@@ -1017,17 +1033,17 @@ async function renderAdBannerCarousel(refreshOnly = false) {
         };
 
         // Pausa ao interagir (touch ou hover) e retoma após soltar
-        track.onmouseenter = () => { if (window._bannerCarouselInterval) clearInterval(window._bannerCarouselInterval); };
-        track.onmouseleave = () => { startBannerAutoPlay(bannersList.length); };
-        track.ontouchstart = () => { if (window._bannerCarouselInterval) clearInterval(window._bannerCarouselInterval); };
-        track.ontouchend = () => { startBannerAutoPlay(bannersList.length); };
+        track.onmouseenter = () => { if (window._bannerCarouselInterval) clearTimeout(window._bannerCarouselInterval); };
+        track.onmouseleave = () => { scheduleNextBannerSlide(); };
+        track.ontouchstart = () => { if (window._bannerCarouselInterval) clearTimeout(window._bannerCarouselInterval); };
+        track.ontouchend = () => { scheduleNextBannerSlide(); };
 
-        // Inicia a rotação automática a cada 3 segundos
-        startBannerAutoPlay(bannersList.length);
+        // Inicia a rotação dinâmica respeitando o tempo de cada banner
+        scheduleNextBannerSlide();
 
       } else {
         dotsContainer.style.display = 'none';
-        if (window._bannerCarouselInterval) clearInterval(window._bannerCarouselInterval);
+        if (window._bannerCarouselInterval) clearTimeout(window._bannerCarouselInterval);
       }
     }
   }

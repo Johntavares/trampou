@@ -478,6 +478,7 @@
             </div>
             <div style="display: flex; justify-content: space-between;">
               <span><strong>Ordem:</strong> ${b.sort_order || 1}</span>
+              <span><strong>Tempo:</strong> ${b.display_seconds || 5}s</span>
               <span><strong>Status:</strong> ${b.active ? '<span style="color: #10B981; font-weight: 700;">Ativo</span>' : '<span style="color: #EF4444; font-weight: 700;">Pausado</span>'}</span>
             </div>
           </div>
@@ -790,6 +791,163 @@
   }
 
   // =========================================================
+  // GESTÃO DE IMAGENS E LINKS DOS BANNERS NO ADMIN
+  // =========================================================
+  let pendingBannerFile = null;
+
+  function updateBannerImagePreview(url) {
+    const preview = document.getElementById('banner-image-preview');
+    const placeholder = document.getElementById('banner-upload-placeholder');
+    const cleanUrl = (url || '').trim();
+    if (cleanUrl) {
+      if (preview) {
+        preview.src = cleanUrl;
+        preview.style.display = 'block';
+      }
+      if (placeholder) placeholder.style.display = 'none';
+    } else {
+      if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+      }
+      if (placeholder) placeholder.style.display = 'block';
+    }
+  }
+
+  function clearBannerImage() {
+    pendingBannerFile = null;
+    const fileInp = document.getElementById('banner-image-file');
+    const urlInp = document.getElementById('banner-image-url');
+    const status = document.getElementById('banner-upload-status');
+    if (fileInp) fileInp.value = '';
+    if (urlInp) urlInp.value = '';
+    if (status) status.style.display = 'none';
+    updateBannerImagePreview('');
+  }
+
+  function handleBannerImageSelect(input) {
+    const file = input && input.files && input.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('A imagem selecionada é maior que 5 MB. Escolha uma imagem menor.');
+      input.value = '';
+      return;
+    }
+    pendingBannerFile = file;
+    const localUrl = URL.createObjectURL(file);
+    updateBannerImagePreview(localUrl);
+    const status = document.getElementById('banner-upload-status');
+    if (status) {
+      status.textContent = `Imagem selecionada: ${file.name} (${Math.round(file.size / 1024)} KB) — será enviada ao salvar`;
+      status.style.display = 'block';
+    }
+  }
+
+  async function uploadBannerFileToSupabase(file) {
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cleanExt = ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext) ? ext : 'jpg';
+    const filename = `banner_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${cleanExt}`;
+
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/banners/${filename}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': file.type || 'image/jpeg'
+      },
+      body: file
+    });
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      throw new Error(`Falha no upload da imagem: ${res.status} ${errText}`);
+    }
+
+    return `${SUPABASE_URL}/storage/v1/object/public/banners/${filename}`;
+  }
+
+  function handleBannerLinkTypeChange() {
+    const typeSelect = document.getElementById('banner-link-type');
+    const linkGroup = document.getElementById('banner-link-value-group');
+    const linkLabel = document.getElementById('banner-link-value-label');
+    const linkInput = document.getElementById('banner-cta-link');
+    if (!typeSelect || !linkGroup || !linkLabel || !linkInput) return;
+
+    const val = typeSelect.value;
+    linkGroup.style.display = 'block';
+    linkInput.disabled = false;
+
+    if (val === 'instagram') {
+      linkLabel.textContent = 'Perfil ou Link do Instagram *';
+      linkInput.placeholder = 'Ex: @hubboficial ou https://instagram.com/hubboficial';
+    } else if (val === 'whatsapp') {
+      linkLabel.textContent = 'Número do WhatsApp (com DDD) *';
+      linkInput.placeholder = 'Ex: 94991234567 ou link direto';
+    } else if (val === 'site') {
+      linkLabel.textContent = 'Endereço do Site / Página *';
+      linkInput.placeholder = 'Ex: https://meusite.com.br';
+    } else if (val === 'share') {
+      linkLabel.textContent = 'Ação no App';
+      linkInput.value = 'share';
+      linkInput.disabled = true;
+    } else if (val === 'pwa') {
+      linkLabel.textContent = 'Ação no App';
+      linkInput.value = 'pwa';
+      linkInput.disabled = true;
+    } else if (val === 'none') {
+      linkLabel.textContent = 'Destino';
+      linkInput.value = '#';
+      linkGroup.style.display = 'none';
+    }
+  }
+
+  function normalizeBannerTargetLink(type, rawVal) {
+    const raw = (rawVal || '').trim();
+    if (type === 'share') return 'share';
+    if (type === 'pwa') return 'pwa';
+    if (type === 'none') return '#';
+
+    if (type === 'instagram') {
+      if (!raw) return 'https://www.instagram.com/';
+      if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+      const cleanHandle = raw.replace(/^@/, '').trim();
+      return `https://www.instagram.com/${cleanHandle}/`;
+    }
+
+    if (type === 'whatsapp') {
+      if (!raw) return 'share';
+      if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+      const digits = raw.replace(/\D/g, '');
+      const fullNum = digits.startsWith('55') ? digits : `55${digits}`;
+      return `https://wa.me/${fullNum}`;
+    }
+
+    if (type === 'site') {
+      if (!raw) return '';
+      if (/^[a-zA-Z]+:\/\//.test(raw)) return raw;
+      return `https://${raw}`;
+    }
+
+    return raw;
+  }
+
+  function detectBannerLinkType(ctaLink) {
+    const link = (ctaLink || '').trim().toLowerCase();
+    if (!link || link === '#' || link === 'javascript:void(0)') return { type: 'none', value: '' };
+    if (link === 'share' || link === '#share') return { type: 'share', value: '' };
+    if (link === 'pwa' || link === '#pwa' || link === 'install') return { type: 'pwa', value: '' };
+    if (link.includes('instagram.com/')) {
+      const match = link.match(/instagram\.com\/([a-zA-Z0-9._-]+)/i);
+      return { type: 'instagram', value: match ? `@${match[1]}` : ctaLink };
+    }
+    if (link.includes('wa.me/') || link.includes('api.whatsapp.com')) {
+      const match = link.match(/\/(?:send\?phone=)?(\d+)/);
+      return { type: 'whatsapp', value: match ? match[1].replace(/^55/, '') : ctaLink };
+    }
+    return { type: 'site', value: ctaLink };
+  }
+
+  // =========================================================
   // MODAIS & OPERAÇÕES CRUD DE BANNERS
   // =========================================================
   function openBannerModal(bannerData = null) {
@@ -799,6 +957,11 @@
     if (!modal || !form) return;
 
     form.reset();
+    clearBannerImage();
+
+    const typeSelect = document.getElementById('banner-link-type');
+    const linkInput = document.getElementById('banner-cta-link');
+    const durationInput = document.getElementById('banner-duration');
 
     if (bannerData) {
       titleEl.textContent = 'Editar Banner de Anúncio';
@@ -808,18 +971,33 @@
       document.getElementById('banner-badge').value = bannerData.badge_text || '';
       document.getElementById('banner-theme').value = bannerData.theme || 'purple-viral';
       document.getElementById('banner-cta-text').value = bannerData.cta_text || '';
-      document.getElementById('banner-cta-link').value = bannerData.cta_link || '';
+
+      const detected = detectBannerLinkType(bannerData.cta_link);
+      if (typeSelect) typeSelect.value = detected.type;
+      handleBannerLinkTypeChange();
+      if (linkInput) linkInput.value = detected.value || bannerData.cta_link || '';
+
       const imgInput = document.getElementById('banner-image-url');
       if (imgInput) imgInput.value = bannerData.image_url || '';
-      document.getElementById('banner-sort-order').value = bannerData.sort_order || 10;
+      updateBannerImagePreview(bannerData.image_url || '');
+
+      document.getElementById('banner-sort-order').value = bannerData.sort_order ?? 10;
+      if (durationInput) durationInput.value = bannerData.display_seconds ?? 5;
       document.getElementById('banner-active').checked = bannerData.active !== false;
+
+      const details = document.getElementById('banner-text-options');
+      if (details && !bannerData.image_url && (bannerData.description || bannerData.badge_text)) {
+        details.open = true;
+      }
     } else {
       titleEl.textContent = 'Criar Novo Banner de Anúncio';
       document.getElementById('banner-id').value = '';
-      const imgInput = document.getElementById('banner-image-url');
-      if (imgInput) imgInput.value = '';
+      if (typeSelect) typeSelect.value = 'instagram';
+      handleBannerLinkTypeChange();
+      if (linkInput) linkInput.value = '';
       document.getElementById('banner-theme').value = 'purple-viral';
       document.getElementById('banner-sort-order').value = 10;
+      if (durationInput) durationInput.value = 5;
       document.getElementById('banner-active').checked = true;
     }
 
@@ -829,6 +1007,7 @@
   function closeBannerModal() {
     const modal = document.getElementById('modal-banner');
     if (modal) modal.classList.remove('active');
+    clearBannerImage();
   }
 
   function editBanner(id) {
@@ -840,34 +1019,64 @@
 
   async function saveBanner() {
     const id = document.getElementById('banner-id').value;
-    const imgUrl = (document.getElementById('banner-image-url')?.value || '').trim();
-    const payload = {
-      title: document.getElementById('banner-title').value.trim(),
-      description: document.getElementById('banner-description').value.trim(),
-      badge_text: document.getElementById('banner-badge').value.trim() || 'DESTAQUE',
-      theme: document.getElementById('banner-theme').value,
-      cta_text: document.getElementById('banner-cta-text').value.trim() || 'Saiba Mais',
-      cta_link: document.getElementById('banner-cta-link').value.trim(),
-      image_url: imgUrl || null,
-      sort_order: parseInt(document.getElementById('banner-sort-order').value, 10) || 10,
-      active: document.getElementById('banner-active').checked,
-      updated_at: new Date().toISOString()
-    };
+    const title = (document.getElementById('banner-title')?.value || '').trim();
+    if (!title) {
+      alert('Informe o nome ou título do anúncio.');
+      return;
+    }
+
+    const btn = document.getElementById('btn-save-banner');
+    const originalBtnHtml = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Salvando banner...</span>';
+    }
 
     try {
-      const btn = document.getElementById('btn-save-banner');
-      if (btn) btn.disabled = true;
+      let finalImageUrl = (document.getElementById('banner-image-url')?.value || '').trim() || null;
+
+      // 1. Upload de nova imagem para o Supabase Storage se houver arquivo selecionado
+      if (pendingBannerFile) {
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up fa-spin"></i> <span>Enviando imagem...</span>';
+        finalImageUrl = await uploadBannerFileToSupabase(pendingBannerFile);
+      }
+
+      // 2. Monta o link normalizado conforme a opção escolhida
+      const linkType = document.getElementById('banner-link-type')?.value || 'instagram';
+      const rawLinkVal = document.getElementById('banner-cta-link')?.value || '';
+      const finalCtaLink = normalizeBannerTargetLink(linkType, rawLinkVal);
+
+      const durationSec = Math.min(60, Math.max(2, parseInt(document.getElementById('banner-duration')?.value, 10) || 5));
+      const sortOrder = parseInt(document.getElementById('banner-sort-order')?.value, 10) || 0;
+      const isActive = document.getElementById('banner-active')?.checked !== false;
+
+      const desc = (document.getElementById('banner-description')?.value || '').trim();
+      const badge = (document.getElementById('banner-badge')?.value || '').trim() || (finalImageUrl ? 'Anúncio' : 'DESTAQUE');
+      const theme = document.getElementById('banner-theme')?.value || 'purple-viral';
+      const ctaText = (document.getElementById('banner-cta-text')?.value || '').trim() || (linkType === 'instagram' ? 'Ver Instagram' : (linkType === 'whatsapp' ? 'Chamar no WhatsApp' : 'Saiba Mais'));
+
+      const payload = {
+        title: title,
+        description: desc || null,
+        badge_text: badge,
+        theme: theme,
+        cta_text: ctaText,
+        cta_link: finalCtaLink,
+        image_url: finalImageUrl,
+        sort_order: sortOrder,
+        display_seconds: durationSec,
+        active: isActive,
+        updated_at: new Date().toISOString()
+      };
 
       let res;
       if (id) {
-        // Atualização
         res = await fetch(`${SUPABASE_URL}/rest/v1/banners?id=eq.${id}`, {
           method: 'PATCH',
           headers: getHeaders(),
           body: JSON.stringify(payload)
         });
       } else {
-        // Criação
         res = await fetch(`${SUPABASE_URL}/rest/v1/banners`, {
           method: 'POST',
           headers: getHeaders(),
@@ -881,18 +1090,22 @@
         renderDashboard();
         renderBanners();
         updateCounters();
-        alert('Banner salvo com sucesso!');
+        alert('✅ Banner salvo com sucesso e sincronizado em tempo real no app!');
       } else {
         const errData = await res.text();
         alert('Erro ao salvar banner no banco: ' + errData);
       }
     } catch (err) {
-      alert('Falha na conexão ao salvar banner: ' + err.message);
+      alert('Falha ao processar banner: ' + err.message);
     } finally {
-      const btn = document.getElementById('btn-save-banner');
-      if (btn) btn.disabled = false;
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = originalBtnHtml || '<i class="fa-solid fa-check"></i> <span>Salvar Banner</span>';
+      }
     }
   }
+
+
 
   async function toggleBannerActive(id, newStatus) {
     try {
@@ -1792,6 +2005,10 @@
     logout,
     switchTab,
     refreshAllData,
+    handleBannerImageSelect,
+    clearBannerImage,
+    updateBannerImagePreview,
+    handleBannerLinkTypeChange,
     openBannerModal,
     closeBannerModal,
     editBanner,

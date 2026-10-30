@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- Estilos do Painel -->
-  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="admin.css?v=2">
 </head>
 <body>
 
@@ -113,6 +113,14 @@
           <span class="nav-counter-pill" id="nav-users-count">0</span>
         </li>
 
+        <li class="admin-nav-item" data-tab="feedbacks">
+          <div class="nav-item-left">
+            <i class="fa-solid fa-lightbulb"></i>
+            <span>Sugestões & Feedbacks</span>
+          </div>
+          <span class="nav-counter-pill" id="nav-feedbacks-count" style="background: rgba(245, 158, 11, 0.2); color: #B45309;">0</span>
+        </li>
+
         <li class="admin-nav-item" data-tab="monetization">
           <div class="nav-item-left">
             <i class="fa-solid fa-hand-holding-dollar"></i>
@@ -127,14 +135,6 @@
             <span>Categorias</span>
           </div>
           <span class="nav-counter-pill" id="nav-cats-count">0</span>
-        </li>
-
-        <li class="admin-nav-item" data-tab="feedbacks">
-          <div class="nav-item-left">
-            <i class="fa-solid fa-lightbulb"></i>
-            <span>Sugestões & Feedbacks</span>
-          </div>
-          <span class="nav-counter-pill" id="nav-feedbacks-count" style="background: rgba(245, 158, 11, 0.2); color: #B45309;">0</span>
         </li>
       </ul>
 
@@ -323,6 +323,21 @@
               </div>
               <span class="kpi-subtext">Exibidos na Home do App</span>
             </div>
+
+            <!-- Feedbacks & Sugestões -->
+            <div class="kpi-stat-card" style="cursor: pointer;" onclick="window.AdminApp.switchTab('feedbacks')">
+              <div class="kpi-header-row">
+                <span class="kpi-label">Sugestões & Feedbacks</span>
+                <div class="kpi-icon-box" style="background: #FAF5FF; color: #6825B3;">
+                  <i class="fa-solid fa-lightbulb"></i>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <h3 id="kpi-total-feedbacks">0</h3>
+                <span class="kpi-growth-badge" id="kpi-pending-feedbacks" style="background: #FEF3C7; color: #B45309;"><i class="fa-solid fa-comment-dots"></i> 0 novos</span>
+              </div>
+              <span class="kpi-subtext" style="color: #6825B3; font-weight: 700;">Ler e responder &rarr;</span>
+            </div>
           </div>
 
           <!-- SEÇÃO RESUMIDA: BANNERS E ÚLTIMOS PROFISSIONAIS -->
@@ -370,6 +385,23 @@
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+
+          <!-- SEÇÃO RESUMIDA: ÚLTIMAS SUGESTÕES & FEEDBACKS DOS USUÁRIOS -->
+          <div class="admin-card-section" style="margin-top: 24px; margin-bottom: 0;">
+            <div class="admin-card-header">
+              <div class="admin-card-title-group">
+                <h4>Últimas Sugestões & Feedbacks dos Usuários</h4>
+                <span>Mensagens e ideias enviadas pelos clientes e profissionais no app</span>
+              </div>
+              <button class="btn-action-primary" onclick="window.AdminApp.switchTab('feedbacks')">
+                <span>Ver Todos & Responder</span>
+                <i class="fa-solid fa-arrow-right"></i>
+              </button>
+            </div>
+            <div id="dashboard-feedbacks-preview" style="padding: 16px;">
+              <!-- Preenchido via JS -->
             </div>
           </div>
         </section>
@@ -427,6 +459,7 @@
                 <thead>
                   <tr>
                     <th>Profissional</th>
+                    <th>E-mail</th>
                     <th>WhatsApp / Contato</th>
                     <th>Especialidade</th>
                     <th>Avaliação</th>
@@ -654,6 +687,7 @@
                 <option value="all">Todos os Status</option>
                 <option value="pendente">⏳ Pendente</option>
                 <option value="em_analise">🔍 Em Análise</option>
+                <option value="respondido">💬 Respondido</option>
                 <option value="implementado">✅ Implementado</option>
                 <option value="arquivado">📁 Arquivado</option>
               </select>
@@ -685,62 +719,96 @@
         <input type="hidden" id="banner-id">
         <div class="admin-modal-body">
           <div class="admin-input-group">
-            <label for="banner-title">Título do Banner *</label>
-            <input type="text" id="banner-title" required placeholder="Ex: Anuncie seu Comércio Aqui!">
+            <label for="banner-title">Nome do Anúncio / Anunciante *</label>
+            <input type="text" id="banner-title" required placeholder="Ex: HÜBB Mercados Autônomos">
           </div>
 
+          <!-- Upload da imagem do banner -->
           <div class="admin-input-group">
-            <label for="banner-description">Descrição Breve *</label>
-            <textarea id="banner-description" rows="2" required placeholder="Ex: Alcance milhares de clientes em Parauapebas todos os dias."></textarea>
+            <label>Imagem do Banner <small style="color:#94A3B8; font-weight:500;">(recomendado 1600×640 px — proporção 2,5:1)</small></label>
+            <div id="banner-upload-box" style="border: 2px dashed #CBD5E1; border-radius: 12px; background: #F8FAFC; padding: 12px; text-align: center; cursor: pointer;" onclick="document.getElementById('banner-image-file').click()">
+              <img id="banner-image-preview" alt="Prévia do banner" style="display: none; width: 100%; aspect-ratio: 2.5 / 1; object-fit: cover; border-radius: 8px; margin-bottom: 8px;">
+              <div id="banner-upload-placeholder" style="padding: 14px 0; color: #64748B; font-size: 13px;">
+                <i class="fa-solid fa-cloud-arrow-up" style="font-size: 26px; color: #6825B3; display: block; margin-bottom: 6px;"></i>
+                Clique para enviar a imagem (JPG, PNG ou WEBP até 5 MB)
+              </div>
+              <div id="banner-upload-status" style="display: none; font-size: 12px; font-weight: 600; color: #6825B3;"></div>
+            </div>
+            <input type="file" id="banner-image-file" accept="image/jpeg,image/png,image/webp" style="display: none;" onchange="window.AdminApp.handleBannerImageSelect(this)">
+            <div style="display: flex; gap: 8px; margin-top: 6px; align-items: center;">
+              <input type="text" id="banner-image-url" placeholder="ou cole a URL de uma imagem (https://...)" style="flex: 1;" oninput="window.AdminApp.updateBannerImagePreview(this.value)">
+              <button type="button" class="btn-admin-secondary" style="padding: 8px 12px;" onclick="window.AdminApp.clearBannerImage()" title="Remover imagem">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <!-- Link de direcionamento -->
+          <div class="admin-form-grid-2" style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 12px;">
             <div class="admin-input-group">
-              <label for="banner-badge">Badge / Etiqueta</label>
-              <input type="text" id="banner-badge" placeholder="Ex: PROMOÇÃO, DESTAQUE, PARCEIRO">
-            </div>
-
-            <div class="admin-input-group">
-              <label for="banner-theme">Tema Visual *</label>
-              <select id="banner-theme">
-                <option value="purple-viral">Roxo Neon Trampou</option>
-                <option value="emerald-pro">Verde Esmeralda Pro</option>
-                <option value="amber-deal">Dourado / Oferta Ouro</option>
-                <option value="dark-gold">Dark Enterprise Luxo</option>
+              <label for="banner-link-type">Ao tocar no banner *</label>
+              <select id="banner-link-type" onchange="window.AdminApp.handleBannerLinkTypeChange()">
+                <option value="instagram">Abrir Instagram</option>
+                <option value="whatsapp">Abrir WhatsApp</option>
+                <option value="site">Abrir site / link</option>
+                <option value="share">Compartilhar o Trampou</option>
+                <option value="pwa">Instalar o App</option>
+                <option value="none">Não fazer nada</option>
               </select>
             </div>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-            <div class="admin-input-group">
-              <label for="banner-cta-text">Texto do Botão *</label>
-              <input type="text" id="banner-cta-text" required placeholder="Ex: Saiba Mais, Chamar no Zap">
-            </div>
-
-            <div class="admin-input-group">
-              <label for="banner-cta-link">Link de Destino (URL / WhatsApp / share) *</label>
-              <input type="text" id="banner-cta-link" required placeholder="Ex: share ou https://wa.me/...">
+            <div class="admin-input-group" id="banner-link-value-group">
+              <label for="banner-cta-link" id="banner-link-value-label">Perfil do Instagram *</label>
+              <input type="text" id="banner-cta-link" placeholder="@perfil ou https://instagram.com/perfil">
             </div>
           </div>
 
-          <div class="admin-input-group">
-            <label for="banner-image-url">URL da Imagem de Fundo / Banner Pronto (Opcional - Medida 1080x432 px)</label>
-            <input type="text" id="banner-image-url" placeholder="Ex: banner-share-trampou.webp ou https://...">
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: center;">
+          <!-- Tempo de exibição, ordem e status -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; align-items: end;">
+            <div class="admin-input-group">
+              <label for="banner-duration">Tempo na tela (seg.)</label>
+              <input type="number" id="banner-duration" value="5" min="2" max="60" step="1">
+            </div>
             <div class="admin-input-group">
               <label for="banner-sort-order">Ordem de Exibição</label>
-              <input type="number" id="banner-sort-order" value="10" min="1">
+              <input type="number" id="banner-sort-order" value="10" min="0">
             </div>
-
-            <div style="margin-top: 18px;">
+            <div style="padding-bottom: 10px;">
               <label class="switch-toggle-label">
                 <input type="checkbox" id="banner-active" checked>
-                <span>Ativo no App imediatamente</span>
+                <span>Ativo no App</span>
               </label>
             </div>
           </div>
+
+          <!-- Opções para banner apenas com texto (sem imagem) -->
+          <details id="banner-text-options" style="margin-top: 6px; border: 1px solid #E2E8F0; border-radius: 10px; padding: 8px 12px;">
+            <summary style="cursor: pointer; font-size: 12.5px; font-weight: 700; color: #334155;">Banner sem imagem (apenas texto) — opcional</summary>
+            <div style="margin-top: 10px;">
+              <div class="admin-input-group">
+                <label for="banner-description">Descrição Breve</label>
+                <textarea id="banner-description" rows="2" placeholder="Ex: Alcance milhares de clientes todos os dias."></textarea>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="admin-input-group">
+                  <label for="banner-badge">Badge / Etiqueta</label>
+                  <input type="text" id="banner-badge" placeholder="Ex: PROMOÇÃO, PARCEIRO">
+                </div>
+                <div class="admin-input-group">
+                  <label for="banner-theme">Tema Visual</label>
+                  <select id="banner-theme">
+                    <option value="purple-viral">Roxo Neon Trampou</option>
+                    <option value="emerald-pro">Verde Esmeralda Pro</option>
+                    <option value="amber-deal">Dourado / Oferta Ouro</option>
+                    <option value="dark-gold">Dark Enterprise Luxo</option>
+                  </select>
+                </div>
+              </div>
+              <div class="admin-input-group">
+                <label for="banner-cta-text">Texto do Botão</label>
+                <input type="text" id="banner-cta-text" placeholder="Ex: Saiba Mais, Chamar no Zap">
+              </div>
+            </div>
+          </details>
         </div>
 
         <div class="admin-modal-footer">
@@ -818,6 +886,95 @@
         </div>
       </form>
     </div>
+  <!-- =========================================================
+       MODAL: RESPONDER FEEDBACK DO USUÁRIO
+       ========================================================= -->
+  <div class="admin-modal-overlay" id="modal-feedback-reply">
+    <div class="admin-modal-box" style="max-width: 620px;">
+      <div class="admin-modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: #FAF5FF; color: #6825B3; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+            <i class="fa-solid fa-reply"></i>
+          </div>
+          <div>
+            <h4 style="margin: 0; font-size: 16px; font-weight: 800; color: #1E293B;">Responder Feedback</h4>
+            <span style="font-size: 12px; color: #64748B;">Envie uma resposta oficial da equipe para o usuário</span>
+          </div>
+        </div>
+        <button class="admin-modal-close" onclick="window.AdminApp.closeFeedbackReplyModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="form-feedback-reply" onsubmit="event.preventDefault(); window.AdminApp.saveFeedbackReply();">
+        <input type="hidden" id="reply-feedback-id">
+        <div class="admin-modal-body">
+          <!-- Mensagem original do usuário -->
+          <div style="background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 14px; padding: 14px 16px; margin-bottom: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="admin-avatar-circle" id="reply-user-avatar" style="width: 28px; height: 28px; font-size: 11px; background: #6825B3;">UT</div>
+                <strong id="reply-user-name" style="font-size: 13.5px; color: #0F172A;">Nome do Usuário</strong>
+              </div>
+              <span id="reply-feedback-badge" class="fb-badge sugestao">Sugestão</span>
+            </div>
+            <div id="reply-feedback-title" style="font-size: 13px; font-weight: 700; color: #1E293B; margin-bottom: 4px;"></div>
+            <p id="reply-feedback-message" style="font-size: 12.5px; color: #475569; margin: 0; line-height: 1.5; white-space: pre-wrap;"></p>
+            <div id="reply-user-contacts" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #CBD5E1; display: flex; gap: 12px; font-size: 11.5px; color: #64748B; flex-wrap: wrap;"></div>
+          </div>
+
+          <!-- Campo de Resposta Oficial -->
+          <div class="admin-input-group">
+            <label for="feedback-reply-text" style="display: flex; justify-content: space-between; align-items: center;">
+              <span><strong>Sua Resposta Oficial da Equipe Trampou *</strong></span>
+              <span style="font-size: 11px; font-weight: normal; color: #6825B3;">Ficará gravada no histórico</span>
+            </label>
+            <textarea id="feedback-reply-text" rows="4" required placeholder="Digite sua resposta para o usuário (ex: Olá John! Agradecemos pela sua mensagem...)"></textarea>
+          </div>
+
+          <!-- Status após responder -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="admin-input-group">
+              <label for="feedback-reply-status">Status do Feedback</label>
+              <select id="feedback-reply-status">
+                <option value="respondido" selected>💬 Respondido</option>
+                <option value="em_analise">🔍 Em Análise</option>
+                <option value="implementado">✅ Implementado</option>
+                <option value="arquivado">📁 Arquivado</option>
+                <option value="pendente">⏳ Pendente</option>
+              </select>
+            </div>
+            <div class="admin-input-group">
+              <label for="feedback-admin-notes">Notas Internas (Privadas da Equipe)</label>
+              <input type="text" id="feedback-admin-notes" placeholder="Ex: Sugestão para o próximo update">
+            </div>
+          </div>
+
+          <!-- Ações Rápidas de Envio Externo -->
+          <div style="background: #FAF5FF; border: 1px solid #E9D5FF; border-radius: 12px; padding: 12px 14px; margin-top: 6px;">
+            <span style="font-size: 11.5px; font-weight: 700; color: #581C87; display: block; margin-bottom: 8px;">
+              <i class="fa-solid fa-paper-plane"></i> Enviar também diretamente para o usuário:
+            </span>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button type="button" id="btn-reply-whatsapp" class="btn-action-primary" style="background: #059669; border-color: #059669; font-size: 11.5px; padding: 7px 12px;" onclick="window.AdminApp.sendReplyViaWhatsApp()">
+                <i class="fa-brands fa-whatsapp"></i> Abrir WhatsApp com a Resposta
+              </button>
+              <button type="button" id="btn-reply-email" class="btn-admin-secondary" style="font-size: 11.5px; padding: 7px 12px;" onclick="window.AdminApp.sendReplyViaEmail()">
+                <i class="fa-regular fa-envelope"></i> Abrir E-mail com a Resposta
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-admin-secondary" onclick="window.AdminApp.closeFeedbackReplyModal()">Cancelar</button>
+          <button type="submit" class="btn-action-primary" id="btn-submit-reply">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Salvar Resposta Oficial</span>
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <!-- =========================================================
@@ -865,6 +1022,6 @@
   <canvas id="admin-confetti-canvas" style="position: fixed; inset: 0; pointer-events: none; z-index: 999999; display: none;"></canvas>
 
   <!-- Script da Lógica Administrativa -->
-  <script src="admin.js"></script>
+  <script src="admin.js?v=2"></script>
 </body>
 </html>
