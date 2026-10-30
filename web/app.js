@@ -2612,14 +2612,69 @@ let currentVitrineTab = 'posts';
 let selectedPresetGradient = 'linear-gradient(135deg, #1e3a8a, #0284c7)';
 let selectedPresetIcon = 'fa-camera';
 
+// =========================================================
+// UTILITÁRIO DE COMPRESSÃO INTELIGENTE DE FOTOS (CANVAS)
+// Reduz fotos de 4MB-10MB da câmera para ~90KB-180KB sem perder nitidez
+// =========================================================
+function compressImageFile(file, maxWidth = 1080, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    if (!file) return reject(new Error('Nenhum arquivo selecionado'));
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Erro ao ler arquivo de imagem'));
+    reader.onload = function(evt) {
+      const rawDataUrl = evt.target.result;
+      const img = new Image();
+      img.onerror = () => resolve(rawDataUrl); // Fallback seguro caso formato não suporte canvas
+      img.onload = function() {
+        try {
+          let width = img.width;
+          let height = img.height;
+          if (width > maxWidth || height > maxWidth) {
+            if (width >= height) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            } else {
+              width = Math.round((width * maxWidth) / height);
+              height = maxWidth;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+          resolve(compressedDataUrl);
+        } catch (err) {
+          resolve(rawDataUrl);
+        }
+      };
+      img.src = rawDataUrl;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+window.compressImageFile = compressImageFile;
+
 // Abre a Vitrine Social do Profissional
 function openProVitrine(id, asOwner = false) {
-  currentVitrinePro = PROFESSIONALS.find(p => p.id === id) || (PROFESSIONALS.length > 0 ? PROFESSIONALS[0] : null);
+  currentVitrinePro = PROFESSIONALS.find(p => p.id === id || p.dbId === id) || (PROFESSIONALS.length > 0 ? PROFESSIONALS[0] : null);
   if (!currentVitrinePro) {
     showToast('Perfil profissional ainda não cadastrado.');
     return;
   }
-  isVitrineOwner = asOwner;
+
+  // Detecta automaticamente se o usuário logado é o dono deste perfil profissional
+  const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+  const isLoggedProOwner = Boolean(
+    user && (
+      (user.id && currentVitrinePro.dbId && user.id === currentVitrinePro.dbId) ||
+      (user.proId && user.proId === currentVitrinePro.id) ||
+      (user.email && currentVitrinePro.email && user.email.toLowerCase() === currentVitrinePro.email.toLowerCase())
+    )
+  );
+
+  isVitrineOwner = Boolean(asOwner || isLoggedProOwner);
   currentVitrineTab = 'posts';
 
   renderVitrineView();
@@ -2698,23 +2753,28 @@ function renderVitrineView() {
 
   // Métricas: Trabalhos, Avaliações, Nota (4,9 com ⭐)
   const worksElem = document.getElementById('stat-works-count');
-  if (worksElem) worksElem.innerText = p.worksCount || (p.posts ? p.posts.length : 32);
+  if (worksElem) worksElem.innerText = p.posts ? p.posts.length : (p.worksCount || 0);
 
   const evalsElem = document.getElementById('stat-reviews-count');
-  if (evalsElem) evalsElem.innerText = p.reviewsCount || 28;
+  if (evalsElem) evalsElem.innerText = p.reviewsCount ?? 0;
 
   const ratingElem = document.getElementById('stat-rating-val');
-  if (ratingElem) ratingElem.innerText = p.rating ? p.rating.toFixed(1).replace('.', ',') : '4,9';
+  if (ratingElem) ratingElem.innerText = p.rating ? p.rating.toFixed(1).replace('.', ',') : '5,0';
 
   // 3. Bio & Descrição
   const headlineElem = document.getElementById('vitrine-headline-text');
-  if (headlineElem) headlineElem.innerText = p.headline || 'Instalações e manutenção elétrica';
+  if (headlineElem) headlineElem.innerText = p.headline || p.specialty || 'Serviços Profissionais';
 
   const bioElem = document.getElementById('vitrine-bio');
-  if (bioElem) bioElem.innerText = p.bio || 'Serviços residenciais e comerciais. Instalações, iluminação, chuveiros e reparos elétricos.';
+  if (bioElem) bioElem.innerText = p.bio || `Atendimento profissional em toda a cidade de ${p.city || 'Parauapebas'}, ${p.state || 'PA'}.`;
 
   const locationElem = document.getElementById('vitrine-location-text');
-  if (locationElem) locationElem.innerText = p.neighborhood || 'Parauapebas, PA';
+  if (locationElem) locationElem.innerText = p.neighborhood || `${p.city || 'Parauapebas'}, ${p.state || 'PA'}`;
+
+  const expandedBioElem = document.getElementById('vitrine-expanded-bio');
+  if (expandedBioElem) {
+    expandedBioElem.innerHTML = `<p>${p.bio || ''} Especialista em ${p.headline || p.specialty || 'serviços gerais'} com atendimento em toda a cidade de ${p.city || 'Parauapebas'}, ${p.state || 'PA'}. Solicite orçamento e confira abaixo o portfólio de serviços realizados.</p>`;
+  }
 
   // 4. Botões de Ação (Owner vs Visitor)
   const buttonsContainer = document.getElementById('vitrine-action-buttons');
@@ -2782,10 +2842,14 @@ function renderVitrineView() {
   renderVitrineEmergencyCard();
   updateVitrine24hBadge();
 
-  // 6. Botão Flutuante (FAB) no canto inferior direito para adicionar trabalhos
+  // 6. Botão Flutuante (FAB) e Botão de Cabeçalho para adicionar trabalhos
   const fabUploadBtn = document.getElementById('vitrine-fab-upload');
   if (fabUploadBtn) {
     fabUploadBtn.style.display = isVitrineOwner ? 'inline-flex' : 'none';
+  }
+  const headerAddWorkBtn = document.getElementById('btn-header-add-work');
+  if (headerAddWorkBtn) {
+    headerAddWorkBtn.style.display = isVitrineOwner ? 'inline-flex' : 'none';
   }
 
   // 7. Grade 3 Colunas de Trabalhos
@@ -2923,7 +2987,7 @@ function loadProfessionalsFromStorage() {
 async function loadProfessionalsFromSupabase() {
   const statusPills = document.querySelectorAll('.db-status-pill');
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/profiles?role=eq.professional&select=*,professional_profiles(*)&order=created_at.desc`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/profiles?role=eq.professional&select=*,professional_profiles(*),portfolio_items(*)&order=created_at.desc`, {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
@@ -2953,6 +3017,30 @@ async function loadProfessionalsFromSupabase() {
           // Reaproveita fotos/posts locais se o profissional adicionou na vitrine neste aparelho
           const existingLocal = prevLocalPros.find(p => p.dbId === lp.id || (p.email && lp.email && p.email.toLowerCase() === lp.email.toLowerCase()));
 
+          // Carrega as fotos de serviços reais do banco (public.portfolio_items)
+          const dbPortfolio = Array.isArray(lp.portfolio_items) ? [...lp.portfolio_items] : [];
+          dbPortfolio.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+          const mappedDbPosts = dbPortfolio.map(item => ({
+            id: item.id,
+            dbItemId: item.id,
+            title: item.title || 'Serviço Realizado',
+            serviceCategory: item.service_category || skillsList[0] || 'Serviço Profissional',
+            neighborhood: item.city_label || `${city}, ${state}`,
+            date: item.created_at ? new Date(item.created_at).toLocaleDateString('pt-BR') : 'Recente',
+            image: item.image_url,
+            description: item.description || `Serviço executado com qualidade e garantia em ${city}, ${state}.`,
+            likes: Number(item.likes_count) || 0
+          }));
+
+          // Mescla posts locais ainda não sincronizados sem duplicar os que já vieram do banco
+          const localOnlyPosts = (existingLocal && Array.isArray(existingLocal.posts))
+            ? existingLocal.posts.filter(pItem =>
+                pItem &&
+                !mappedDbPosts.some(dbP => dbP.id === pItem.id || dbP.id === pItem.dbItemId || (dbP.title === pItem.title && dbP.image === pItem.image))
+              )
+            : [];
+          const combinedPosts = [...mappedDbPosts, ...localOnlyPosts];
+
           loadedFromDb.push({
             id: 'db_' + lp.id.slice(0, 8),
             dbId: lp.id,
@@ -2973,14 +3061,14 @@ async function loadProfessionalsFromSupabase() {
             serviceCities: serviceCities,
             rating: Number(lp.rating_average) || 5.0,
             reviewsCount: Number(lp.rating_count) || 0,
-            worksCount: existingLocal && existingLocal.posts ? existingLocal.posts.length : 0,
+            worksCount: combinedPosts.length,
             completedServices: existingLocal ? (existingLocal.completedServices || 0) : 0,
             verified: lp.is_verified ?? true,
             experience: proDetails.years_experience ? `${proDetails.years_experience} anos` : 'Profissional Verificado',
             avatar: lp.avatar_url || (existingLocal && existingLocal.avatar) || 'trampou_app_icon.png',
             bio: lp.bio || (existingLocal && existingLocal.bio) || `Atendimento profissional em toda a cidade de ${city}, ${state}.`,
             servedNeighborhoods: [`Toda a cidade (${city}, ${state})`],
-            posts: existingLocal && existingLocal.posts ? existingLocal.posts : [],
+            posts: combinedPosts,
             services: existingLocal && existingLocal.services ? existingLocal.services : []
           });
         });
@@ -2998,6 +3086,18 @@ async function loadProfessionalsFromSupabase() {
 
         PROFESSIONALS = loadedFromDb;
         saveProfessionalsToStorage();
+
+        // Se a vitrine de um profissional estiver aberta, atualiza os trabalhos em tempo real
+        if (currentVitrinePro) {
+          const updatedPro = PROFESSIONALS.find(p => p.id === currentVitrinePro.id || (p.dbId && p.dbId === currentVitrinePro.dbId));
+          if (updatedPro) {
+            currentVitrinePro = updatedPro;
+            const vitrineOverlay = document.getElementById('pro-vitrine-overlay');
+            if (vitrineOverlay && vitrineOverlay.classList.contains('active')) {
+              renderVitrineView();
+            }
+          }
+        }
 
         // Atualiza status pill
         statusPills.forEach(pill => {
@@ -3057,7 +3157,8 @@ function initRealtimeDatabaseSync() {
             presence: { key: '' },
             postgres_changes: [
               { event: '*', schema: 'public', table: 'profiles' },
-              { event: '*', schema: 'public', table: 'professional_profiles' }
+              { event: '*', schema: 'public', table: 'professional_profiles' },
+              { event: '*', schema: 'public', table: 'portfolio_items' }
             ]
           }
         },
@@ -3116,6 +3217,7 @@ function renderVitrineWorks() {
   const container = document.getElementById('vitrine-works-grid');
   if (!container || !currentVitrinePro) return;
 
+  const proCityName = currentVitrinePro.city || currentActiveLocation.city || 'Parauapebas';
   const posts = currentVitrinePro.posts || [];
   if (posts.length === 0) {
     container.innerHTML = `
@@ -3124,9 +3226,9 @@ function renderVitrineWorks() {
           <i class="fa-solid fa-camera"></i>
         </div>
         <div class="empty-works-title">Nenhum trabalho publicado ainda</div>
-        <div class="empty-works-desc">Mostre fotos dos seus serviços executados em Parauapebas para conquistar mais clientes.</div>
+        <div class="empty-works-desc">Mostre fotos dos seus serviços executados em ${proCityName} para conquistar mais clientes.</div>
         ${isVitrineOwner ? `
-          <button class="btn-empty-upload" onclick="openCreatePostModal()">
+          <button class="btn-empty-upload" onclick="triggerAddMediaFlow()">
             <i class="fa-solid fa-plus"></i> Publicar primeira foto
           </button>
         ` : ''}
@@ -3827,6 +3929,7 @@ function togglePostLike(postId) {
 
   let likedPosts = getLikedPosts();
   const isLiked = likedPosts.includes(postId);
+  const delta = isLiked ? -1 : 1;
 
   if (isLiked) {
     likedPosts = likedPosts.filter(id => id !== postId);
@@ -3840,7 +3943,22 @@ function togglePostLike(postId) {
   }
 
   localStorage.setItem('go_liked_posts', JSON.stringify(likedPosts));
+  saveProfessionalsToStorage();
   updatePostDetailLikeUI(post);
+
+  // Sincroniza curtida no banco de dados se o post tiver ID UUID do Supabase
+  const targetDbItemId = post.dbItemId || (/^[0-9a-f-]{36}$/i.test(String(post.id)) ? post.id : null);
+  if (targetDbItemId) {
+    fetch(`${SUPABASE_URL}/rest/v1/rpc/like_portfolio_item`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({ p_item_id: targetDbItemId, p_delta: delta })
+    }).catch(() => {});
+  }
 }
 
 function updatePostDetailLikeUI(post) {
@@ -4054,9 +4172,35 @@ function closePostDetail() {
   document.getElementById('post-detail-overlay').classList.remove('active');
 }
 
-function deletePost(postId) {
+async function deletePost(postId) {
   if (!currentVitrinePro) return;
-  currentVitrinePro.posts = currentVitrinePro.posts.filter(p => p.id !== postId);
+  const postToDelete = (currentVitrinePro.posts || []).find(p => p.id === postId);
+  currentVitrinePro.posts = (currentVitrinePro.posts || []).filter(p => p.id !== postId);
+  currentVitrinePro.worksCount = currentVitrinePro.posts.length;
+  saveProfessionalsToStorage();
+
+  // Remove também do banco de dados Supabase (public.portfolio_items)
+  const targetDbItemId = (postToDelete && postToDelete.dbItemId) || (/^[0-9a-f-]{36}$/i.test(String(postId)) ? postId : null);
+  const proDbId = currentVitrinePro.dbId || null;
+  if (targetDbItemId) {
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/rpc/delete_portfolio_item`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          p_item_id: targetDbItemId,
+          p_professional_id: proDbId
+        })
+      });
+    } catch (e) {
+      console.warn('Erro ao remover foto do Supabase:', e);
+    }
+  }
+
   closePostDetail();
   renderVitrineView();
   showToast('Publicação excluída da sua vitrine com sucesso.');
@@ -4093,18 +4237,19 @@ function triggerAddMediaFlow() {
 }
 window.triggerAddMediaFlow = triggerAddMediaFlow;
 
-// Manipula a foto selecionada na galeria e abre o modal de visualização e detalhes
-function handleMediaSelected(event) {
+// Manipula a foto selecionada na galeria, comprime com alta nitidez e abre o modal de publicação
+async function handleMediaSelected(event) {
   const file = event.target.files && event.target.files[0];
   if (!file) return;
 
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    selectedCustomImage = e.target.result;
+  try {
+    selectedCustomImage = await compressImageFile(file, 1080, 0.82);
     openCreatePostModal(selectedCustomImage);
-    showToast('📸 Foto selecionada com sucesso! Adicione o título e descrição.');
-  };
-  reader.readAsDataURL(file);
+    showToast('📸 Foto carregada e otimizada! Adicione o título e descrição do serviço.');
+  } catch (err) {
+    console.warn('Erro ao processar imagem selecionada:', err);
+    showToast('Não foi possível carregar esta foto. Tente outra imagem.');
+  }
 }
 window.handleMediaSelected = handleMediaSelected;
 
@@ -4165,11 +4310,11 @@ function closeCreatePostModal() {
 }
 window.closeCreatePostModal = closeCreatePostModal;
 
-// Salva e publica a mídia na vitrine
-function submitNewPost() {
+// Salva e publica a mídia na vitrine e sincroniza em tempo real no Supabase (public.portfolio_items)
+async function submitNewPost() {
   const titleInput = document.getElementById('new-post-title');
   const title = titleInput ? titleInput.value.trim() : '';
-  const service = document.getElementById('new-post-service-select')?.value || 'Serviço Profissional';
+  const service = document.getElementById('new-post-service-select')?.value || (currentVitrinePro && currentVitrinePro.specialty) || 'Serviço Profissional';
   const proLoc = currentVitrinePro
     ? `${currentVitrinePro.city || currentActiveLocation.city || 'Parauapebas'}, ${currentVitrinePro.state || currentActiveLocation.state || 'PA'}`
     : `${currentActiveLocation.city}, ${currentActiveLocation.state}`;
@@ -4187,15 +4332,18 @@ function submitNewPost() {
     return;
   }
 
+  const finalDescription = desc || `Serviço executado com qualidade e garantia em ${proLoc}.`;
+  const tempId = 'post_' + Date.now();
   const newPost = {
-    id: 'post_' + Date.now(),
+    id: tempId,
+    dbItemId: null,
     title: title,
     serviceCategory: service,
     neighborhood: proLoc,
     date: 'Agora mesmo',
     image: selectedCustomImage,
-    description: desc || `Serviço executado com qualidade e garantia em ${proLoc}.`,
-    likes: 1
+    description: finalDescription,
+    likes: 0
   };
 
   if (!currentVitrinePro.posts) {
@@ -4207,14 +4355,71 @@ function submitNewPost() {
   saveProfessionalsToStorage();
   closeCreatePostModal();
   renderVitrineView();
-  showToast('✨ Publicação adicionada ao seu portfólio com sucesso!');
+
+  // Grava imediatamente no banco Supabase (public.portfolio_items) para todos os clientes verem
+  const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+  const targetProDbId = (currentVitrinePro && currentVitrinePro.dbId) ||
+    (user && user.id && !String(user.id).startsWith('u_') ? user.id : null);
+
+  if (targetProDbId) {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/add_portfolio_item`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          p_professional_id: targetProDbId,
+          p_title: title,
+          p_description: finalDescription,
+          p_image_url: selectedCustomImage,
+          p_service_category: service,
+          p_city_label: proLoc
+        })
+      });
+      if (res.ok) {
+        const savedUuid = await res.json();
+        if (savedUuid && typeof savedUuid === 'string') {
+          newPost.id = savedUuid;
+          newPost.dbItemId = savedUuid;
+          saveProfessionalsToStorage();
+          renderVitrineView();
+        }
+      }
+    } catch (err) {
+      console.warn('Erro ao salvar publicação no Supabase:', err);
+    }
+  }
+
+  selectedCustomImage = null;
+  showToast('✨ Foto do serviço publicada e sincronizada com sucesso!');
 }
 
 // =========================================================
 // MODAL: EDITAR PERFIL (DONO)
 // =========================================================
+let pendingEditProAvatar = null;
+
+async function handleEditProAvatarSelect(input) {
+  if (!input.files || !input.files[0]) return;
+  try {
+    const compressed = await compressImageFile(input.files[0], 420, 0.84);
+    pendingEditProAvatar = compressed;
+    const preview = document.getElementById('edit-pro-avatar-preview');
+    if (preview) preview.src = compressed;
+    showToast('📸 Nova foto de perfil carregada! Clique em "Salvar Alterações".');
+  } catch (e) {
+    showToast('Erro ao processar foto de perfil.');
+  }
+}
+window.handleEditProAvatarSelect = handleEditProAvatarSelect;
+
 function openEditProModal() {
   if (!currentVitrinePro) return;
+  pendingEditProAvatar = null;
+  const avatarPreview = document.getElementById('edit-pro-avatar-preview');
   const nameEl = document.getElementById('edit-pro-name');
   const specEl = document.getElementById('edit-pro-specialty');
   const cepEl = document.getElementById('edit-pro-cep');
@@ -4223,6 +4428,7 @@ function openEditProModal() {
   const bioEl = document.getElementById('edit-pro-bio');
   const statusEl = document.getElementById('edit-pro-location-status');
 
+  if (avatarPreview) avatarPreview.src = currentVitrinePro.avatar || 'trampou_app_icon.png';
   if (nameEl) nameEl.value = currentVitrinePro.name || '';
   if (specEl) specEl.value = currentVitrinePro.specialty || '';
   if (cepEl) cepEl.value = currentVitrinePro.cep || '';
@@ -4254,6 +4460,9 @@ async function saveProProfile() {
   const newCity = document.getElementById('edit-pro-city')?.value.trim() || currentVitrinePro.city || 'Parauapebas';
   const newBio = document.getElementById('edit-pro-bio')?.value.trim() || currentVitrinePro.bio;
 
+  if (pendingEditProAvatar) {
+    currentVitrinePro.avatar = pendingEditProAvatar;
+  }
   currentVitrinePro.name = newName;
   currentVitrinePro.specialty = newSpec;
   currentVitrinePro.category = newSpec;
@@ -4273,6 +4482,10 @@ async function saveProProfile() {
 
   // Sincroniza no Supabase se o profissional possuir dbId
   const user = getCurrentUser();
+  if (user && pendingEditProAvatar) {
+    user.avatar = pendingEditProAvatar;
+    localStorage.setItem('go_currentUser', JSON.stringify(user));
+  }
   const targetDbId = currentVitrinePro.dbId || (user && user.id && !String(user.id).startsWith('u_') ? user.id : null);
   if (targetDbId) {
     try {
@@ -4302,6 +4515,7 @@ async function saveProProfile() {
     }
   }
 
+  pendingEditProAvatar = null;
   saveProfessionalsToStorage();
   setActiveLocation(newCity, newState, currentVitrinePro.latitude, currentVitrinePro.longitude, false);
   closeEditProModal();
@@ -7537,17 +7751,16 @@ function toggleNeighborhoodChip(el) {
   saveProDraft();
 }
 
-// Upload de Avatar no Wizard
-function handleWizardAvatarSelect(input) {
+// Upload de Avatar no Wizard (com compressão inteligente)
+async function handleWizardAvatarSelect(input) {
   if (input.files && input.files[0]) {
     const file = input.files[0];
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      proWizardData.vitrine.avatar = e.target.result;
+    try {
+      proWizardData.vitrine.avatar = await compressImageFile(file, 420, 0.84);
       updateWizardAvatarPreview();
       saveProDraft();
-    };
-    reader.readAsDataURL(file);
+      showToast('📸 Foto de perfil otimizada com sucesso!');
+    } catch (_) {}
   }
 }
 
@@ -7575,24 +7788,24 @@ function removeWizardAvatar() {
   saveProDraft();
 }
 
-// Upload de Galeria de Fotos no Wizard
-function handleWizardGallerySelect(input) {
+// Upload de Galeria de Fotos no Wizard (com compressão inteligente de até 6 fotos)
+async function handleWizardGallerySelect(input) {
   if (!input.files || input.files.length === 0) return;
   const files = Array.from(input.files);
 
-  files.forEach(file => {
+  for (const file of files) {
     if (proWizardData.vitrine.photos.length >= 6) {
       showToast('Limite de 6 fotos de trabalhos atingido.');
-      return;
+      break;
     }
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      proWizardData.vitrine.photos.push(e.target.result);
+    try {
+      const compressed = await compressImageFile(file, 1080, 0.82);
+      proWizardData.vitrine.photos.push(compressed);
       renderWizardGalleryGrid();
       saveProDraft();
-    };
-    reader.readAsDataURL(file);
-  });
+    } catch (_) {}
+  }
+  showToast('📸 Foto(s) de trabalho adicionada(s) ao portfólio!');
 }
 
 function renderWizardGalleryGrid() {
@@ -7768,6 +7981,31 @@ async function handleProSignupFinalSubmit() {
             p_lng: proLng
           })
         });
+
+        // 2.1 Sincroniza todas as fotos do portfólio enviadas no cadastro com public.portfolio_items
+        const wizardPhotos = proWizardData.vitrine.photos || [];
+        for (let idx = 0; idx < wizardPhotos.length; idx++) {
+          const imgSrc = wizardPhotos[idx];
+          if (!imgSrc) continue;
+          try {
+            await fetch(`${SUPABASE_URL}/rest/v1/rpc/add_portfolio_item`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+              },
+              body: JSON.stringify({
+                p_professional_id: dbUserId,
+                p_title: `${category} em ${firstNeigh}`,
+                p_description: proWizardData.vitrine.extraInfo || `Serviço de ${category} realizado com qualidade e garantia em ${firstNeigh}.`,
+                p_image_url: imgSrc,
+                p_service_category: category,
+                p_city_label: firstNeigh
+              })
+            });
+          } catch (_) {}
+        }
       } catch (rpcErr) {
         console.warn('Erro ao sincronizar perfil profissional via RPC:', rpcErr);
       }
@@ -8067,12 +8305,11 @@ function closePublishShowcaseModal() {
   if (modal) modal.classList.remove('active');
 }
 
-function handleShowcaseImageSelect(input, side) {
+async function handleShowcaseImageSelect(input, side) {
   if (!input.files || !input.files[0]) return;
   const file = input.files[0];
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const dataUrl = e.target.result;
+  try {
+    const dataUrl = await compressImageFile(file, 1080, 0.82);
     showcaseImageData[side] = dataUrl;
     const previewImg = document.getElementById(`preview-img-${side}`);
     const emptyBox = document.getElementById(`dropzone-${side}-empty`);
@@ -8083,8 +8320,7 @@ function handleShowcaseImageSelect(input, side) {
     if (emptyBox) {
       emptyBox.style.display = 'none';
     }
-  };
-  reader.readAsDataURL(file);
+  } catch (_) {}
 }
 
 function handlePublishShowcaseSubmit(event) {
@@ -8108,9 +8344,9 @@ function handlePublishShowcaseSubmit(event) {
   let proId = 'p1';
   let proAvatar = null;
 
-  if (typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'pro') {
+  if (typeof currentUser !== 'undefined' && currentUser && (currentUser.role === 'professional' || currentUser.role === 'pro')) {
     proName = currentUser.name || proName;
-    proId = currentUser.id || proId;
+    proId = currentUser.proId || currentUser.id || proId;
     proAvatar = currentUser.avatar || null;
   } else if (typeof currentVitrinePro !== 'undefined' && currentVitrinePro) {
     proName = currentVitrinePro.name || proName;

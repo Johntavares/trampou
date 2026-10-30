@@ -552,8 +552,11 @@
 
               <!-- Seção "Meus trabalhos" com Grade 3x3 -->
               <div class="vitrine-works-section">
-                <div class="works-header-row">
+                <div class="works-header-row" style="display: flex; justify-content: space-between; align-items: center;">
                   <h3 class="works-section-title">Meus trabalhos</h3>
+                  <button type="button" id="btn-header-add-work" onclick="triggerAddMediaFlow()" style="display: none; align-items: center; gap: 6px; background: #4F46E5; color: #FFFFFF; border: none; border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 10px rgba(79,70,229,0.25);">
+                    <i class="fa-solid fa-camera"></i> + Publicar Foto
+                  </button>
                 </div>
 
                 <!-- Grade com 3 colunas de trabalhos fotográficos -->
@@ -665,12 +668,12 @@
               <!-- Palco de Mídia Estilo Instagram: Foto Selecionada em Destaque -->
               <div class="instagram-media-stage" id="instagram-media-stage">
                 <img id="instagram-post-img" class="instagram-preview-img" src="" alt="Mídia selecionada" style="display: none;">
-                <div id="instagram-post-fallback" class="instagram-preview-fallback">
+                <div id="instagram-post-fallback" class="instagram-preview-fallback" onclick="triggerAddMediaFlow()" style="cursor: pointer;">
                   <i class="fa-solid fa-camera"></i>
-                  <span>Nenhuma foto selecionada</span>
+                  <span>Toque aqui para selecionar ou tirar uma foto</span>
                 </div>
                 <button type="button" class="btn-change-media-pill" onclick="triggerAddMediaFlow()" title="Trocar foto da galeria">
-                  <i class="fa-solid fa-arrows-rotate"></i> Trocar foto
+                  <i class="fa-solid fa-arrows-rotate"></i> Selecionar / Trocar foto
                 </button>
               </div>
 
@@ -714,6 +717,19 @@
               <button class="close-x-btn" onclick="closeEditProModal()"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding: 10px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px;">
+                <div style="width: 56px; height: 56px; border-radius: 50%; overflow: hidden; background: #E0E7FF; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                  <img id="edit-pro-avatar-preview" src="trampou_app_icon.png" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div style="flex: 1;">
+                  <div style="font-size: 12.5px; font-weight: 700; color: #1E293B; margin-bottom: 4px;">Foto de Perfil / Logotipo</div>
+                  <input type="file" id="edit-pro-avatar-input" accept="image/*" style="display: none;" onchange="handleEditProAvatarSelect(this)">
+                  <button type="button" class="v-btn-outline" style="height: 30px; font-size: 11.5px; padding: 0 12px;" onclick="document.getElementById('edit-pro-avatar-input').click()">
+                    <i class="fa-solid fa-camera"></i> Alterar foto de perfil
+                  </button>
+                </div>
+              </div>
+
               <label>Nome Profissional</label>
               <input type="text" id="edit-pro-name">
 
