@@ -1,13 +1,13 @@
 // Trampou PWA Service Worker
-const CACHE_NAME = 'trampou-pwa-v25';
+const CACHE_NAME = 'trampou-pwa-v26';
 
 const STATIC_SHELL = [
   './',
   './index.html',
   './styles.css',
-  './styles.css?v=24',
+  './styles.css?v=25',
   './app.js',
-  './app.js?v=24',
+  './app.js?v=25',
   './manifest.json',
   './manifest.json?v=5',
   './icon-192.png',
@@ -58,8 +58,10 @@ self.addEventListener('fetch', (event) => {
   // 1. Ignora requisições de outros esquemas ou métodos não-GET
   if (req.method !== 'GET' || !url.protocol.startsWith('http')) return;
 
-  // 2. Chamadas de API do Supabase:Sempre Rede Primeiro (Network-First) com cache de leitura e fallback seguro
-  if (url.hostname.includes('supabase.co')) {
+  // 2. Chamadas de API do Supabase, ViaCEP e IBGE: Sempre Rede Primeiro (Network-First) com cache de leitura e fallback seguro
+  if (url.hostname.includes('supabase.co') ||
+      url.hostname.includes('viacep.com.br') ||
+      url.hostname.includes('ibge.gov.br')) {
     event.respondWith(
       fetch(req)
         .then((networkResponse) => {

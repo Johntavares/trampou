@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=24">
+  <link rel="stylesheet" href="styles.css?v=25">
 </head>
 <body>
   <!-- Container Principal do Aplicativo Nativo / PWA -->
@@ -187,8 +187,8 @@
                 <h3 class="explore-page-title">Explorar Profissionais</h3>
                 <span class="explore-sub">Autônomos verificados em Parauapebas, PA</span>
               </div>
-              <div class="explore-city-tag">
-                <i class="fa-solid fa-location-dot" aria-hidden="true"></i> Parauapebas
+              <div class="explore-city-tag clickable" onclick="openLocationPickerModal()" title="Toque para trocar de cidade ou informar CEP" style="cursor: pointer;">
+                <i class="fa-solid fa-location-dot" aria-hidden="true"></i> <span id="explore-city-tag-text">Parauapebas</span> <i class="fa-solid fa-chevron-down" style="font-size: 9px; margin-left: 3px;"></i>
               </div>
             </div>
 
@@ -687,22 +687,10 @@
                 </div>
 
                 <div class="ig-fields-row">
-                  <div class="ig-field-group half">
+                  <div class="ig-field-group" style="width: 100%;">
                     <label for="new-post-service-select">Especialidade / Serviço</label>
                     <select id="new-post-service-select" class="ig-select">
                       <!-- Opções de serviços do profissional -->
-                    </select>
-                  </div>
-
-                  <div class="ig-field-group half">
-                    <label for="new-post-neighborhood-select">Bairro em Parauapebas</label>
-                    <select id="new-post-neighborhood-select" class="ig-select">
-                      <option value="Cidade Nova">Cidade Nova</option>
-                      <option value="Rio Verde">Rio Verde</option>
-                      <option value="União">União</option>
-                      <option value="Nova Carajás">Nova Carajás</option>
-                      <option value="Beira Rio">Beira Rio</option>
-                      <option value="Da Paz">Da Paz</option>
                     </select>
                   </div>
                 </div>
@@ -732,19 +720,49 @@
               <label>Especialidade Principal</label>
               <input type="text" id="edit-pro-specialty">
 
-              <label>Bairro Base</label>
-              <select id="edit-pro-bairro">
-                <option value="Cidade Nova">Cidade Nova</option>
-                <option value="Rio Verde">Rio Verde</option>
-                <option value="União">União</option>
-                <option value="Nova Carajás">Nova Carajás</option>
-              </select>
+              <div class="auth-label-row" style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                <label style="margin: 0;">Cidade de Atuação (CEP ou Nome da Cidade)</label>
+                <button type="button" class="btn-geo-detect" onclick="detectEditProLocationGPS()" title="Detectar cidade via GPS">
+                  <i class="fa-solid fa-location-crosshairs"></i> Usar GPS
+                </button>
+              </div>
+              <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                <input type="text" id="edit-pro-cep" placeholder="CEP (ex: 68515-000)" maxlength="9" inputmode="numeric" oninput="handleCepLookup(this.value, 'edit-pro')" style="width: 145px; margin-bottom: 0;">
+                <select id="edit-pro-state" onchange="handleFormStateChange(this.value, 'edit-pro-city')" style="width: 78px; margin-bottom: 0;">
+                  <option value="PA">PA</option>
+                  <option value="SP">SP</option>
+                  <option value="RJ">RJ</option>
+                  <option value="MG">MG</option>
+                  <option value="BA">BA</option>
+                  <option value="CE">CE</option>
+                  <option value="DF">DF</option>
+                  <option value="ES">ES</option>
+                  <option value="GO">GO</option>
+                  <option value="MA">MA</option>
+                  <option value="MT">MT</option>
+                  <option value="MS">MS</option>
+                  <option value="AM">AM</option>
+                  <option value="PR">PR</option>
+                  <option value="PE">PE</option>
+                  <option value="PI">PI</option>
+                  <option value="RN">RN</option>
+                  <option value="RS">RS</option>
+                  <option value="RO">RO</option>
+                  <option value="RR">RR</option>
+                  <option value="SC">SC</option>
+                  <option value="SE">SE</option>
+                  <option value="TO">TO</option>
+                  <option value="AC">AC</option>
+                  <option value="AL">AL</option>
+                  <option value="AP">AP</option>
+                  <option value="PB">PB</option>
+                </select>
+                <input type="text" id="edit-pro-city" placeholder="Nome da cidade" list="city-picker-datalist" style="flex: 1; margin-bottom: 0;">
+              </div>
+              <div id="edit-pro-location-status" class="cep-status-pill" style="display: none; margin-bottom: 10px;"></div>
 
               <label>Biografia / Apresentação</label>
               <textarea id="edit-pro-bio" rows="3"></textarea>
-
-              <label>Bairros Atendidos (separados por vírgula)</label>
-              <input type="text" id="edit-pro-served-bairros" placeholder="Ex: Cidade Nova, Rio Verde, União">
 
               <!-- Checkbox de Disponibilidade para Plantão SOS Emergência -->
               <div class="emergency-pro-switch-wrap">
@@ -803,17 +821,6 @@
             <div class="modal-body">
               <label>Título do Serviço</label>
               <input type="text" id="quote-title-input" placeholder="Ex: Instalação de Split ou Troca de Fiação">
-              
-              <label>Bairro de Execução em Parauapebas</label>
-              <select id="quote-bairro-select">
-                <option value="Cidade Nova">Cidade Nova</option>
-                <option value="Rio Verde">Rio Verde</option>
-                <option value="União">União</option>
-                <option value="Nova Carajás">Nova Carajás</option>
-                <option value="Beira Rio">Beira Rio</option>
-                <option value="Da Paz">Da Paz</option>
-                <option value="Outro bairro">Outro bairro</option>
-              </select>
 
               <label>Detalhes do que precisa</label>
               <textarea id="quote-desc-input" rows="3" placeholder="Descreva brevemente o problema, prazo desejado ou marca do aparelho..."></textarea>
@@ -1102,17 +1109,22 @@
                   </div>
                 </div>
 
-                <!-- Cidade & Estado do Usuário (Expansão Nacional) -->
+                <!-- Cidade & Estado do Usuário (CEP ou Nome da Cidade) -->
                 <div class="auth-input-group">
                   <div class="auth-label-row">
-                    <label>Sua Cidade e Estado</label>
+                    <label>Sua Cidade (digite o CEP ou o nome da cidade)</label>
                     <button type="button" class="btn-geo-detect" onclick="detectClientLocationGPS()" title="Preencher com GPS atual">
                       <i class="fa-solid fa-location-crosshairs"></i> Usar GPS
                     </button>
                   </div>
+                  <div class="input-icon-wrap" style="margin-bottom: 8px;">
+                    <i class="fa-solid fa-envelopes-bulk"></i>
+                    <input type="text" id="client-cep" placeholder="Digite seu CEP (opcional, ex: 68515-000)" maxlength="9" inputmode="numeric" oninput="handleCepLookup(this.value, 'client')">
+                  </div>
+                  <div id="client-location-status" class="cep-status-pill" style="display: none; margin-bottom: 8px;"></div>
                   <div class="location-select-grid">
                     <div class="select-wrap uf-wrap">
-                      <select id="client-state">
+                      <select id="client-state" onchange="handleFormStateChange(this.value, 'client-city')">
                         <option value="PA">PA</option>
                         <option value="SP">SP</option>
                         <option value="RJ">RJ</option>
@@ -1144,12 +1156,8 @@
                     </div>
                     <div class="input-icon-wrap city-wrap">
                       <i class="fa-solid fa-city"></i>
-                      <input type="text" id="client-city" placeholder="Sua cidade (ex: Parauapebas)" value="Parauapebas" required>
+                      <input type="text" id="client-city" placeholder="Nome da sua cidade (ex: Parauapebas)" value="Parauapebas" list="city-picker-datalist" required>
                     </div>
-                  </div>
-                  <div class="input-icon-wrap" style="margin-top: 8px;">
-                    <i class="fa-solid fa-map-pin"></i>
-                    <input type="text" id="client-neighborhood" placeholder="Bairro (opcional, ex: Cidade Nova)">
                   </div>
                   <input type="hidden" id="client-lat" value="">
                   <input type="hidden" id="client-lng" value="">
@@ -1394,17 +1402,22 @@
                   </div>
                 </div>
 
-                <!-- Cidade e Estado de Atuação do Profissional (Nacional) -->
+                <!-- Cidade e Estado de Atuação do Profissional (CEP ou Nome da Cidade) -->
                 <div class="auth-input-group">
                   <div class="auth-label-row">
-                    <label>Sua Cidade e Estado de Atuação</label>
+                    <label>Cidade de Atuação (CEP ou Nome da Cidade)</label>
                     <button type="button" class="btn-geo-detect" onclick="detectProLocationGPS()" title="Detectar cidade via GPS">
                       <i class="fa-solid fa-location-crosshairs"></i> Usar GPS
                     </button>
                   </div>
+                  <div class="input-icon-wrap" style="margin-bottom: 8px;">
+                    <i class="fa-solid fa-envelopes-bulk"></i>
+                    <input type="text" id="pro-cep" placeholder="Digite seu CEP para preencher a cidade (ex: 68515-000)" maxlength="9" inputmode="numeric" oninput="handleCepLookup(this.value, 'pro')">
+                  </div>
+                  <div id="pro-location-status" class="cep-status-pill" style="display: none; margin-bottom: 8px;"></div>
                   <div class="location-select-grid">
                     <div class="select-wrap uf-wrap">
-                      <select id="pro-state">
+                      <select id="pro-state" onchange="handleFormStateChange(this.value, 'pro-city')">
                         <option value="PA">PA</option>
                         <option value="SP">SP</option>
                         <option value="RJ">RJ</option>
@@ -1436,20 +1449,12 @@
                     </div>
                     <div class="input-icon-wrap city-wrap">
                       <i class="fa-solid fa-city"></i>
-                      <input type="text" id="pro-city" placeholder="Cidade de atendimento" value="Parauapebas">
+                      <input type="text" id="pro-city" placeholder="Ou digite o nome da sua cidade" value="Parauapebas" list="city-picker-datalist">
                     </div>
                   </div>
+                  <small class="field-hint"><i class="fa-solid fa-circle-check" style="color: #10B981;"></i> Sua vitrine ficará visível para clientes de <strong>toda a cidade selecionada</strong>, sem restrição por bairro.</small>
                   <input type="hidden" id="pro-lat" value="">
                   <input type="hidden" id="pro-lng" value="">
-                </div>
-
-                <div class="auth-input-group">
-                  <label for="pro-neighborhoods-input">Bairros e Regiões Atendidas</label>
-                  <div class="input-icon-wrap">
-                    <i class="fa-solid fa-map-location-dot"></i>
-                    <input type="text" id="pro-neighborhoods-input" placeholder="ex: Toda a cidade, ou Cidade Nova, Centro..." value="Toda a cidade">
-                  </div>
-                  <small class="field-hint">Indique se atende toda a cidade ou liste seus bairros prioritários.</small>
                 </div>
 
                 <div class="auth-input-group">
@@ -1562,8 +1567,8 @@
 
                   <!-- Detalhes do resumo -->
                   <div class="summary-detail-row">
-                    <span class="detail-label"><i class="fa-solid fa-location-dot"></i> Bairros atendidos:</span>
-                    <span class="detail-value" id="rev-neighborhoods">Cidade Nova, Rio Verde</span>
+                    <span class="detail-label"><i class="fa-solid fa-location-dot"></i> Cidade de atuação:</span>
+                    <span class="detail-value" id="rev-neighborhoods">Parauapebas, PA</span>
                   </div>
 
                   <div class="summary-detail-row">
@@ -1635,18 +1640,48 @@
                 </div>
 
                 <div class="auth-input-group">
-                  <label for="edit-profile-neighborhood">Seu Bairro em Parauapebas</label>
-                  <div class="input-icon-wrap select-wrap">
-                    <i class="fa-solid fa-location-dot"></i>
-                    <select id="edit-profile-neighborhood">
-                      <option value="Cidade Nova">Cidade Nova</option>
-                      <option value="Rio Verde">Rio Verde</option>
-                      <option value="União">União</option>
-                      <option value="Nova Carajás">Nova Carajás</option>
-                      <option value="Beira Rio">Beira Rio</option>
-                      <option value="Da Paz">Da Paz</option>
-                      <option value="Outro bairro">Outro bairro</option>
-                    </select>
+                  <label>Sua Cidade (CEP ou Nome da Cidade)</label>
+                  <div class="input-icon-wrap" style="margin-bottom: 8px;">
+                    <i class="fa-solid fa-envelopes-bulk"></i>
+                    <input type="text" id="edit-profile-cep" placeholder="CEP (opcional, ex: 68515-000)" maxlength="9" inputmode="numeric" oninput="handleCepLookup(this.value, 'edit-profile')">
+                  </div>
+                  <div id="edit-profile-location-status" class="cep-status-pill" style="display: none; margin-bottom: 8px;"></div>
+                  <div class="location-select-grid">
+                    <div class="select-wrap uf-wrap">
+                      <select id="edit-profile-state" onchange="handleFormStateChange(this.value, 'edit-profile-city')">
+                        <option value="PA">PA</option>
+                        <option value="SP">SP</option>
+                        <option value="RJ">RJ</option>
+                        <option value="MG">MG</option>
+                        <option value="BA">BA</option>
+                        <option value="CE">CE</option>
+                        <option value="DF">DF</option>
+                        <option value="ES">ES</option>
+                        <option value="GO">GO</option>
+                        <option value="MA">MA</option>
+                        <option value="MT">MT</option>
+                        <option value="MS">MS</option>
+                        <option value="AM">AM</option>
+                        <option value="PR">PR</option>
+                        <option value="PE">PE</option>
+                        <option value="PI">PI</option>
+                        <option value="RN">RN</option>
+                        <option value="RS">RS</option>
+                        <option value="RO">RO</option>
+                        <option value="RR">RR</option>
+                        <option value="SC">SC</option>
+                        <option value="SE">SE</option>
+                        <option value="TO">TO</option>
+                        <option value="AC">AC</option>
+                        <option value="AL">AL</option>
+                        <option value="AP">AP</option>
+                        <option value="PB">PB</option>
+                      </select>
+                    </div>
+                    <div class="input-icon-wrap city-wrap">
+                      <i class="fa-solid fa-city"></i>
+                      <input type="text" id="edit-profile-city" placeholder="Sua cidade (ex: Parauapebas)" list="city-picker-datalist">
+                    </div>
                   </div>
                 </div>
 
@@ -1846,23 +1881,12 @@
                 </div>
               </div>
 
-              <!-- Bairro / Localização -->
+              <!-- Cidade / Ponto de Referência -->
               <div class="auth-input-group">
-                <label for="sos-bairro-select">Seu Bairro em Parauapebas</label>
-                <div class="input-icon-wrap select-wrap">
+                <label for="sos-bairro-select">Sua Cidade ou Ponto de Referência</label>
+                <div class="input-icon-wrap">
                   <i class="fa-solid fa-location-dot"></i>
-                  <select id="sos-bairro-select">
-                    <option value="Cidade Nova">Cidade Nova</option>
-                    <option value="Rio Verde">Rio Verde</option>
-                    <option value="União">União</option>
-                    <option value="Nova Carajás">Nova Carajás</option>
-                    <option value="Beira Rio">Beira Rio</option>
-                    <option value="Da Paz">Da Paz</option>
-                    <option value="Altamira">Altamira</option>
-                    <option value="Chácara do Sol">Chácara do Sol</option>
-                    <option value="Maranhão">Maranhão</option>
-                    <option value="Outro bairro">Outro bairro</option>
-                  </select>
+                  <input type="text" id="sos-bairro-select" placeholder="Ex: Parauapebas, PA (ou rua/referência)">
                 </div>
               </div>
 
@@ -2477,38 +2501,19 @@
                   </div>
                 </div>
 
-                <div class="input-row-split">
-                  <div class="auth-input-group">
-                    <label for="showcase-bairro">Bairro da Execução</label>
-                    <div class="input-icon-wrap select-wrap">
-                      <i class="fa-solid fa-location-dot"></i>
-                      <select id="showcase-bairro" required>
-                        <option value="Cidade Nova">Cidade Nova</option>
-                        <option value="Rio Verde">Rio Verde</option>
-                        <option value="União">União</option>
-                        <option value="Nova Carajás">Nova Carajás</option>
-                        <option value="Beira Rio">Beira Rio</option>
-                        <option value="Da Paz">Da Paz</option>
-                        <option value="Carajás">Carajás</option>
-                        <option value="Outro bairro">Outro bairro</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div class="auth-input-group">
-                    <label for="showcase-category">Categoria</label>
-                    <div class="input-icon-wrap select-wrap">
-                      <i class="fa-solid fa-briefcase"></i>
-                      <select id="showcase-category" required>
-                        <option value="Pedreiro & Porcelanato">Pedreiro & Porcelanato</option>
-                        <option value="Eletricista Residencial">Eletricista Residencial</option>
-                        <option value="Refrigeração & Ar">Refrigeração & Ar</option>
-                        <option value="Pintor & Grafiato">Pintor & Grafiato</option>
-                        <option value="Diarista & Pós-Obra">Diarista & Pós-Obra</option>
-                        <option value="Mecânica & Auto Socorro">Mecânica & Auto Socorro</option>
-                        <option value="Marcenaria & Móveis">Marcenaria & Móveis</option>
-                      </select>
-                    </div>
+                <div class="auth-input-group">
+                  <label for="showcase-category">Categoria do Serviço</label>
+                  <div class="input-icon-wrap select-wrap">
+                    <i class="fa-solid fa-briefcase"></i>
+                    <select id="showcase-category" required>
+                      <option value="Pedreiro & Porcelanato">Pedreiro & Porcelanato</option>
+                      <option value="Eletricista Residencial">Eletricista Residencial</option>
+                      <option value="Refrigeração & Ar">Refrigeração & Ar</option>
+                      <option value="Pintor & Grafiato">Pintor & Grafiato</option>
+                      <option value="Diarista & Pós-Obra">Diarista & Pós-Obra</option>
+                      <option value="Mecânica & Auto Socorro">Mecânica & Auto Socorro</option>
+                      <option value="Marcenaria & Móveis">Marcenaria & Móveis</option>
+                    </select>
                   </div>
                 </div>
 
@@ -2686,9 +2691,14 @@
                 <i class="fa-solid fa-chevron-right loc-arrow"></i>
               </div>
 
-              <!-- Seleção Manual de UF + Cidade -->
+              <!-- Seleção por CEP ou UF + Nome da Cidade -->
               <div class="location-picker-section">
-                <h6><i class="fa-solid fa-map-location-dot icon-purple"></i> Escolher Outra Cidade</h6>
+                <h6><i class="fa-solid fa-envelopes-bulk icon-purple"></i> Buscar por CEP ou Nome da Cidade</h6>
+                <div class="input-icon-wrap" style="margin-bottom: 8px;">
+                  <i class="fa-solid fa-magnifying-glass-location"></i>
+                  <input type="text" id="picker-cep-input" placeholder="Digite o CEP (ex: 68515-000 ou 66000-000)..." maxlength="9" inputmode="numeric" oninput="handleCepLookup(this.value, 'picker')">
+                </div>
+                <div id="picker-cep-status" class="cep-status-pill" style="display: none; margin-bottom: 8px;"></div>
                 <div class="location-manual-row">
                   <div class="select-wrap uf-picker-wrap">
                     <select id="picker-manual-uf" onchange="handleStateSelectChange(this.value)">
@@ -2723,11 +2733,11 @@
                   </div>
                   <div class="input-icon-wrap city-picker-input-wrap">
                     <i class="fa-solid fa-city"></i>
-                    <input type="text" id="picker-manual-city" placeholder="Digite o nome da cidade..." list="city-picker-datalist" onkeydown="if(event.key==='Enter'){event.preventDefault();applyManualCityChoice();}">
+                    <input type="text" id="picker-manual-city" placeholder="Ou digite o nome da cidade..." list="city-picker-datalist" onkeydown="if(event.key==='Enter'){event.preventDefault();applyManualCityChoice();}">
                     <datalist id="city-picker-datalist"></datalist>
                   </div>
                   <button type="button" class="btn-apply-city" onclick="applyManualCityChoice()">
-                    Buscar
+                    Aplicar
                   </button>
                 </div>
               </div>
@@ -2831,20 +2841,20 @@
                   <textarea id="feedback-message-input" class="feedback-textarea" rows="4" required placeholder="Conte-nos em detalhes o que você gostaria de ver no Trampou ou o que podemos aprimorar..."></textarea>
                 </div>
 
-                <!-- 5. Dados do Usuário -->
+                <!-- 5. Dados do Usuário (Vinculados automaticamente à Conta Verificada) -->
                 <div class="feedback-row-inputs">
                   <div class="feedback-group" style="flex: 1;">
-                    <label class="feedback-field-label" for="feedback-user-name">Seu Nome *</label>
+                    <label class="feedback-field-label" for="feedback-user-name">Conta Identificada <i class="fa-solid fa-lock" style="font-size: 10px; color: #6825B3;" title="Vinculado automaticamente à sua conta"></i></label>
                     <div class="input-icon-wrap">
-                      <i class="fa-solid fa-user"></i>
-                      <input type="text" id="feedback-user-name" required placeholder="Como podemos te chamar?">
+                      <i class="fa-solid fa-user-check"></i>
+                      <input type="text" id="feedback-user-name" readonly style="background: #F1F5F9; color: #475569; cursor: not-allowed;" required placeholder="Nome da sua conta">
                     </div>
                   </div>
                   <div class="feedback-group" style="flex: 1;">
-                    <label class="feedback-field-label" for="feedback-user-contact">Contato (WhatsApp / E-mail)</label>
+                    <label class="feedback-field-label" for="feedback-user-contact">E-mail / WhatsApp da Conta <i class="fa-solid fa-lock" style="font-size: 10px; color: #6825B3;" title="Vinculado automaticamente à sua conta"></i></label>
                     <div class="input-icon-wrap">
-                      <i class="fa-solid fa-phone"></i>
-                      <input type="text" id="feedback-user-contact" placeholder="(DDD) ou e-mail">
+                      <i class="fa-solid fa-envelope-circle-check"></i>
+                      <input type="text" id="feedback-user-contact" readonly style="background: #F1F5F9; color: #475569; cursor: not-allowed;" placeholder="E-mail da conta">
                     </div>
                   </div>
                 </div>
@@ -3289,6 +3299,6 @@
     </div>
   </aside>
 
-  <script src="app.js?v=24"></script>
+  <script src="app.js?v=25"></script>
 </body>
 </html>

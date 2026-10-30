@@ -113,9 +113,17 @@ function updateLocationDisplay() {
       icon.title = 'Localização definida';
     }
   }
+  const cityLabel = `${currentActiveLocation.city}, ${currentActiveLocation.state}`;
   if (el) {
-    // Apenas o texto limpo da cidade e UF, sem duplicar o ícone
-    el.textContent = `${currentActiveLocation.city}, ${currentActiveLocation.state}`;
+    el.textContent = cityLabel;
+  }
+  const exploreCityTag = document.getElementById('explore-city-tag-text');
+  if (exploreCityTag) {
+    exploreCityTag.textContent = `${currentActiveLocation.city}, ${currentActiveLocation.state}`;
+  }
+  const exploreSub = document.querySelector('#tab-search .explore-sub');
+  if (exploreSub) {
+    exploreSub.textContent = `Autônomos verificados em ${cityLabel}`;
   }
 }
 
@@ -134,7 +142,7 @@ const STATE_DEFAULT_CITIES = {
   MT: ['Cuiabá', 'Várzea Grande', 'Rondonópolis', 'Sinop', 'Sorriso'],
   MS: ['Campo Grande', 'Dourados', 'Três Lagoas', 'Corumbá'],
   MG: ['Belo Horizonte', 'Uberlândia', 'Contagem', 'Juiz de Fora', 'Betim'],
-  PA: ['Parauapebas', 'Belém', 'Marabá', 'Ananindeua', 'Santarém', 'Canaã dos Carajás', 'Castanhal'],
+  PA: ['Parauapebas', 'Belém', 'Marabá', 'Ananindeua', 'Santarém', 'Canaã dos Carajás', 'Castanhal', 'Curionópolis', 'Eldorado do Carajás', 'Xinguara', 'Redenção', 'Tucuruí', 'Altamira', 'Itaituba', 'abaetetuba', 'Paragominas'],
   PB: ['João Pessoa', 'Campina Grande', 'Santa Rita', 'Patos'],
   PR: ['Curitiba', 'Londrina', 'Maringá', 'Ponta Grossa', 'Cascavel'],
   PE: ['Recife', 'Jaboatão dos Guararapes', 'Olinda', 'Caruaru', 'Petrolina'],
@@ -150,31 +158,163 @@ const STATE_DEFAULT_CITIES = {
   TO: ['Palmas', 'Araguaína', 'Gurupi', 'Porto Nacional']
 };
 
-function handleStateSelectChange(uf) {
-  const cityInput = document.getElementById('picker-manual-city') || document.getElementById('user-city-input');
-  const cities = STATE_DEFAULT_CITIES[uf] || [];
+// Cache em memória de municípios do IBGE por UF para autocompletar qualquer cidade do Brasil
+const ibgeCitiesCache = {};
 
-  // Atualiza datalist de sugestões
+async function fetchIbgeCitiesForState(uf) {
+  const cleanUf = (uf || 'PA').toUpperCase();
+  if (ibgeCitiesCache[cleanUf]) {
+    populateCityDatalist(ibgeCitiesCache[cleanUf]);
+    return ibgeCitiesCache[cleanUf];
+  }
+  const fallback = STATE_DEFAULT_CITIES[cleanUf] || [];
+  populateCityDatalist(fallback);
+  try {
+    const res = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${cleanUf}/municipios?orderBy=nome`);
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        const names = data.map(m => m.nome);
+        // Coloca as principais cidades do estado no topo da lista
+        const merged = [...new Set([...fallback, ...names])];
+        ibgeCitiesCache[cleanUf] = merged;
+        populateCityDatalist(merged);
+        return merged;
+      }
+    }
+  } catch (err) {
+    // Usa fallback local silenciosamente
+  }
+  return fallback;
+}
+
+function populateCityDatalist(cities) {
   let datalist = document.getElementById('city-picker-datalist');
   if (!datalist) {
     datalist = document.createElement('datalist');
     datalist.id = 'city-picker-datalist';
     document.body.appendChild(datalist);
   }
+  datalist.innerHTML = (cities || []).map(c => `<option value="${c}">`).join('');
+}
+
+function handleFormStateChange(uf, cityInputId) {
+  const cleanUf = (uf || 'PA').toUpperCase();
+  fetchIbgeCitiesForState(cleanUf);
+  const cityInput = document.getElementById(cityInputId);
+  if (cityInput) {
+    const defaults = STATE_DEFAULT_CITIES[cleanUf] || [];
+    cityInput.placeholder = defaults[0] ? `Ex: ${defaults[0]}` : 'Digite o nome da sua cidade';
+  }
+}
+
+// Busca automática de Cidade e UF pelo CEP (ViaCEP)
+let cepLookupAbortController = null;
+async function handleCepLookup(rawValue, target) {
+  const digits = String(rawValue || '').replace(/\D/g, '').slice(0, 8);
+  const formatted = digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits;
+
+  const inputMap = {
+    'picker': { cepId: 'picker-cep-input', stateId: 'picker-manual-uf', cityId: 'picker-manual-city', statusId: 'picker-cep-status' },
+    'client': { cepId: 'client-cep', stateId: 'client-state', cityId: 'client-city', statusId: 'client-location-status' },
+    'pro': { cepId: 'pro-cep', stateId: 'pro-state', cityId: 'pro-city', statusId: 'pro-location-status' },
+    'edit-pro': { cepId: 'edit-pro-cep', stateId: 'edit-pro-state', cityId: 'edit-pro-city', statusId: 'edit-pro-location-status' },
+    'edit-profile': { cepId: 'edit-profile-cep', stateId: 'edit-profile-state', cityId: 'edit-profile-city', statusId: 'edit-profile-location-status' }
+  };
+
+  const cfg = inputMap[target];
+  if (!cfg) return;
+
+  const cepInput = document.getElementById(cfg.cepId);
+  if (cepInput && cepInput.value !== formatted) {
+    cepInput.value = formatted;
+  }
+
+  const statusEl = document.getElementById(cfg.statusId);
+  if (digits.length < 8) {
+    if (statusEl) statusEl.style.display = 'none';
+    return;
+  }
+
+  if (statusEl) {
+    statusEl.style.display = 'flex';
+    statusEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Buscando cidade pelo CEP ${formatted}...`;
+  }
+
+  try {
+    const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+    if (!res.ok) throw new Error('Falha ao consultar CEP');
+    const data = await res.json();
+
+    if (data.erro || !data.localidade) {
+      if (statusEl) {
+        statusEl.style.display = 'flex';
+        statusEl.innerHTML = `<span style="color: #DC2626;"><i class="fa-solid fa-circle-exclamation"></i> CEP não encontrado. Digite o nome da cidade abaixo.</span>`;
+      }
+      return;
+    }
+
+    const city = data.localidade;
+    const state = (data.uf || 'PA').toUpperCase();
+    const stateEl = document.getElementById(cfg.stateId);
+    const cityEl = document.getElementById(cfg.cityId);
+
+    if (stateEl) stateEl.value = state;
+    if (cityEl) cityEl.value = city;
+    fetchIbgeCitiesForState(state);
+
+    if (statusEl) {
+      statusEl.style.display = 'flex';
+      statusEl.innerHTML = `<span style="color: #059669; font-weight: 700;"><i class="fa-solid fa-circle-check"></i> Cidade identificada: ${city}, ${state}</span>`;
+    }
+
+    if (target === 'picker') {
+      setActiveLocation(city, state, null, null, false);
+      setTimeout(() => {
+        closeLocationPickerModal();
+        showToast(`📍 Cidade alterada para ${city}, ${state} (CEP ${formatted})`);
+      }, 450);
+    } else {
+      showToast(`📍 Cidade preenchida pelo CEP: ${city}, ${state}`);
+    }
+  } catch (err) {
+    if (statusEl) {
+      statusEl.style.display = 'flex';
+      statusEl.innerHTML = `<span style="color: #D97706;"><i class="fa-solid fa-circle-info"></i> Não foi possível consultar o CEP agora. Digite o nome da cidade abaixo.</span>`;
+    }
+  }
+}
+
+function handleStateSelectChange(uf) {
+  const cityInput = document.getElementById('picker-manual-city') || document.getElementById('user-city-input');
+  const cities = STATE_DEFAULT_CITIES[uf] || [];
+
+  fetchIbgeCitiesForState(uf);
+
   if (cityInput) {
     cityInput.setAttribute('list', 'city-picker-datalist');
-  }
-  datalist.innerHTML = cities.map(c => `<option value="${c}">`).join('');
-
-  // Ao trocar de estado, preenche com a principal cidade/capital do estado selecionado
-  if (cityInput && cities.length > 0) {
-    cityInput.value = cities[0];
+    cityInput.placeholder = cities[0] ? `Digite a cidade (ex: ${cities[0]})...` : 'Digite o nome da cidade...';
+    cityInput.value = '';
     cityInput.focus();
-    cityInput.select();
   }
 
   // Atualiza os chips de cidades populares abaixo
   updatePopularCitiesChips(uf);
+}
+
+function getAvailableProCities() {
+  const map = new Map();
+  (PROFESSIONALS || []).forEach(p => {
+    const c = (p.city || 'Parauapebas').trim();
+    const s = (p.state || 'PA').trim().toUpperCase();
+    const key = `${c.toLowerCase()}_${s}`;
+    if (!map.has(key)) {
+      map.set(key, { city: c, state: s, count: 1 });
+    } else {
+      map.get(key).count += 1;
+    }
+  });
+  return Array.from(map.values());
 }
 
 function updatePopularCitiesChips(uf) {
@@ -183,36 +323,48 @@ function updatePopularCitiesChips(uf) {
 
   const currentUf = uf || currentActiveLocation.state || 'PA';
   const stateCities = STATE_DEFAULT_CITIES[currentUf] || [];
+  const activeProCities = getAvailableProCities();
 
   const nationalHighlights = [
     { city: 'Parauapebas', state: 'PA' },
+    { city: 'Belém', state: 'PA' },
+    { city: 'Marabá', state: 'PA' },
     { city: 'São Paulo', state: 'SP' },
     { city: 'Rio de Janeiro', state: 'RJ' },
     { city: 'Belo Horizonte', state: 'MG' },
     { city: 'Brasília', state: 'DF' },
-    { city: 'Goiânia', state: 'GO' },
-    { city: 'Curitiba', state: 'PR' }
+    { city: 'Goiânia', state: 'GO' }
   ];
 
   const renderedList = [];
 
-  // Primeiro as cidades do estado selecionado
-  stateCities.forEach(c => {
-    renderedList.push({ city: c, state: currentUf });
-  });
-
-  // Em seguida as principais nacionais (sem duplicatas)
-  nationalHighlights.forEach(h => {
-    if (!renderedList.some(r => r.city.toLowerCase() === h.city.toLowerCase() && r.state === h.state)) {
-      renderedList.push(h);
+  // 1. Cidades que já possuem profissionais cadastrados na plataforma vêm primeiro!
+  activeProCities.forEach(ac => {
+    if (!renderedList.some(r => r.city.toLowerCase() === ac.city.toLowerCase() && r.state === ac.state)) {
+      renderedList.push({ city: ac.city, state: ac.state, count: ac.count });
     }
   });
 
-  chipsContainer.innerHTML = renderedList.slice(0, 10).map(item => {
+  // 2. Cidades do estado selecionado
+  stateCities.forEach(c => {
+    if (!renderedList.some(r => r.city.toLowerCase() === c.toLowerCase() && r.state === currentUf)) {
+      renderedList.push({ city: c, state: currentUf, count: 0 });
+    }
+  });
+
+  // 3. Principais nacionais
+  nationalHighlights.forEach(h => {
+    if (!renderedList.some(r => r.city.toLowerCase() === h.city.toLowerCase() && r.state === h.state)) {
+      renderedList.push({ city: h.city, state: h.state, count: 0 });
+    }
+  });
+
+  chipsContainer.innerHTML = renderedList.slice(0, 12).map(item => {
     const isActive = (item.city.toLowerCase() === currentActiveLocation.city.toLowerCase() && item.state === currentActiveLocation.state);
+    const badge = item.count > 0 ? ` <small style="opacity:0.85; font-weight:700;">(${item.count})</small>` : '';
     return `
       <button type="button" class="loc-chip ${isActive ? 'active' : ''}" onclick="selectCityOption('${item.city}', '${item.state}')">
-        ${item.city}, ${item.state}
+        ${item.city}, ${item.state}${badge}
       </button>
     `;
   }).join('');
@@ -220,6 +372,7 @@ function updatePopularCitiesChips(uf) {
 
 function initLocationManager() {
   updateLocationDisplay();
+  fetchIbgeCitiesForState(currentActiveLocation.state || 'PA');
 }
 
 function setActiveLocation(city, state, lat = null, lng = null, isGps = false) {
@@ -242,9 +395,10 @@ function setActiveLocation(city, state, lat = null, lng = null, isGps = false) {
 
   updateLocationDisplay();
 
-  // Re-renderiza vitrine e busca com a nova cidade ativa
+  // Re-renderiza vitrine e busca com a nova cidade ativa e sincroniza com o banco em tempo real
   if (typeof renderRecommendedProfessionals === 'function') renderRecommendedProfessionals();
   if (typeof renderSearchResults === 'function') renderSearchResults();
+  if (typeof loadProfessionalsFromSupabase === 'function') loadProfessionalsFromSupabase();
 }
 
 function openLocationPickerModal() {
@@ -253,8 +407,13 @@ function openLocationPickerModal() {
     modal.classList.add('active');
     const uState = document.getElementById('picker-manual-uf') || document.getElementById('user-state-select');
     const uCity = document.getElementById('picker-manual-city') || document.getElementById('user-city-input');
+    const cepInp = document.getElementById('picker-cep-input');
+    const cepStatus = document.getElementById('picker-cep-status');
+    if (cepInp) cepInp.value = '';
+    if (cepStatus) cepStatus.style.display = 'none';
     if (uState && currentActiveLocation.state) uState.value = currentActiveLocation.state;
     if (uCity && currentActiveLocation.city) uCity.value = currentActiveLocation.city;
+    fetchIbgeCitiesForState(currentActiveLocation.state || 'PA');
     updatePopularCitiesChips(currentActiveLocation.state);
   }
 }
@@ -273,10 +432,40 @@ function selectCityOption(city, state) {
 function applyManualCityChoice() {
   const stateSelect = document.getElementById('picker-manual-uf') || document.getElementById('user-state-select');
   const cityInput = document.getElementById('picker-manual-city') || document.getElementById('user-city-input');
-  const state = stateSelect ? stateSelect.value : (currentActiveLocation.state || 'PA');
-  const city = cityInput && cityInput.value.trim()
-    ? cityInput.value.trim()
-    : (STATE_DEFAULT_CITIES[state] ? STATE_DEFAULT_CITIES[state][0] : 'Parauapebas');
+  let state = stateSelect ? stateSelect.value : (currentActiveLocation.state || 'PA');
+  let rawCity = cityInput && cityInput.value.trim() ? cityInput.value.trim() : '';
+
+  // Se o usuário digitou um CEP no campo de cidade, faz lookup automático
+  const cepDigits = rawCity.replace(/\D/g, '');
+  if (cepDigits.length === 8) {
+    handleCepLookup(cepDigits, 'picker');
+    return;
+  }
+
+  // Se o usuário digitou "Cidade, UF" ou "Cidade - UF"
+  if (rawCity.includes(',') || rawCity.includes('-')) {
+    const parts = rawCity.split(/[,-]/).map(s => s.trim()).filter(Boolean);
+    if (parts.length >= 2 && parts[parts.length - 1].length === 2) {
+      rawCity = parts[0];
+      state = parts[parts.length - 1].toUpperCase();
+    }
+  } else if (rawCity) {
+    // Verifica se a cidade digitada pertence a outro estado conhecido
+    const normTyped = rawCity.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const currentStateCities = (STATE_DEFAULT_CITIES[state] || []).map(c => c.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
+    if (!currentStateCities.includes(normTyped)) {
+      for (const [ufKey, list] of Object.entries(STATE_DEFAULT_CITIES)) {
+        const match = list.find(c => c.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') === normTyped);
+        if (match) {
+          rawCity = match;
+          state = ufKey;
+          break;
+        }
+      }
+    }
+  }
+
+  const city = rawCity || (STATE_DEFAULT_CITIES[state] ? STATE_DEFAULT_CITIES[state][0] : 'Parauapebas');
 
   setActiveLocation(city, state, null, null, false);
   closeLocationPickerModal();
@@ -374,6 +563,33 @@ async function detectProLocationGPS() {
     showToast('Não foi possível obter localização via GPS.');
   }, { enableHighAccuracy: true, timeout: 10000 });
 }
+
+// Detecção no modal de edição do perfil profissional
+async function detectEditProLocationGPS() {
+  if (!navigator.geolocation) {
+    showToast('Geolocalização não suportada.');
+    return;
+  }
+  showToast('Obtendo sua cidade pelo GPS...');
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    const geo = await reverseGeocodeCoords(lat, lng);
+
+    const stateEl = document.getElementById('edit-pro-state');
+    const cityEl = document.getElementById('edit-pro-city');
+    if (stateEl) stateEl.value = geo.state;
+    if (cityEl) cityEl.value = geo.city;
+    fetchIbgeCitiesForState(geo.state);
+    showToast(`📍 Cidade preenchida pelo GPS: ${geo.city}, ${geo.state}`);
+  }, () => {
+    showToast('Não foi possível obter localização via GPS.');
+  }, { enableHighAccuracy: true, timeout: 10000 });
+}
+
+window.handleCepLookup = handleCepLookup;
+window.handleFormStateChange = handleFormStateChange;
+window.detectEditProLocationGPS = detectEditProLocationGPS;
 
 // Função utilitária para filtrar e calcular distâncias
 function filterAndSortProsByLocation(prosList) {
@@ -569,6 +785,7 @@ document.addEventListener('DOMContentLoaded', () => {
       handlePWADeepLinks();
     }
   });
+  initRealtimeDatabaseSync();
   renderRecommendedProfessionals();
   renderNewsFeed();
   renderConversations();
@@ -1009,14 +1226,26 @@ function renderRecommendedProfessionals() {
 
   if (!filteredPros || filteredPros.length === 0) {
     const locLabel = `${currentActiveLocation.city}, ${currentActiveLocation.state}`;
+    const availableCities = typeof getAvailableProCities === 'function' ? getAvailableProCities() : [];
+    const quickCitiesHtml = availableCities.length > 0 ? `
+      <div style="margin-top: 10px; display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
+        ${availableCities.map(c => `
+          <button type="button" class="loc-chip" onclick="selectCityOption('${c.city}', '${c.state}')" style="font-size: 11.5px; padding: 5px 10px;">
+            📍 Ver ${c.city}, ${c.state} (${c.count})
+          </button>
+        `).join('')}
+      </div>
+    ` : '';
+
     container.innerHTML = `
       <div class="state-block" style="flex: 1 0 100%; text-align: center; padding: 24px 16px;">
         <div class="state-icon" style="color: #6366F1; font-size: 32px; margin-bottom: 8px;"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></div>
         <h6 style="font-size: 15px; font-weight: 700; color: #1E293B;">Nenhum profissional em ${locLabel}</h6>
-        <p style="font-size: 13px; color: #64748B; margin: 4px 0 14px;">Ainda estamos expandindo para esta cidade. Toque abaixo para escolher outra cidade ou pesquisar em todo o Brasil.</p>
+        <p style="font-size: 13px; color: #64748B; margin: 4px 0 14px;">Ainda não há profissionais cadastrados nesta cidade. Escolha outra cidade abaixo ou cadastre seu perfil:</p>
         <button type="button" class="btn-reset-filters" style="margin: 0 auto; display: inline-flex;" onclick="openLocationPickerModal()">
-          <i class="fa-solid fa-map-location-dot"></i> Alterar Cidade
+          <i class="fa-solid fa-map-location-dot"></i> Alterar Cidade ou CEP
         </button>
+        ${quickCitiesHtml}
       </div>`;
     setupProsScrollIndicator();
     return;
@@ -2703,30 +2932,40 @@ async function loadProfessionalsFromSupabase() {
 
     if (res.ok) {
       const livePros = await res.json();
-      PROFESSIONALS = [];
+      const prevLocalPros = (PROFESSIONALS || []).filter(p => p && !String(p.id).startsWith('p'));
+      const loadedFromDb = [];
       if (Array.isArray(livePros)) {
         livePros.forEach(lp => {
-          const proDetails = (lp.professional_profiles && lp.professional_profiles[0]) || {};
+          // PostgREST 1-to-1 retorna objeto único em vez de array
+          const proDetails = Array.isArray(lp.professional_profiles)
+            ? (lp.professional_profiles[0] || {})
+            : (lp.professional_profiles || {});
           const handle = lp.full_name.toLowerCase().replace(/[^a-z0-9]/g, '.');
           const city = lp.city || 'Parauapebas';
           const state = lp.state || 'PA';
           const lat = (lp.latitude !== null && lp.latitude !== undefined) ? Number(lp.latitude) : null;
           const lng = (lp.longitude !== null && lp.longitude !== undefined) ? Number(lp.longitude) : null;
-          const serviceCities = proDetails.service_cities && proDetails.service_cities.length > 0
+          const skillsList = Array.isArray(proDetails.skills) ? proDetails.skills.filter(Boolean) : [];
+          const serviceCities = Array.isArray(proDetails.service_cities) && proDetails.service_cities.length > 0
             ? proDetails.service_cities
             : [city];
 
-          PROFESSIONALS.push({
+          // Reaproveita fotos/posts locais se o profissional adicionou na vitrine neste aparelho
+          const existingLocal = prevLocalPros.find(p => p.dbId === lp.id || (p.email && lp.email && p.email.toLowerCase() === lp.email.toLowerCase()));
+
+          loadedFromDb.push({
             id: 'db_' + lp.id.slice(0, 8),
             dbId: lp.id,
             handle: handle,
             name: lp.full_name,
             email: lp.email || '',
             phone: lp.phone_whatsapp || '',
+            cep: lp.cep || '',
             created_at: lp.created_at || null,
-            specialty: (proDetails.skills && proDetails.skills[0]) || 'Profissional Autônomo',
-            headline: proDetails.skills ? proDetails.skills.join(' • ') : `Serviços em ${city}`,
-            neighborhood: lp.neighborhood || `${city}, ${state}`,
+            specialty: skillsList[0] || (existingLocal && existingLocal.specialty) || 'Profissional Autônomo',
+            category: skillsList[0] || (existingLocal && existingLocal.category) || 'Profissional Autônomo',
+            headline: skillsList.length > 0 ? skillsList.join(' • ') : `Serviços em ${city}, ${state}`,
+            neighborhood: `${city}, ${state}`,
             city: city,
             state: state,
             latitude: lat,
@@ -2734,25 +2973,41 @@ async function loadProfessionalsFromSupabase() {
             serviceCities: serviceCities,
             rating: Number(lp.rating_average) || 5.0,
             reviewsCount: Number(lp.rating_count) || 0,
-            worksCount: 0,
-            completedServices: 0,
+            worksCount: existingLocal && existingLocal.posts ? existingLocal.posts.length : 0,
+            completedServices: existingLocal ? (existingLocal.completedServices || 0) : 0,
             verified: lp.is_verified ?? true,
-            experience: proDetails.years_experience ? `${proDetails.years_experience} anos` : 'Experiente',
-            avatar: lp.avatar_url || 'trampou_app_icon.png',
-            bio: lp.bio || `Atendimento profissional em ${city} e região.`,
-            servedNeighborhoods: proDetails.served_neighborhoods || [`${city}, ${state}`],
-            posts: []
+            experience: proDetails.years_experience ? `${proDetails.years_experience} anos` : 'Profissional Verificado',
+            avatar: lp.avatar_url || (existingLocal && existingLocal.avatar) || 'trampou_app_icon.png',
+            bio: lp.bio || (existingLocal && existingLocal.bio) || `Atendimento profissional em toda a cidade de ${city}, ${state}.`,
+            servedNeighborhoods: [`Toda a cidade (${city}, ${state})`],
+            posts: existingLocal && existingLocal.posts ? existingLocal.posts : [],
+            services: existingLocal && existingLocal.services ? existingLocal.services : []
           });
         });
+
+        // Mantém também qualquer profissional recém-criado localmente que ainda não esteja na lista do banco
+        prevLocalPros.forEach(localPro => {
+          const alreadyInDb = loadedFromDb.some(d =>
+            (localPro.dbId && d.dbId === localPro.dbId) ||
+            (localPro.name && d.name.toLowerCase() === localPro.name.toLowerCase())
+          );
+          if (!alreadyInDb) {
+            loadedFromDb.push(localPro);
+          }
+        });
+
+        PROFESSIONALS = loadedFromDb;
+        saveProfessionalsToStorage();
 
         // Atualiza status pill
         statusPills.forEach(pill => {
           pill.classList.remove('offline');
           pill.classList.add('online');
-          pill.innerHTML = `<span class="status-dot"></span> Supabase Conectado • ${livePros.length} Pros`;
+          pill.innerHTML = `<span class="status-dot"></span> Supabase Conectado • ${PROFESSIONALS.length} Pros`;
         });
 
         // Re-renderiza componentes dependentes
+        updatePopularCitiesChips(currentActiveLocation.state);
         if (typeof renderRecommendedProfessionals === 'function') renderRecommendedProfessionals();
         if (typeof renderSearchResults === 'function') renderSearchResults();
         return;
@@ -2766,6 +3021,95 @@ async function loadProfessionalsFromSupabase() {
       pill.innerHTML = `<span class="status-dot"></span> Modo Local • 0 Pros`;
     });
   }
+}
+
+// =========================================================
+// SINCRONIZAÇÃO EM TEMPO REAL (FULLTIME) COM O SUPABASE DB
+// =========================================================
+let realtimeSocket = null;
+let realtimeHeartbeatTimer = null;
+let lastSupabaseSyncAt = 0;
+
+async function triggerRealtimeDbRefresh(force = false) {
+  const now = Date.now();
+  if (!force && now - lastSupabaseSyncAt < 3000) return;
+  lastSupabaseSyncAt = now;
+  await loadProfessionalsFromSupabase();
+  if (typeof syncCurrentUserProfileFromSupabase === 'function') {
+    await syncCurrentUserProfileFromSupabase();
+  }
+}
+
+function initRealtimeDatabaseSync() {
+  // 1. WebSocket Realtime nativo do Supabase para escutar INSERT / UPDATE / DELETE em profiles e professional_profiles
+  try {
+    const wsUrl = SUPABASE_URL.replace(/^https:/, 'wss:').replace(/^http:/, 'ws:') +
+      `/realtime/v1/websocket?apikey=${SUPABASE_ANON_KEY}&vsn=1.0.0`;
+    realtimeSocket = new WebSocket(wsUrl);
+
+    realtimeSocket.addEventListener('open', () => {
+      const joinMsg = {
+        topic: 'realtime:public',
+        event: 'phx_join',
+        payload: {
+          config: {
+            broadcast: { self: false },
+            presence: { key: '' },
+            postgres_changes: [
+              { event: '*', schema: 'public', table: 'profiles' },
+              { event: '*', schema: 'public', table: 'professional_profiles' }
+            ]
+          }
+        },
+        ref: '1'
+      };
+      realtimeSocket.send(JSON.stringify(joinMsg));
+
+      if (realtimeHeartbeatTimer) clearInterval(realtimeHeartbeatTimer);
+      realtimeHeartbeatTimer = setInterval(() => {
+        if (realtimeSocket && realtimeSocket.readyState === WebSocket.OPEN) {
+          realtimeSocket.send(JSON.stringify({
+            topic: 'phoenix',
+            event: 'heartbeat',
+            payload: {},
+            ref: String(Date.now())
+          }));
+        }
+      }, 25000);
+    });
+
+    realtimeSocket.addEventListener('message', (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg && (msg.event === 'postgres_changes' || msg.event === 'INSERT' || msg.event === 'UPDATE' || msg.event === 'DELETE')) {
+          triggerRealtimeDbRefresh(true);
+        }
+      } catch (_) {}
+    });
+
+    realtimeSocket.addEventListener('close', () => {
+      if (realtimeHeartbeatTimer) clearInterval(realtimeHeartbeatTimer);
+      setTimeout(initRealtimeDatabaseSync, 8000);
+    });
+  } catch (err) {
+    console.warn('WebSocket Realtime fallback para polling:', err);
+  }
+
+  // 2. Sincroniza imediatamente sempre que o usuário volta para o app ou restaura conexão
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      triggerRealtimeDbRefresh(false);
+    }
+  });
+  window.addEventListener('focus', () => triggerRealtimeDbRefresh(false));
+  window.addEventListener('online', () => triggerRealtimeDbRefresh(true));
+
+  // 3. Atualização contínua automática em background a cada 25 segundos
+  setInterval(() => {
+    if (document.visibilityState === 'visible') {
+      triggerRealtimeDbRefresh(false);
+    }
+  }, 25000);
 }
 
 function renderVitrineWorks() {
@@ -3826,7 +4170,9 @@ function submitNewPost() {
   const titleInput = document.getElementById('new-post-title');
   const title = titleInput ? titleInput.value.trim() : '';
   const service = document.getElementById('new-post-service-select')?.value || 'Serviço Profissional';
-  const bairro = document.getElementById('new-post-neighborhood-select')?.value || 'Cidade Nova';
+  const proLoc = currentVitrinePro
+    ? `${currentVitrinePro.city || currentActiveLocation.city || 'Parauapebas'}, ${currentVitrinePro.state || currentActiveLocation.state || 'PA'}`
+    : `${currentActiveLocation.city}, ${currentActiveLocation.state}`;
   const desc = document.getElementById('new-post-desc')?.value.trim() || '';
 
   if (!selectedCustomImage) {
@@ -3845,10 +4191,10 @@ function submitNewPost() {
     id: 'post_' + Date.now(),
     title: title,
     serviceCategory: service,
-    neighborhood: bairro,
+    neighborhood: proLoc,
     date: 'Agora mesmo',
     image: selectedCustomImage,
-    description: desc || 'Serviço executado com qualidade e garantia em Parauapebas.',
+    description: desc || `Serviço executado com qualidade e garantia em ${proLoc}.`,
     likes: 1
   };
 
@@ -3858,6 +4204,7 @@ function submitNewPost() {
   currentVitrinePro.posts.unshift(newPost);
   currentVitrinePro.worksCount = currentVitrinePro.posts.length;
 
+  saveProfessionalsToStorage();
   closeCreatePostModal();
   renderVitrineView();
   showToast('✨ Publicação adicionada ao seu portfólio com sucesso!');
@@ -3868,11 +4215,23 @@ function submitNewPost() {
 // =========================================================
 function openEditProModal() {
   if (!currentVitrinePro) return;
-  document.getElementById('edit-pro-name').value = currentVitrinePro.name;
-  document.getElementById('edit-pro-specialty').value = currentVitrinePro.specialty;
-  document.getElementById('edit-pro-bairro').value = currentVitrinePro.neighborhood;
-  document.getElementById('edit-pro-bio').value = currentVitrinePro.bio;
-  document.getElementById('edit-pro-served-bairros').value = currentVitrinePro.servedNeighborhoods.join(', ');
+  const nameEl = document.getElementById('edit-pro-name');
+  const specEl = document.getElementById('edit-pro-specialty');
+  const cepEl = document.getElementById('edit-pro-cep');
+  const stateEl = document.getElementById('edit-pro-state');
+  const cityEl = document.getElementById('edit-pro-city');
+  const bioEl = document.getElementById('edit-pro-bio');
+  const statusEl = document.getElementById('edit-pro-location-status');
+
+  if (nameEl) nameEl.value = currentVitrinePro.name || '';
+  if (specEl) specEl.value = currentVitrinePro.specialty || '';
+  if (cepEl) cepEl.value = currentVitrinePro.cep || '';
+  if (stateEl) stateEl.value = currentVitrinePro.state || currentActiveLocation.state || 'PA';
+  if (cityEl) cityEl.value = currentVitrinePro.city || currentActiveLocation.city || 'Parauapebas';
+  if (bioEl) bioEl.value = currentVitrinePro.bio || '';
+  if (statusEl) statusEl.style.display = 'none';
+
+  fetchIbgeCitiesForState(currentVitrinePro.state || 'PA');
 
   const emergencyChk = document.getElementById('edit-pro-emergency-available');
   if (emergencyChk) {
@@ -3886,15 +4245,25 @@ function closeEditProModal() {
   document.getElementById('edit-pro-overlay').classList.remove('active');
 }
 
-function saveProProfile() {
+async function saveProProfile() {
   if (!currentVitrinePro) return;
-  currentVitrinePro.name = document.getElementById('edit-pro-name').value.trim() || currentVitrinePro.name;
-  currentVitrinePro.specialty = document.getElementById('edit-pro-specialty').value.trim() || currentVitrinePro.specialty;
-  currentVitrinePro.neighborhood = document.getElementById('edit-pro-bairro').value;
-  currentVitrinePro.bio = document.getElementById('edit-pro-bio').value.trim() || currentVitrinePro.bio;
+  const newName = document.getElementById('edit-pro-name')?.value.trim() || currentVitrinePro.name;
+  const newSpec = document.getElementById('edit-pro-specialty')?.value.trim() || currentVitrinePro.specialty;
+  const newCep = document.getElementById('edit-pro-cep')?.value.trim() || '';
+  const newState = (document.getElementById('edit-pro-state')?.value || currentVitrinePro.state || 'PA').toUpperCase();
+  const newCity = document.getElementById('edit-pro-city')?.value.trim() || currentVitrinePro.city || 'Parauapebas';
+  const newBio = document.getElementById('edit-pro-bio')?.value.trim() || currentVitrinePro.bio;
 
-  const bairrosStr = document.getElementById('edit-pro-served-bairros').value;
-  currentVitrinePro.servedNeighborhoods = bairrosStr.split(',').map(s => s.trim()).filter(Boolean);
+  currentVitrinePro.name = newName;
+  currentVitrinePro.specialty = newSpec;
+  currentVitrinePro.category = newSpec;
+  currentVitrinePro.cep = newCep;
+  currentVitrinePro.state = newState;
+  currentVitrinePro.city = newCity;
+  currentVitrinePro.neighborhood = `${newCity}, ${newState}`;
+  currentVitrinePro.serviceCities = [newCity];
+  currentVitrinePro.servedNeighborhoods = [`Toda a cidade (${newCity}, ${newState})`];
+  currentVitrinePro.bio = newBio;
 
   const emergencyChk = document.getElementById('edit-pro-emergency-available');
   if (emergencyChk) {
@@ -3902,12 +4271,42 @@ function saveProProfile() {
     currentVitrinePro.is24h = emergencyChk.checked;
   }
 
+  // Sincroniza no Supabase se o profissional possuir dbId
+  const user = getCurrentUser();
+  const targetDbId = currentVitrinePro.dbId || (user && user.id && !String(user.id).startsWith('u_') ? user.id : null);
+  if (targetDbId) {
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/rpc/upsert_professional_profile_data`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          p_user_id: targetDbId,
+          p_full_name: newName,
+          p_phone: currentVitrinePro.phone || (user ? user.phone : ''),
+          p_city: newCity,
+          p_state: newState,
+          p_cep: newCep,
+          p_bio: newBio,
+          p_avatar_url: currentVitrinePro.avatar || '',
+          p_skills: [newSpec],
+          p_lat: currentVitrinePro.latitude || null,
+          p_lng: currentVitrinePro.longitude || null
+        })
+      });
+    } catch (e) {
+      console.warn('Falha ao sincronizar perfil profissional no Supabase:', e);
+    }
+  }
+
   saveProfessionalsToStorage();
+  setActiveLocation(newCity, newState, currentVitrinePro.latitude, currentVitrinePro.longitude, false);
   closeEditProModal();
   renderVitrineView();
-  showToast(currentVitrinePro.emergencyAvailable !== false 
-    ? '🚨 Perfil atualizado! Você está ativo para atendimentos de emergência 24h.' 
-    : 'Perfil atualizado! Plantão 24h desativado.');
+  showToast(`✅ Perfil atualizado! Atuando em toda ${newCity}, ${newState}.`);
 }
 
 // =========================================================
@@ -4699,7 +5098,7 @@ function closeQuoteModal() {
 
 function submitQuoteRequest() {
   const title = document.getElementById('quote-title-input').value.trim();
-  const bairro = document.getElementById('quote-bairro-select').value;
+  const locLabel = `${currentActiveLocation.city}, ${currentActiveLocation.state}`;
   const desc = document.getElementById('quote-desc-input').value.trim();
 
   if (!title) {
@@ -4713,9 +5112,9 @@ function submitQuoteRequest() {
   userRequests.unshift({
     id: 'req_' + Date.now(),
     title: title,
-    description: desc || 'Solicitação enviada pelo cliente em Parauapebas.',
+    description: desc || `Solicitação enviada pelo cliente em ${locLabel}.`,
     category: (currentQuoteTarget && currentQuoteTarget.category) || 'Geral',
-    neighborhood: bairro,
+    neighborhood: locLabel,
     status: 'pending',
     statusLabel: 'Aguardando resposta',
     proName: targetProName,
@@ -4824,17 +5223,18 @@ function openProListModal(queryOrCategory = '', professionFilter = 'all') {
     }
   }
 
-  // Título e subtítulo
+  // Título e subtítulo com a cidade ativa
+  const activeLocText = `${currentActiveLocation.city}, ${currentActiveLocation.state}`;
   if (currentProListProfession !== 'all') {
-    titleEl.textContent = `${currentProListProfession}s em Parauapebas`;
-    subEl.textContent = `Profissionais disponíveis na categoria`;
+    titleEl.textContent = `${currentProListProfession} em ${currentActiveLocation.city}`;
+    subEl.textContent = `Profissionais disponíveis em ${activeLocText}`;
   } else if (currentProListQuery) {
     const formattedTitle = currentProListQuery.charAt(0).toUpperCase() + currentProListQuery.slice(1);
     titleEl.textContent = `${formattedTitle}`;
-    subEl.textContent = `Resultados da busca em Parauapebas`;
+    subEl.textContent = `Resultados da busca em ${activeLocText}`;
   } else {
-    titleEl.textContent = 'Profissionais em Parauapebas';
-    subEl.textContent = 'Todos os autônomos verificados da região';
+    titleEl.textContent = `Profissionais em ${currentActiveLocation.city}`;
+    subEl.textContent = `Autônomos verificados em ${activeLocText}`;
   }
 
   // Renderiza a barra de filtros exclusivamente por PROFISSÃO
@@ -4848,8 +5248,11 @@ function openProListModal(queryOrCategory = '', professionFilter = 'all') {
     `;
   }).join('');
 
+  // 0. Filtra primeiro pela cidade ativa
+  const cityFiltered = filterAndSortProsByLocation(PROFESSIONALS || []);
+
   // 1. Filtra profissionais pela busca textual (se houver)
-  let matched = (PROFESSIONALS || []).filter(p => {
+  let matched = cityFiltered.filter(p => {
     if (!currentProListQuery) return true;
     const q = normalize(currentProListQuery);
     const nameNorm = normalize(p.name);
@@ -5336,14 +5739,6 @@ function renderSearchResults() {
       if (!matchCat) return false;
     }
 
-    // Filtro por Bairro
-    if (bairroNorm) {
-      const pNeigh = normalize(p.neighborhood);
-      const served = (p.servedNeighborhoods || []).map(normalize);
-      const matchBairro = pNeigh.includes(bairroNorm) || served.some(s => s.includes(bairroNorm) || s.includes('todos os bairros'));
-      if (!matchBairro) return false;
-    }
-
     return true;
   });
 
@@ -5400,6 +5795,17 @@ function renderSearchResults() {
 
   // Renderiza cards compactos ou estado vazio
   if (filtered.length === 0) {
+    const availableCities = typeof getAvailableProCities === 'function' ? getAvailableProCities() : [];
+    const quickCitiesHtml = availableCities.length > 0 ? `
+      <div style="margin-top: 12px; display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
+        ${availableCities.map(c => `
+          <button type="button" class="loc-chip" onclick="selectCityOption('${c.city}', '${c.state}')" style="font-size: 11.5px; padding: 5px 10px;">
+            📍 Ver ${c.city}, ${c.state} (${c.count})
+          </button>
+        `).join('')}
+      </div>
+    ` : '';
+
     container.innerHTML = `
       <div class="explore-empty-state">
         <i class="fa-solid fa-location-dot" style="color: #6366F1; font-size: 32px; margin-bottom: 8px;" aria-hidden="true"></i>
@@ -5407,12 +5813,13 @@ function renderSearchResults() {
         <p>Não encontramos nenhum profissional cadastrado nesta cidade com os filtros atuais${exploreCategory !== 'all' ? ` em "${exploreCategory}"` : ''}.</p>
         <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 14px;">
           <button type="button" class="btn-reset-filters" onclick="openLocationPickerModal()">
-            <i class="fa-solid fa-map-location-dot"></i> Alterar Cidade
+            <i class="fa-solid fa-map-location-dot"></i> Alterar Cidade ou CEP
           </button>
           <button type="button" class="btn-reset-filters" onclick="resetExploreFilters()">
             <i class="fa-solid fa-arrows-rotate"></i> Limpar filtros
           </button>
         </div>
+        ${quickCitiesHtml}
       </div>
     `;
   } else {
@@ -5912,6 +6319,56 @@ function initAuthManager() {
   if (typeof populateProCategoryOptions === 'function') {
     populateProCategoryOptions();
   }
+  syncCurrentUserProfileFromSupabase();
+}
+
+// Sincroniza os dados da sessão do usuário logado diretamente com public.profiles no Supabase
+async function syncCurrentUserProfileFromSupabase() {
+  const user = getCurrentUser();
+  if (!user) return;
+
+  try {
+    let queryParam = '';
+    if (user.id && !String(user.id).startsWith('u_')) {
+      queryParam = `id=eq.${encodeURIComponent(user.id)}`;
+    } else if (user.email) {
+      queryParam = `email=eq.${encodeURIComponent(user.email.trim().toLowerCase())}`;
+    } else {
+      return;
+    }
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/profiles?${queryParam}&select=*&limit=1`, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    });
+    if (!res.ok) return;
+    const rows = await res.json();
+    if (!Array.isArray(rows) || rows.length === 0) return;
+
+    const dbProfile = rows[0];
+    const city = dbProfile.city || user.city || 'Parauapebas';
+    const state = dbProfile.state || user.state || 'PA';
+
+    user.id = dbProfile.id || user.id;
+    user.name = dbProfile.full_name || user.name;
+    user.email = dbProfile.email || user.email;
+    user.phone = dbProfile.phone_whatsapp || user.phone;
+    user.role = dbProfile.role || user.role;
+    user.city = city;
+    user.state = state;
+    user.cep = dbProfile.cep || user.cep || '';
+    user.neighborhood = `${city}, ${state}`;
+    if (dbProfile.avatar_url) user.avatar = dbProfile.avatar_url;
+    if (user.role === 'professional' && dbProfile.id) {
+      user.proId = 'db_' + dbProfile.id.slice(0, 8);
+    }
+
+    currentUser = user;
+    localStorage.setItem('go_currentUser', JSON.stringify(currentUser));
+    renderAuthUI();
+  } catch (_) {}
 }
 
 // Obtém o usuário atual persistido no localStorage (ou null se visitante)
@@ -5957,7 +6414,10 @@ function renderAuthUI() {
   if (nameEl) nameEl.textContent = user ? user.name : 'Visitante';
   if (emailEl) emailEl.textContent = user ? user.email : 'Toque em entrar para acessar sua conta';
   if (locEl) {
-    locEl.innerHTML = `<i class="fa-solid fa-location-dot"></i> ${user ? (user.neighborhood || 'Cidade Nova') + ', Parauapebas' : 'Parauapebas, PA'}`;
+    const userLocText = user
+      ? `${user.city || currentActiveLocation.city || 'Parauapebas'}, ${user.state || currentActiveLocation.state || 'PA'}`
+      : `${currentActiveLocation.city || 'Parauapebas'}, ${currentActiveLocation.state || 'PA'}`;
+    locEl.innerHTML = `<i class="fa-solid fa-location-dot"></i> ${userLocText}`;
   }
 
   if (badgeEl) {
@@ -6399,16 +6859,14 @@ async function handleLoginSubmit(event) {
         const fullName = (profileData && profileData.full_name) || (authUser.user_metadata && authUser.user_metadata.full_name) || identifier.split('@')[0];
         const phone = (profileData && profileData.phone_whatsapp) || (authUser.user_metadata && authUser.user_metadata.phone_whatsapp) || '';
         const avatar = (profileData && profileData.avatar_url) || (authUser.user_metadata && authUser.user_metadata.avatar_url) || '';
-        const neighborhood = (profileData && profileData.neighborhood) || 'Cidade Nova';
+        const city = (profileData && profileData.city) || (authUser.user_metadata && authUser.user_metadata.city) || currentActiveLocation.city || 'Parauapebas';
+        const state = ((profileData && profileData.state) || (authUser.user_metadata && authUser.user_metadata.state) || currentActiveLocation.state || 'PA').toUpperCase();
+        const cep = (profileData && profileData.cep) || (authUser.user_metadata && authUser.user_metadata.cep) || '';
+        const neighborhood = `${city}, ${state}`;
 
         let proId = null;
         if (role === 'professional') {
-          const matchedPro = PROFESSIONALS.find(p => 
-            p.dbId === authUser.id || 
-            (p.email && p.email.toLowerCase() === identifier.toLowerCase().trim()) ||
-            p.name.toLowerCase().includes(fullName.toLowerCase().split(' ')[0])
-          );
-          proId = matchedPro ? matchedPro.id : 'p1';
+          proId = 'db_' + authUser.id.slice(0, 8);
         }
 
         loggedUser = {
@@ -6417,10 +6875,16 @@ async function handleLoginSubmit(event) {
           email: authUser.email || identifier,
           phone: phone,
           role: role,
+          city: city,
+          state: state,
+          cep: cep,
           neighborhood: neighborhood,
           avatar: avatar,
           proId: proId
         };
+
+        setActiveLocation(city, state, null, null, false);
+        await loadProfessionalsFromSupabase();
       } else if (matchedLocal) {
         loggedUser = { ...matchedLocal };
         delete loggedUser.password;
@@ -6550,8 +7014,9 @@ async function handleClientSignupSubmit(event) {
   if (errorAlert) errorAlert.style.display = 'none';
 
   const state = (document.getElementById('client-state') ? document.getElementById('client-state').value : 'PA').trim().toUpperCase();
-  const city = (document.getElementById('client-city') ? document.getElementById('client-city').value : 'Parauapebas').trim();
-  const neighborhood = (document.getElementById('client-neighborhood') ? document.getElementById('client-neighborhood').value : '').trim();
+  const city = (document.getElementById('client-city') ? document.getElementById('client-city').value : 'Parauapebas').trim() || 'Parauapebas';
+  const cep = (document.getElementById('client-cep') ? document.getElementById('client-cep').value : '').trim();
+  const neighborhood = `${city}, ${state}`;
   const latVal = document.getElementById('client-lat') ? document.getElementById('client-lat').value : '';
   const lngVal = document.getElementById('client-lng') ? document.getElementById('client-lng').value : '';
   const lat = latVal ? parseFloat(latVal) : null;
@@ -6573,7 +7038,8 @@ async function handleClientSignupSubmit(event) {
             phone_whatsapp: phone.trim(),
             city: city,
             state: state,
-            neighborhood: neighborhood || city,
+            cep: cep,
+            neighborhood: neighborhood,
             latitude: lat,
             longitude: lng
           }
@@ -6652,7 +7118,10 @@ let proWizardData = {
     commercialName: '',
     category: '',
     specialties: ['Instalações Novas', 'Residencial'],
-    neighborhoods: ['Cidade Nova'],
+    city: 'Parauapebas',
+    state: 'PA',
+    cep: '',
+    neighborhoods: ['Parauapebas, PA'],
     bio: ''
   },
   vitrine: {
@@ -6841,9 +7310,20 @@ function initProWizard() {
   // Preenche campos da Etapa 2
   const commNameInput = document.getElementById('pro-commercial-name');
   const bioInput = document.getElementById('pro-bio');
+  const proStateSelect = document.getElementById('pro-state');
+  const proCityInput = document.getElementById('pro-city');
+  const proCepInput = document.getElementById('pro-cep');
+  const proStatusEl = document.getElementById('pro-location-status');
   if (commNameInput) commNameInput.value = proWizardData.profile.commercialName || '';
   populateProCategoryOptions(proWizardData.profile.category || '');
   if (bioInput) bioInput.value = proWizardData.profile.bio || '';
+  const initialState = proWizardData.profile.state || (user && user.state) || currentActiveLocation.state || 'PA';
+  const initialCity = proWizardData.profile.city || (user && user.city) || currentActiveLocation.city || 'Parauapebas';
+  if (proStateSelect) proStateSelect.value = initialState;
+  if (proCityInput) proCityInput.value = initialCity;
+  if (proCepInput) proCepInput.value = proWizardData.profile.cep || (user && user.cep) || '';
+  if (proStatusEl) proStatusEl.style.display = 'none';
+  fetchIbgeCitiesForState(initialState);
 
   // Preenche campos da Etapa 3
   const extraInfoInput = document.getElementById('pro-extra-info');
@@ -6961,7 +7441,7 @@ function validateAndGoStep(targetStep) {
 
     const proState = (document.getElementById('pro-state') ? document.getElementById('pro-state').value : 'PA').trim().toUpperCase();
     const proCity = (document.getElementById('pro-city') ? document.getElementById('pro-city').value : 'Parauapebas').trim();
-    const proNeighInput = document.getElementById('pro-neighborhoods-input') ? document.getElementById('pro-neighborhoods-input').value.trim() : '';
+    const proCep = (document.getElementById('pro-cep') ? document.getElementById('pro-cep').value : '').trim();
     const proLatVal = document.getElementById('pro-lat') ? document.getElementById('pro-lat').value : '';
     const proLngVal = document.getElementById('pro-lng') ? document.getElementById('pro-lng').value : '';
 
@@ -6989,22 +7469,21 @@ function validateAndGoStep(targetStep) {
       showToast('Selecione sua Profissão Principal ou crie uma nova categoria.');
       return;
     }
-
-    let proNeighborhoods = [...(proWizardData.profile.neighborhoods || [])];
-    if (proNeighInput) {
-      const parts = proNeighInput.split(',').map(s => s.trim()).filter(Boolean);
-      parts.forEach(p => { if (!proNeighborhoods.includes(p)) proNeighborhoods.push(p); });
-    }
-    if (proNeighborhoods.length === 0) {
-      proNeighborhoods = [proCity ? `Toda a cidade (${proCity})` : 'Toda a cidade'];
+    if (!proCity || proCity.length < 2) {
+      showToast('Informe sua cidade de atuação ou digite seu CEP.');
+      const cityEl = document.getElementById('pro-city');
+      if (cityEl) cityEl.focus();
+      return;
     }
 
+    const fullCityLabel = `${proCity}, ${proState}`;
     proWizardData.profile.commercialName = commName;
     proWizardData.profile.category = cat;
     proWizardData.profile.bio = bio;
     proWizardData.profile.state = proState;
     proWizardData.profile.city = proCity;
-    proWizardData.profile.neighborhoods = proNeighborhoods;
+    proWizardData.profile.cep = proCep;
+    proWizardData.profile.neighborhoods = [`Toda a cidade (${fullCityLabel})`];
     proWizardData.profile.lat = proLatVal ? parseFloat(proLatVal) : null;
     proWizardData.profile.lng = proLngVal ? parseFloat(proLngVal) : null;
 
@@ -7172,7 +7651,8 @@ function renderProReviewSummary() {
   const phone = (user && user.role === 'client') ? user.phone : proWizardData.account.phone;
   if (revContact) revContact.textContent = `${email || 'contato@goparauapebas.com'} • ${phone || '(94) 99123-4567'}`;
 
-  if (revBairros) revBairros.textContent = proWizardData.profile.neighborhoods.join(', ') || 'Parauapebas toda';
+  const citySummary = `${proWizardData.profile.city || 'Parauapebas'}, ${proWizardData.profile.state || 'PA'}`;
+  if (revBairros) revBairros.textContent = `${citySummary} (Toda a cidade)`;
   if (revSpecs) revSpecs.textContent = proWizardData.profile.specialties.join(', ') || 'Serviços gerais';
   if (revBio) revBio.textContent = proWizardData.profile.bio || 'Sem descrição informada.';
 
@@ -7221,11 +7701,14 @@ async function handleProSignupFinalSubmit() {
     let dbUserId = user ? user.id : null;
     const proCity = proWizardData.profile.city || 'Parauapebas';
     const proState = proWizardData.profile.state || 'PA';
+    const proCep = proWizardData.profile.cep || '';
     const proLat = proWizardData.profile.lat || null;
     const proLng = proWizardData.profile.lng || null;
-    const firstNeigh = (proWizardData.profile.neighborhoods && proWizardData.profile.neighborhoods[0]) || proCity;
+    const firstNeigh = `${proCity}, ${proState}`;
+    const proBioText = proWizardData.profile.bio || `Atendimento profissional e orçamentos em toda a cidade de ${proCity}, ${proState} com garantia e qualidade.`;
+    const combinedSkills = [category, ...(proWizardData.profile.specialties || [])].filter(Boolean);
 
-    // Se o usuário ainda não tiver conta autenticada, registra no Supabase Auth com dados de localização
+    // 1. Se o usuário ainda não tiver conta autenticada, registra no Supabase Auth com dados completos
     if (!user && email && password) {
       try {
         const supRes = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
@@ -7241,6 +7724,10 @@ async function handleProSignupFinalSubmit() {
               avatar_url: proWizardData.vitrine.avatar || '',
               city: proCity,
               state: proState,
+              cep: proCep,
+              bio: proBioText,
+              category: category,
+              skills: combinedSkills,
               neighborhood: firstNeigh,
               latitude: proLat,
               longitude: proLng
@@ -7257,16 +7744,50 @@ async function handleProSignupFinalSubmit() {
       }
     }
 
+    // 2. Garante sincronização em public.profiles e public.professional_profiles (inclusive quando cliente vira profissional!)
+    if (dbUserId && !String(dbUserId).startsWith('u_')) {
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/rpc/upsert_professional_profile_data`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({
+            p_user_id: dbUserId,
+            p_full_name: commercialName,
+            p_phone: phone,
+            p_city: proCity,
+            p_state: proState,
+            p_cep: proCep,
+            p_bio: proBioText,
+            p_avatar_url: proWizardData.vitrine.avatar || '',
+            p_skills: combinedSkills,
+            p_lat: proLat,
+            p_lng: proLng
+          })
+        });
+      } catch (rpcErr) {
+        console.warn('Erro ao sincronizar perfil profissional via RPC:', rpcErr);
+      }
+    }
+
+    const finalProCardId = (dbUserId && !String(dbUserId).startsWith('u_')) ? ('db_' + dbUserId.slice(0, 8)) : newProId;
+
     // Cria o objeto de perfil profissional no marketplace
     const newProfessional = {
-      id: newProId,
+      id: finalProCardId,
       dbId: dbUserId,
       handle: handleName,
       name: commercialName,
+      email: email,
+      phone: phone,
+      cep: proCep,
       created_at: new Date().toISOString(),
       specialty: category,
       category: category,
-      headline: proWizardData.profile.specialties.join(' • ') || `${category} em ${proCity}`,
+      headline: proWizardData.profile.specialties.join(' • ') || `${category} em ${proCity}, ${proState}`,
       neighborhood: firstNeigh,
       city: proCity,
       state: proState,
@@ -7279,11 +7800,11 @@ async function handleProSignupFinalSubmit() {
       completedServices: 0,
       verified: true,
       experience: 'Profissional Verificado',
-      avatar: proWizardData.vitrine.avatar || 'carlos_avatar.png',
-      bio: proWizardData.profile.bio || `Atendimento profissional e orçamentos em ${proCity} e região com garantia e qualidade.`,
-      servedNeighborhoods: proWizardData.profile.neighborhoods,
+      avatar: proWizardData.vitrine.avatar || 'trampou_app_icon.png',
+      bio: proBioText,
+      servedNeighborhoods: [`Toda a cidade (${firstNeigh})`],
       posts: proWizardData.vitrine.photos.map((imgSrc, idx) => ({
-        id: `post_${newProId}_${idx}`,
+        id: `post_${finalProCardId}_${idx}`,
         title: `Serviço realizado em ${firstNeigh}`,
         serviceCategory: category,
         neighborhood: firstNeigh,
@@ -7294,7 +7815,8 @@ async function handleProSignupFinalSubmit() {
       }))
     };
 
-    // Insere no início da lista de profissionais do marketplace
+    // Remove eventual duplicata anterior do mesmo usuário e insere no topo
+    PROFESSIONALS = PROFESSIONALS.filter(p => p.id !== finalProCardId && (!dbUserId || p.dbId !== dbUserId));
     PROFESSIONALS.unshift(newProfessional);
     saveProfessionalsToStorage();
 
@@ -7307,11 +7829,12 @@ async function handleProSignupFinalSubmit() {
       role: 'professional',
       city: proCity,
       state: proState,
+      cep: proCep,
       neighborhood: firstNeigh,
       latitude: proLat,
       longitude: proLng,
       avatar: proWizardData.vitrine.avatar || (user ? user.avatar : ''),
-      proId: newProId
+      proId: finalProCardId
     };
 
     localStorage.setItem('go_currentUser', JSON.stringify(currentUser));
@@ -7326,8 +7849,8 @@ async function handleProSignupFinalSubmit() {
     closeAuthModal('auth-pro-signup-modal');
 
     // Abre a vitrine recém-criada diretamente em modo de dono (proprietário)
-    openProVitrine(newProId, true);
-    showToast(`🎉 Parabéns! Sua vitrine profissional foi criada e está ativa em ${proCity}!`);
+    openProVitrine(finalProCardId, true);
+    showToast(`🎉 Parabéns! Sua vitrine profissional foi criada e está ativa em ${proCity}, ${proState}!`);
 
   } catch (err) {
     showToast('Erro ao publicar vitrine. Tente novamente.');
@@ -7350,24 +7873,34 @@ function openEditProfileModal() {
   }
   const nameInp = document.getElementById('edit-profile-name');
   const phoneInp = document.getElementById('edit-profile-phone');
-  const neighSelect = document.getElementById('edit-profile-neighborhood');
+  const cepInp = document.getElementById('edit-profile-cep');
+  const stateInp = document.getElementById('edit-profile-state');
+  const cityInp = document.getElementById('edit-profile-city');
+  const statusEl = document.getElementById('edit-profile-location-status');
 
   if (nameInp) nameInp.value = user.name || '';
   if (phoneInp) phoneInp.value = user.phone || '';
-  if (neighSelect && user.neighborhood) neighSelect.value = user.neighborhood;
+  if (cepInp) cepInp.value = user.cep || '';
+  if (stateInp) stateInp.value = user.state || currentActiveLocation.state || 'PA';
+  if (cityInp) cityInp.value = user.city || currentActiveLocation.city || 'Parauapebas';
+  if (statusEl) statusEl.style.display = 'none';
+
+  fetchIbgeCitiesForState(user.state || currentActiveLocation.state || 'PA');
 
   const modal = document.getElementById('edit-profile-modal');
   if (modal) modal.classList.add('active');
 }
 
-function handleProfileEditSubmit(event) {
+async function handleProfileEditSubmit(event) {
   event.preventDefault();
   const user = getCurrentUser();
   if (!user) return;
 
   const name = document.getElementById('edit-profile-name').value.trim();
   const phone = document.getElementById('edit-profile-phone').value.trim();
-  const neigh = document.getElementById('edit-profile-neighborhood').value;
+  const cep = (document.getElementById('edit-profile-cep')?.value || '').trim();
+  const state = (document.getElementById('edit-profile-state')?.value || user.state || 'PA').toUpperCase();
+  const city = (document.getElementById('edit-profile-city')?.value || user.city || 'Parauapebas').trim();
 
   if (name.length < 3) {
     showToast('Nome deve conter ao menos 3 letras.');
@@ -7376,13 +7909,40 @@ function handleProfileEditSubmit(event) {
 
   user.name = name;
   user.phone = phone;
-  user.neighborhood = neigh;
+  user.cep = cep;
+  user.state = state;
+  user.city = city;
+  user.neighborhood = `${city}, ${state}`;
+
+  if (user.id && !String(user.id).startsWith('u_')) {
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/rpc/update_user_profile_location`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          p_user_id: user.id,
+          p_full_name: name,
+          p_phone: phone,
+          p_city: city,
+          p_state: state,
+          p_cep: cep
+        })
+      });
+    } catch (e) {
+      console.warn('Falha ao atualizar perfil no Supabase:', e);
+    }
+  }
 
   currentUser = user;
   localStorage.setItem('go_currentUser', JSON.stringify(currentUser));
+  setActiveLocation(city, state, user.latitude || null, user.longitude || null, false);
   renderAuthUI();
   closeAuthModal('edit-profile-modal');
-  showToast('Dados atualizados com sucesso!');
+  showToast(`✅ Dados atualizados! Cidade definida: ${city}, ${state}`);
 }
 
 function handleLogoutClick() {
@@ -7531,7 +8091,7 @@ function handlePublishShowcaseSubmit(event) {
   event.preventDefault();
 
   const title = (document.getElementById('showcase-title')?.value || '').trim();
-  const bairro = document.getElementById('showcase-bairro')?.value || 'Cidade Nova';
+  const bairro = `${currentActiveLocation.city || 'Parauapebas'}, ${currentActiveLocation.state || 'PA'}`;
   const category = document.getElementById('showcase-category')?.value || 'Serviços Gerais';
   const descBefore = (document.getElementById('showcase-desc-before')?.value || '').trim();
   const descAfter = (document.getElementById('showcase-desc-after')?.value || '').trim();
