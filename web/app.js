@@ -904,13 +904,22 @@ async function renderAdBannerCarousel(refreshOnly = false) {
   function buildBannerHtml(banner, index) {
     // Se o banner possuir imagem dedicada (1080x432 px / 2.5:1)
     if (banner.image_url) {
-      const isWebp = banner.image_url.endsWith('.webp');
-      const fallbackUrl = banner.image_url_fallback || (isWebp ? banner.image_url.replace('.webp', '.jpg').replace('.webp', '.png') : banner.image_url);
+      let finalImgUrl = banner.image_url;
+      // Garante protocolo HTTPS e suporta URLs relativas ou absolutas
+      if (finalImgUrl.startsWith('//')) {
+        finalImgUrl = 'https:' + finalImgUrl;
+      } else if (!finalImgUrl.startsWith('http://') && !finalImgUrl.startsWith('https://') && !finalImgUrl.startsWith('./')) {
+        // Se for nome de arquivo local
+        finalImgUrl = `./${finalImgUrl}`;
+      }
+
+      const isWebp = finalImgUrl.endsWith('.webp');
+      const fallbackUrl = banner.image_url_fallback || (isWebp ? finalImgUrl.replace('.webp', '.jpg').replace('.webp', '.png') : finalImgUrl);
       return `
         <div class="ad-slide-card ad-slide-img-card" data-slide-index="${index}" data-banner-id="${banner.id || ''}" role="banner" style="cursor: pointer;">
           <picture>
-            ${isWebp ? `<source srcset="${banner.image_url}" type="image/webp">` : ''}
-            <img src="${fallbackUrl}" alt="${escapeHTML(banner.title || 'Banner Trampou')}" loading="${index === 0 ? 'eager' : 'lazy'}">
+            ${isWebp ? `<source srcset="${finalImgUrl}" type="image/webp">` : ''}
+            <img src="${fallbackUrl}" alt="${escapeHTML(banner.title || 'Banner Trampou')}" loading="${index === 0 ? 'eager' : 'lazy'}" onerror="this.onerror=null; this.parentElement.parentElement.classList.remove('ad-slide-img-card'); this.parentElement.parentElement.classList.add('theme-purple-viral');">
           </picture>
         </div>
       `;

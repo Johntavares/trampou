@@ -1041,6 +1041,17 @@
         finalImageUrl = await uploadBannerFileToSupabase(pendingBannerFile);
       }
 
+      // Validação de segurança: se o usuário não enviou imagem nem preencheu texto descritivo
+      if (!finalImageUrl && !document.getElementById('banner-description')?.value?.trim()) {
+        if (!confirm('Este banner está sendo salvo SEM imagem de arte. Ele será exibido como um card com texto e botão. Deseja continuar?')) {
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalBtnHtml || '<i class="fa-solid fa-check"></i> <span>Salvar Banner</span>';
+          }
+          return;
+        }
+      }
+
       // 2. Monta o link normalizado conforme a opção escolhida
       const linkType = document.getElementById('banner-link-type')?.value || 'instagram';
       const rawLinkVal = document.getElementById('banner-cta-link')?.value || '';
