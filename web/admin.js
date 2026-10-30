@@ -96,7 +96,7 @@
   // NAVEGAÇÃO DE ABAS
   // =========================================================
   function initNavigation() {
-    const navItems = document.querySelectorAll('.admin-nav-item');
+    const navItems = document.querySelectorAll('.admin-nav-item, .bottom-nav-item[data-tab]');
     navItems.forEach(item => {
       item.addEventListener('click', () => {
         const targetTab = item.getAttribute('data-tab');
@@ -109,7 +109,7 @@
     state.currentTab = tabId;
 
     // Atualiza classes do menu
-    document.querySelectorAll('.admin-nav-item').forEach(item => {
+    document.querySelectorAll('.admin-nav-item, .bottom-nav-item[data-tab]').forEach(item => {
       if (item.getAttribute('data-tab') === tabId) {
         item.classList.add('active');
       } else {
@@ -137,6 +137,8 @@
 
     const activePane = document.getElementById(`tab-${tabId}`);
     if (activePane) activePane.classList.add('active');
+    if (typeof closeMobileSidebar === 'function') closeMobileSidebar();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     if (tabId === 'feedbacks' && typeof renderFeedbacks === 'function') {
       renderFeedbacks();
@@ -214,6 +216,12 @@
     if (uCount) uCount.textContent = state.users.length;
     if (sCount) sCount.textContent = state.subscriptions.filter(s => s.status === 'active').length;
     if (cCount) cCount.textContent = state.categories.length;
+    const bbCount = document.getElementById('bottom-banners-count');
+    const bpCount = document.getElementById('bottom-pros-count');
+    const buCount = document.getElementById('bottom-users-count');
+    if (bbCount) { bbCount.textContent = state.banners.length; bbCount.style.display = state.banners.length > 0 ? 'inline-block' : 'none'; }
+    if (bpCount) { bpCount.textContent = state.professionals.length; bpCount.style.display = state.professionals.length > 0 ? 'inline-block' : 'none'; }
+    if (buCount) { buCount.textContent = state.users.length; buCount.style.display = state.users.length > 0 ? 'inline-block' : 'none'; }
     if (fbCount) {
       const pendings = state.feedbacks.filter(f => f.status === 'pendente').length;
       fbCount.textContent = pendings;
@@ -240,7 +248,11 @@
       headers: getHeaders()
     });
     if (res.ok) {
-      state.professionals = await res.json();
+      const raw = await res.json();
+      state.professionals = (raw || []).map(p => ({
+        ...p,
+        verified: Boolean(p.verified || (p.profiles && p.profiles.is_verified))
+      }));
     } else {
       state.professionals = [];
     }
@@ -272,7 +284,7 @@
 
   // 5. Assinaturas PRO
   async function fetchSubscriptions() {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/pro_subscriptions?select=*,professional_profiles(*,profiles(full_name,email,phone))&order=created_at.desc`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/pro_subscriptions?select=*,professional_profiles(*,profiles(full_name,email,phone_whatsapp))&order=created_at.desc`, {
       headers: getHeaders()
     });
     if (res.ok) {
@@ -309,6 +321,15 @@
     if (mrrEl) mrrEl.textContent = formatCurrency(totalMRR);
     if (activeSubsEl) activeSubsEl.textContent = `${activeSubs.length} assinaturas ativas`;
 
+    // KPI Feedbacks
+    const totalFeedbacksEl = document.getElementById('kpi-total-feedbacks');
+    const pendingFeedbacksEl = document.getElementById('kpi-pending-feedbacks');
+    if (totalFeedbacksEl) totalFeedbacksEl.textContent = state.feedbacks.length;
+    if (pendingFeedbacksEl) {
+      const pend = state.feedbacks.filter(f => f.status === 'pendente').length;
+      pendingFeedbacksEl.innerHTML = `<i class="fa-solid fa-comment-dots"></i> ${pend} pendente${pend === 1 ? '' : 's'}`;
+    }
+
     // Resumo Banners
     const dashBanners = document.getElementById('dashboard-banners-preview');
     if (dashBanners) {
@@ -342,17 +363,58 @@
           const name = p.profiles ? p.profiles.full_name : 'Profissional';
           const spec = p.specialty || (p.categories ? p.categories.name : 'Geral');
           return `
-            <tr>
-              <td>
+            <tr class="mobile-table-card">
+              <td data-label="Profissional" class="td-card-header">
                 <div style="font-weight: 700; color: #0F172A;">${escapeHTML(name)}</div>
               </td>
-              <td>${escapeHTML(spec)}</td>
-              <td>
+              <td data-label="Especialidade">${escapeHTML(spec)}</td>
+              <td data-label="Status">
                 ${p.verified 
                   ? `<span class="badge-status-pill success"><i class="fa-solid fa-circle-check"></i> Verificado</span>` 
                   : `<span class="badge-status-pill neutral">Pendente</span>`}
               </td>
             </tr>
+          `;
+        }).join('');
+      }
+    }
+
+    // Resumo Feedbacks no Dashboard
+    const dashFeedbacks = document.getElementById('dashboard-feedbacks-preview');
+    if (dashFeedbacks) {
+      const recentFbs = state.feedbacks.slice(0, 3);
+      if (recentFbs.length === 0) {
+        dashFeedbacks.innerHTML = `<p style="font-size: 13px; color: #94A3B8; text-align: center; padding: 20px;">Nenhuma sugestão ou feedback recebido ainda.</p>`;
+      } else {
+        dashFeedbacks.innerHTML = recentFbs.map(f => {
+          const badgeLabels = {
+            sugestao: '💡 Sugestão',
+            elogio: '⭐ Elogio',
+            problema: '⚠️ Problema',
+            outro: '💬 Outro'
+          };
+          const dateStr = f.created_at ? new Date(f.created_at).toLocaleDateString('pt-BR') : '';
+          const hasReply = !!f.admin_reply;
+          return `
+            <div class="dash-feedback-preview-item">
+              <div style="flex: 1; min-width: 200px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
+                  <strong style="font-size: 13px; color: #0F172A;">${escapeHTML(f.user_name || 'Usuário')}</strong>
+                  <span class="fb-badge ${f.feedback_type || 'sugestao'}" style="font-size: 10px; padding: 2px 8px;">${badgeLabels[f.feedback_type] || f.feedback_type}</span>
+                  <span style="font-size: 11px; color: #94A3B8;">${dateStr}</span>
+                  ${hasReply 
+                    ? `<span style="font-size: 11px; color: #4F46E5; font-weight: 700;"><i class="fa-solid fa-check-double"></i> Respondido</span>` 
+                    : `<span style="font-size: 11px; color: #D97706; font-weight: 700;"><i class="fa-solid fa-clock"></i> Aguardando resposta</span>`}
+                </div>
+                <div style="font-size: 12.5px; color: #334155; font-weight: 600;">${escapeHTML(f.title || '')}</div>
+                <p style="font-size: 12px; color: #64748B; margin: 2px 0 0; max-height: 38px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${escapeHTML(f.message || '')}</p>
+              </div>
+              <div class="dash-feedback-preview-actions">
+                <button class="btn-action-primary" style="padding: 6px 12px; font-size: 11.5px; background: #6825B3; border-color: #6825B3;" onclick="window.AdminApp.openFeedbackReplyModal('${f.id}')">
+                  <i class="fa-solid fa-reply"></i> ${hasReply ? 'Ver / Editar Resposta' : 'Responder'}
+                </button>
+              </div>
+            </div>
           `;
         }).join('');
       }
@@ -449,13 +511,14 @@
     if (!tbody) return;
 
     if (list.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 32px; color: #94A3B8;">Nenhum profissional cadastrado ou correspondente ao filtro.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 32px; color: #94A3B8;">Nenhum profissional cadastrado ou correspondente ao filtro.</td></tr>`;
       return;
     }
 
     tbody.innerHTML = list.map(p => {
       const name = p.profiles ? p.profiles.full_name : 'Profissional';
-      const phone = p.profiles ? p.profiles.phone : '';
+      const email = p.profiles ? (p.profiles.email || 'Não informado') : 'Não informado';
+      const phone = p.profiles ? (p.profiles.phone_whatsapp || p.profiles.phone || '') : '';
       const avatar = p.profiles ? p.profiles.avatar_url : null;
       const cleanPhone = phone ? phone.replace(/\D/g, '') : '';
       const categoryName = p.categories ? p.categories.name : (p.specialty || 'Diversos');
@@ -464,8 +527,8 @@
       const hasPro = state.subscriptions.some(s => s.professional_id === p.id && s.status === 'active');
 
       return `
-        <tr>
-          <td>
+        <tr class="mobile-table-card">
+          <td data-label="Profissional" class="td-card-header">
             <div style="display: flex; align-items: center; gap: 10px;">
               ${avatar 
                 ? `<img src="${escapeHTML(avatar)}" alt="${escapeHTML(name)}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">` 
@@ -476,36 +539,43 @@
               </div>
             </div>
           </td>
-          <td>
+          <td data-label="E-mail">
+            ${email !== 'Não informado' 
+              ? `<a href="mailto:${escapeHTML(email)}" style="color: #4F46E5; text-decoration: none; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; word-break: break-all;">
+                   <i class="fa-regular fa-envelope" style="opacity: 0.7;"></i> ${escapeHTML(email)}
+                 </a>` 
+              : `<span style="color: #94A3B8;">Não informado</span>`}
+          </td>
+          <td data-label="WhatsApp">
             ${cleanPhone 
               ? `<a href="https://wa.me/55${cleanPhone}" target="_blank" style="color: #059669; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
                    <i class="fa-brands fa-whatsapp"></i> ${escapeHTML(phone)}
                  </a>` 
               : `<span style="color: #94A3B8;">Não informado</span>`}
           </td>
-          <td>
+          <td data-label="Especialidade">
             <span class="badge-status-pill neutral">${escapeHTML(categoryName)}</span>
           </td>
-          <td>
+          <td data-label="Avaliação">
             <div style="display: flex; align-items: center; gap: 4px; font-weight: 700; color: #F59E0B;">
               <i class="fa-solid fa-star"></i>
               <span>${p.rating || '5.0'}</span>
               <span style="font-size: 11px; color: #94A3B8; font-weight: normal;">(${p.total_reviews || 0})</span>
             </div>
           </td>
-          <td>
+          <td data-label="Selo Verificado">
             <label class="switch-toggle-label" title="Clique para ativar/desativar selo oficial verificado">
-              <input type="checkbox" ${p.verified ? 'checked' : ''} onchange="window.AdminApp.toggleProfessionalVerified('${p.id}', ${p.verified})">
-              <span>${p.verified ? '<strong style="color: #10B981;">Verificado</strong>' : '<span style="color: #94A3B8;">Não verificado</span>'}</span>
+              <input type="checkbox" ${p.verified ? 'checked' : ''} onchange="window.AdminApp.toggleProfessionalVerified('${p.id}', ${Boolean(p.verified)})">
+              <span>${p.verified ? '<strong style="color: #10B981;"><i class="fa-solid fa-circle-check"></i> Verificado</strong>' : '<span style="color: #94A3B8;">Não verificado</span>'}</span>
             </label>
           </td>
-          <td>
+          <td data-label="Plano PRO">
             ${hasPro 
               ? `<span class="badge-status-pill pro"><i class="fa-solid fa-crown"></i> PRO Ativo</span>` 
               : `<span class="badge-status-pill neutral">Gratuito</span>`}
           </td>
-          <td>
-            <div style="display: flex; gap: 6px;">
+          <td data-label="Ações Rápidas" class="td-card-actions">
+            <div style="display: flex; gap: 6px; justify-content: flex-end; width: 100%;">
               <button class="btn-action-primary" style="padding: 6px 10px; font-size: 11px;" onclick="window.AdminApp.openSubscriptionModal('${p.id}')">
                 <i class="fa-solid fa-crown"></i>
                 <span>Dar PRO</span>
@@ -523,10 +593,11 @@
 
     const filtered = state.professionals.filter(p => {
       const name = (p.profiles?.full_name || '').toLowerCase();
-      const phone = (p.profiles?.phone || '').toLowerCase();
+      const email = (p.profiles?.email || '').toLowerCase();
+      const phone = (p.profiles?.phone_whatsapp || p.profiles?.phone || '').toLowerCase();
       const spec = (p.specialty || p.categories?.name || '').toLowerCase();
 
-      const matchesQuery = !query || name.includes(query) || phone.includes(query) || spec.includes(query);
+      const matchesQuery = !query || name.includes(query) || email.includes(query) || phone.includes(query) || spec.includes(query);
 
       let matchesStatus = true;
       if (status === 'verified') matchesStatus = p.verified === true;
@@ -553,14 +624,14 @@
     tbody.innerHTML = list.map(u => {
       const name = u.full_name || 'Usuário Sem Nome';
       const email = u.email || 'Não informado';
-      const phone = u.phone || '';
+      const phone = u.phone_whatsapp || u.phone || '';
       const cleanPhone = phone ? phone.replace(/\D/g, '') : '';
       const role = u.role || 'client';
       const created = u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : '-';
 
       return `
-        <tr>
-          <td>
+        <tr class="mobile-table-card">
+          <td data-label="Usuário" class="td-card-header">
             <div style="display: flex; align-items: center; gap: 10px;">
               <div class="admin-avatar-circle" style="width: 34px; height: 34px; font-size: 12px; background: #3B82F6;">
                 ${escapeHTML(name.substring(0, 2).toUpperCase())}
@@ -568,15 +639,21 @@
               <div style="font-weight: 700; color: #0F172A;">${escapeHTML(name)}</div>
             </div>
           </td>
-          <td>${escapeHTML(email)}</td>
-          <td>${phone ? escapeHTML(phone) : '<span style="color: #94A3B8;">Não cadastrado</span>'}</td>
-          <td>
+          <td data-label="E-mail">
+            ${email !== 'Não informado' 
+              ? `<a href="mailto:${escapeHTML(email)}" style="color: #4F46E5; text-decoration: none; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; word-break: break-all;">
+                   <i class="fa-regular fa-envelope" style="opacity: 0.7;"></i> ${escapeHTML(email)}
+                 </a>` 
+              : `<span style="color: #94A3B8;">Não informado</span>`}
+          </td>
+          <td data-label="Telefone">${phone ? escapeHTML(phone) : '<span style="color: #94A3B8;">Não cadastrado</span>'}</td>
+          <td data-label="Tipo">
             <span class="badge-status-pill ${role === 'professional' ? 'pro' : 'neutral'}">
               ${role === 'professional' ? 'Profissional' : 'Cliente'}
             </span>
           </td>
-          <td>${created}</td>
-          <td>
+          <td data-label="Cadastro">${created}</td>
+          <td data-label="Contato" class="td-card-actions">
             ${cleanPhone 
               ? `<a href="https://wa.me/55${cleanPhone}" target="_blank" class="btn-action-primary" style="padding: 5px 10px; font-size: 11px; text-decoration: none; background: #059669; border-color: #059669;">
                    <i class="fa-brands fa-whatsapp"></i> Conversar
@@ -593,7 +670,7 @@
     const filtered = state.users.filter(u => {
       const name = (u.full_name || '').toLowerCase();
       const email = (u.email || '').toLowerCase();
-      const phone = (u.phone || '').toLowerCase();
+      const phone = (u.phone_whatsapp || u.phone || '').toLowerCase();
       return !query || name.includes(query) || email.includes(query) || phone.includes(query);
     });
     renderUsers(filtered);
@@ -649,20 +726,20 @@
       const isActive = s.status === 'active';
 
       return `
-        <tr>
-          <td>
+        <tr class="mobile-table-card">
+          <td data-label="Profissional" class="td-card-header">
             <div style="font-weight: 700; color: #0F172A;">${escapeHTML(proName)}</div>
           </td>
-          <td><span class="badge-status-pill pro">${escapeHTML(plan)}</span></td>
-          <td style="font-weight: 800; color: #059669;">${amount}</td>
-          <td>${start}</td>
-          <td>${expires}</td>
-          <td>
+          <td data-label="Plano"><span class="badge-status-pill pro">${escapeHTML(plan)}</span></td>
+          <td data-label="Valor" style="font-weight: 800; color: #059669;">${amount}</td>
+          <td data-label="Início">${start}</td>
+          <td data-label="Expiração">${expires}</td>
+          <td data-label="Status">
             ${isActive 
               ? `<span class="badge-status-pill success"><i class="fa-solid fa-circle-check"></i> Ativo</span>` 
               : `<span class="badge-status-pill danger">Expirado</span>`}
           </td>
-          <td>
+          <td data-label="Ações" class="td-card-actions">
             ${isActive 
               ? `<button class="btn-action-icon danger" title="Cancelar Assinatura" onclick="window.AdminApp.cancelSubscription('${s.id}')">
                    <i class="fa-solid fa-ban"></i>
@@ -690,18 +767,21 @@
       // Conta quantos profissionais pertencem a essa categoria
       const count = state.professionals.filter(p => p.category_id === c.id).length;
       return `
-        <tr>
-          <td>
-            <div class="kpi-icon-box purple" style="width: 32px; height: 32px; font-size: 13px;">
-              <i class="fa-solid fa-briefcase"></i>
+        <tr class="mobile-table-card">
+          <td data-label="Ícone" class="td-card-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="kpi-icon-box purple" style="width: 32px; height: 32px; font-size: 13px;">
+                <i class="fa-solid fa-briefcase"></i>
+              </div>
+              <span class="mobile-only-cat-name" style="font-weight: 700; color: #0F172A; display: none;">${escapeHTML(c.name)}</span>
             </div>
           </td>
-          <td style="font-weight: 700; color: #0F172A;">${escapeHTML(c.name)}</td>
-          <td><code>${escapeHTML(c.slug)}</code></td>
-          <td>
+          <td data-label="Categoria" style="font-weight: 700; color: #0F172A;">${escapeHTML(c.name)}</td>
+          <td data-label="Slug"><code>${escapeHTML(c.slug)}</code></td>
+          <td data-label="Profissionais">
             <span class="badge-status-pill neutral"><strong>${count}</strong> profissionais</span>
           </td>
-          <td>
+          <td data-label="Status">
             <span class="badge-status-pill success"><i class="fa-solid fa-check"></i> Ativa</span>
           </td>
         </tr>
@@ -863,24 +943,48 @@
   // OPERAÇÕES: PROFISSIONAIS
   // =========================================================
   async function toggleProfessionalVerified(id, currentStatus) {
-    const newStatus = !currentStatus;
+    const pro = state.professionals.find(p => p.id === id);
+    const baseStatus = pro ? Boolean(pro.verified) : Boolean(currentStatus);
+    const newStatus = !baseStatus;
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/professional_profiles?id=eq.${id}`, {
-        method: 'PATCH',
+      let savedOk = false;
+
+      // 1. Tenta via RPC SECURITY DEFINER (atualiza professional_profiles.verified e profiles.is_verified simultaneamente)
+      const rpcRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/admin_set_professional_verified`, {
+        method: 'POST',
         headers: getHeaders(),
-        body: JSON.stringify({ verified: newStatus, updated_at: new Date().toISOString() })
+        body: JSON.stringify({ p_pro_id: id, p_verified: newStatus })
       });
 
-      if (res.ok) {
-        const pro = state.professionals.find(p => p.id === id);
-        if (pro) pro.verified = newStatus;
-        renderDashboard();
-        renderProfessionals();
+      if (rpcRes.ok) {
+        savedOk = true;
       } else {
-        alert('Erro ao atualizar verificação do profissional.');
+        // 2. Fallback direto via PATCH na tabela professional_profiles
+        const patchRes = await fetch(`${SUPABASE_URL}/rest/v1/professional_profiles?id=eq.${id}`, {
+          method: 'PATCH',
+          headers: getHeaders(),
+          body: JSON.stringify({ verified: newStatus, updated_at: new Date().toISOString() })
+        });
+        if (patchRes.ok) {
+          const rows = await patchRes.json().catch(() => []);
+          savedOk = Array.isArray(rows) ? rows.length > 0 : true;
+        }
+      }
+
+      if (savedOk) {
+        if (pro) {
+          pro.verified = newStatus;
+          if (pro.profiles) pro.profiles.is_verified = newStatus;
+        }
+        renderDashboard();
+        filterProfessionals();
+      } else {
+        alert('Erro ao salvar o status de verificação no banco de dados.');
+        filterProfessionals();
       }
     } catch (err) {
       alert('Falha ao atualizar status de verificação: ' + err.message);
+      filterProfessionals();
     }
   }
 
@@ -1208,7 +1312,60 @@
   // =========================================================
   // INICIALIZAÇÃO
   // =========================================================
+  function ensureFeedbackStyles() {
+    if (document.getElementById('trampou-feedbacks-ui-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'trampou-feedbacks-ui-styles';
+    style.textContent = `.btn-admin-primary,.btn-action-primary{background:#6825B3;color:#FFFFFF!important;border:1px solid #6825B3;border-radius:8px;padding:8px 14px;font-size:12.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:all .15s ease;text-decoration:none}.btn-admin-primary:hover,.btn-action-primary:hover{background:#4C1D95;border-color:#4C1D95;transform:translateY(-1px)}.tab-header-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;padding:20px 24px;margin-bottom:24px;box-shadow:0 1px 3px rgba(0,0,0,.05)}.tab-title{font-size:18px;font-weight:800;color:#0F172A;letter-spacing:-.3px;margin:0 0 4px}.tab-subtitle{font-size:13px;color:#64748B;margin:0;line-height:1.4}.tab-actions-row{display:flex;align-items:center;gap:10px}.btn-admin-secondary{display:inline-flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #E2E8F0;color:#334155;font-size:13px;font-weight:700;padding:9px 16px;border-radius:10px;cursor:pointer;transition:all .15s ease}.btn-admin-secondary:hover{background:#F8FAFC;border-color:#6825B3;color:#6825B3}.admin-stats-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))!important;gap:18px!important;margin-bottom:24px!important}.admin-stat-card{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.05);display:flex;align-items:center;gap:16px}.stat-icon-circle{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}.stat-icon-circle.purple{background:#EDE9FE;color:#6825B3}.stat-icon-circle.gold{background:#FEF3C7;color:#D97706}.stat-icon-circle.blue{background:#EFF6FF;color:#2563EB}.stat-icon-circle.red{background:#FEF2F2;color:#DC2626}.stat-info{display:flex;flex-direction:column;gap:4px;min-width:0}.stat-label{font-size:12.5px;font-weight:600;color:#64748B}.stat-number{font-size:24px;font-weight:900;color:#0F172A;line-height:1.1}.admin-filter-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:14px;padding:14px 18px;margin-bottom:22px;box-shadow:0 1px 3px rgba(0,0,0,.05)}.filter-search-wrap{position:relative;flex:1;min-width:240px;display:flex;align-items:center}.filter-search-wrap i{position:absolute;left:14px;color:#94A3B8;font-size:13.5px;pointer-events:none}.filter-search-wrap input{width:100%;height:40px;padding:0 14px 0 38px;border:1px solid #E2E8F0;border-radius:10px;font-size:13px;color:#0F172A;background:#F1F5F9;outline:none}.filter-search-wrap input:focus{background:#FFFFFF;border-color:#6825B3}.filter-select-wrap{min-width:185px}.filter-select-wrap select{width:100%;height:40px;padding:0 12px;border:1px solid #E2E8F0;border-radius:10px;font-size:13px;font-weight:600;color:#334155;background:#FFFFFF;outline:none;cursor:pointer}`;
+    document.head.appendChild(style);
+  }
+
+  let deferredInstallPrompt = null;
+
+  function toggleMobileSidebar() {
+    const sidebar = document.getElementById('admin-sidebar');
+    const overlay = document.getElementById('admin-sidebar-overlay');
+    if (!sidebar || !overlay) return;
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+  }
+
+  function closeMobileSidebar() {
+    const sidebar = document.getElementById('admin-sidebar');
+    const overlay = document.getElementById('admin-sidebar-overlay');
+    if (sidebar) sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('active');
+  }
+
+  function promptInstallPWA() {
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      deferredInstallPrompt.userChoice.then(choiceResult => {
+        if (choiceResult.outcome === 'accepted') {
+          const btn = document.getElementById('btn-install-pwa');
+          if (btn) btn.style.display = 'none';
+        }
+        deferredInstallPrompt = null;
+      });
+    } else {
+      alert('📱 Como instalar o Trampou Admin no seu celular:\n\n• No Android (Chrome): Toque nos 3 pontinhos do navegador e selecione "Instalar aplicativo" ou "Adicionar à tela inicial".\n\n• No iPhone (Safari): Toque no botão Compartilhar e escolha "Adicionar à Tela de Início".');
+    }
+  }
+
   function init() {
+    ensureFeedbackStyles();
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      const btn = document.getElementById('btn-install-pwa');
+      if (btn) btn.style.display = 'inline-flex';
+    });
+    if ('caches' in window) {
+      caches.keys().then(keys => keys.forEach(k => { if (k !== 'trampou-admin-v2.0.0') caches.delete(k); }));
+    }
+    if ('serviceWorker' in navigator && (location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+      navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+    }
     startLiveClock();
     initNavigation();
 
@@ -1305,11 +1462,45 @@
 
       const dateStr = f.created_at ? new Date(f.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recente';
 
-      const contact = f.user_phone || f.user_email || '';
-      const isPhone = contact && contact.replace(/\D/g, '').length >= 10;
-      const whatsappLink = isPhone
-        ? `https://wa.me/55${contact.replace(/\D/g, '')}?text=${encodeURIComponent(`Olá ${f.user_name || ''}! Aqui é da equipe do Trampou. Recebemos sua mensagem sobre "${f.title || 'o app'}" e gostaríamos de te agradecer!`)}`
+      // Cruza com a tabela public.profiles (state.users) para identificar a conta real do usuário
+      const rawPhone = (f.user_phone || '').trim();
+      const rawCleanPhone = rawPhone ? rawPhone.replace(/\D/g, '') : '';
+      const rawEmail = (f.user_email || '').trim().toLowerCase();
+
+      const matchedProfile = (state.users || []).find(u => {
+        if (f.user_id && u.id === f.user_id) return true;
+        if (rawEmail && u.email && u.email.trim().toLowerCase() === rawEmail) return true;
+        const uPhone = (u.phone_whatsapp || u.phone || '').replace(/\D/g, '');
+        if (rawCleanPhone && uPhone && uPhone === rawCleanPhone) return true;
+        return false;
+      });
+
+      const displayName = matchedProfile?.full_name || f.user_name || 'Usuário';
+      const phone = (matchedProfile?.phone_whatsapp || matchedProfile?.phone || f.user_phone || '').trim();
+      const cleanPhone = phone ? phone.replace(/\D/g, '') : '';
+      const email = (matchedProfile?.email || f.user_email || '').trim();
+
+      const defaultZapMsg = `Olá ${displayName}! Aqui é da equipe do Trampou. Recebemos sua mensagem sobre "${f.title || 'o app'}" e estamos entrando em contato para te responder!`;
+      const whatsappLink = cleanPhone
+        ? `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(f.admin_reply ? `Olá ${displayName}! Aqui é da equipe do Trampou.\n\nEm resposta à sua mensagem sobre "${f.title || 'o app'}":\n\n${f.admin_reply}` : defaultZapMsg)}`
         : null;
+
+      const emailSubject = encodeURIComponent(`Resposta da equipe Trampou: ${f.title || 'Seu Feedback'}`);
+      const emailBody = encodeURIComponent(`Olá ${displayName},\n\nAqui é da equipe do Trampou!\n\n${f.admin_reply || 'Agradecemos pelo seu contato sobre o app.'}\n\nAtenciosamente,\nEquipe Trampou`);
+      const emailLink = email ? `mailto:${email}?subject=${emailSubject}&body=${emailBody}` : null;
+
+      const hasReply = !!f.admin_reply;
+      const replyDateStr = f.admin_replied_at 
+        ? new Date(f.admin_replied_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) 
+        : '';
+
+      const verificationBadgeHtml = matchedProfile
+        ? `<span class="badge-status-pill success" style="font-size: 10px; padding: 2px 8px;" title="Conta real autenticada na tabela profiles (ID: ${matchedProfile.id})">
+             <i class="fa-solid fa-user-check"></i> Conta Verificada (${matchedProfile.role === 'professional' ? 'Profissional' : 'Cliente'})
+           </span>`
+        : `<span class="badge-status-pill danger" style="font-size: 10px; padding: 2px 8px;" title="Este e-mail/ID não foi localizado na tabela profiles">
+             <i class="fa-solid fa-triangle-exclamation"></i> Conta Não Identificada no DB
+           </span>`;
 
       return `
         <div class="admin-feedback-card status-${f.status || 'pendente'}">
@@ -1328,16 +1519,50 @@
           ${f.title ? `<h4 class="fb-card-title">${escapeHTML(f.title)}</h4>` : ''}
           <p class="fb-card-message">${escapeHTML(f.message || '')}</p>
 
+          ${hasReply ? `
+            <div class="fb-reply-box">
+              <div class="fb-reply-header">
+                <span><i class="fa-solid fa-reply"></i> Resposta Oficial da Equipe Trampou</span>
+                <span style="font-size: 11px; color: #581C87; font-weight: 500;">${replyDateStr}</span>
+              </div>
+              <p class="fb-reply-text">${escapeHTML(f.admin_reply)}</p>
+            </div>
+          ` : ''}
+
+          ${f.admin_notes ? `
+            <div class="fb-notes-box">
+              <i class="fa-solid fa-note-sticky"></i>
+              <span><strong>Nota Interna:</strong> ${escapeHTML(f.admin_notes)}</span>
+            </div>
+          ` : ''}
+
           <div class="fb-card-user-info">
             <div class="fb-user-details">
-              <span class="fb-user-name">${escapeHTML(f.user_name || 'Usuário')}</span>
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <span class="fb-user-name">${escapeHTML(displayName)}</span>
+                ${verificationBadgeHtml}
+              </div>
               <span class="fb-user-loc"><i class="fa-solid fa-location-dot"></i> ${escapeHTML(f.city || 'Parauapebas')}, ${escapeHTML(f.state || 'PA')}</span>
+              ${email ? `<span style="font-size: 11px; color: #4F46E5; margin-top: 2px; word-break: break-all;"><i class="fa-regular fa-envelope"></i> ${escapeHTML(email)}</span>` : ''}
+              ${phone ? `<span style="font-size: 11px; color: #059669; margin-top: 1px;"><i class="fa-brands fa-whatsapp"></i> ${escapeHTML(phone)}</span>` : ''}
+              ${matchedProfile ? `<span style="font-size: 10.5px; color: #94A3B8; margin-top: 1px;">ID da Conta: <code>${escapeHTML(matchedProfile.id.substring(0, 8))}...</code></span>` : ''}
             </div>
-            ${whatsappLink ? `
-              <a href="${whatsappLink}" target="_blank" class="fb-contact-btn" title="Conversar no WhatsApp">
-                <i class="fa-brands fa-whatsapp"></i> Responder
-              </a>
-            ` : (contact ? `<span style="font-size: 11px; color: #64748B;">${escapeHTML(contact)}</span>` : '')}
+
+            <div class="fb-card-actions-group" style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+              ${whatsappLink ? `
+                <a href="${whatsappLink}" target="_blank" class="fb-contact-btn" title="Conversar no WhatsApp">
+                  <i class="fa-brands fa-whatsapp"></i> WhatsApp
+                </a>
+              ` : ''}
+              ${emailLink ? `
+                <a href="${emailLink}" class="fb-contact-btn" style="background: #EFF6FF; border-color: #BFDBFE; color: #1D4ED8;" title="Enviar E-mail">
+                  <i class="fa-regular fa-envelope"></i> E-mail
+                </a>
+              ` : ''}
+              <button class="btn-action-primary" style="padding: 5px 12px; font-size: 11.5px; background: #6825B3; border-color: #6825B3;" onclick="window.AdminApp.openFeedbackReplyModal('${f.id}')">
+                <i class="fa-solid fa-reply"></i> ${hasReply ? 'Editar Resposta' : 'Responder'}
+              </button>
+            </div>
           </div>
 
           <div class="fb-card-footer">
@@ -1345,6 +1570,7 @@
               <span style="font-size: 11px; font-weight: 700; color: #64748B;">Status:</span>
               <select class="fb-status-select" onchange="window.AdminApp.updateFeedbackStatus('${f.id}', this.value)">
                 <option value="pendente" ${f.status === 'pendente' ? 'selected' : ''}>⏳ Pendente</option>
+                <option value="respondido" ${f.status === 'respondido' ? 'selected' : ''}>💬 Respondido</option>
                 <option value="em_analise" ${f.status === 'em_analise' ? 'selected' : ''}>🔍 Em Análise</option>
                 <option value="implementado" ${f.status === 'implementado' ? 'selected' : ''}>✅ Implementado</option>
                 <option value="arquivado" ${f.status === 'arquivado' ? 'selected' : ''}>📁 Arquivado</option>
@@ -1359,6 +1585,169 @@
     }).join('');
   }
 
+  let currentReplyFeedback = null;
+
+  function openFeedbackReplyModal(id) {
+    const feedback = state.feedbacks.find(f => f.id === id);
+    if (!feedback) return;
+
+    currentReplyFeedback = feedback;
+
+    const modal = document.getElementById('modal-feedback-reply');
+    if (!modal) return;
+
+    const idInput = document.getElementById('reply-feedback-id');
+    if (idInput) idInput.value = feedback.id;
+
+    const nameEl = document.getElementById('reply-user-name');
+    if (nameEl) nameEl.textContent = feedback.user_name || 'Usuário Sem Nome';
+    
+    const initials = (feedback.user_name || 'U').substring(0, 2).toUpperCase();
+    const avatarEl = document.getElementById('reply-user-avatar');
+    if (avatarEl) avatarEl.textContent = initials;
+
+    const badgeEl = document.getElementById('reply-feedback-badge');
+    if (badgeEl) {
+      badgeEl.className = `fb-badge ${feedback.feedback_type || 'sugestao'}`;
+      const badgeLabels = {
+        sugestao: '💡 Sugestão',
+        elogio: '⭐ Elogio',
+        problema: '⚠️ Problema',
+        outro: '💬 Outro'
+      };
+      badgeEl.innerHTML = badgeLabels[feedback.feedback_type] || feedback.feedback_type;
+    }
+
+    const titleEl = document.getElementById('reply-feedback-title');
+    if (titleEl) titleEl.textContent = feedback.title || '';
+
+    const msgEl = document.getElementById('reply-feedback-message');
+    if (msgEl) msgEl.textContent = feedback.message || '';
+
+    const contactsEl = document.getElementById('reply-user-contacts');
+    if (contactsEl) {
+      const parts = [];
+      if (feedback.user_email) parts.push(`<span><i class="fa-regular fa-envelope"></i> ${escapeHTML(feedback.user_email)}</span>`);
+      if (feedback.user_phone) parts.push(`<span><i class="fa-brands fa-whatsapp"></i> ${escapeHTML(feedback.user_phone)}</span>`);
+      parts.push(`<span><i class="fa-solid fa-location-dot"></i> ${escapeHTML(feedback.city || 'Parauapebas')}, ${escapeHTML(feedback.state || 'PA')}</span>`);
+      contactsEl.innerHTML = parts.join('');
+    }
+
+    const replyInput = document.getElementById('feedback-reply-text');
+    if (replyInput) {
+      replyInput.value = feedback.admin_reply || `Olá ${feedback.user_name || ''}! Agradecemos muito pelo seu feedback. Analisamos sua mensagem e ficamos felizes em te responder!`;
+    }
+
+    const statusSelect = document.getElementById('feedback-reply-status');
+    if (statusSelect) {
+      statusSelect.value = feedback.status === 'pendente' ? 'respondido' : (feedback.status || 'respondido');
+    }
+
+    const notesInput = document.getElementById('feedback-admin-notes');
+    if (notesInput) {
+      notesInput.value = feedback.admin_notes || '';
+    }
+
+    const btnZap = document.getElementById('btn-reply-whatsapp');
+    if (btnZap) {
+      btnZap.style.display = feedback.user_phone ? 'inline-flex' : 'none';
+    }
+
+    const btnEmail = document.getElementById('btn-reply-email');
+    if (btnEmail) {
+      btnEmail.style.display = feedback.user_email ? 'inline-flex' : 'none';
+    }
+
+    modal.classList.add('active');
+  }
+
+  function closeFeedbackReplyModal() {
+    const modal = document.getElementById('modal-feedback-reply');
+    if (modal) modal.classList.remove('active');
+    currentReplyFeedback = null;
+  }
+
+  async function saveFeedbackReply() {
+    const id = document.getElementById('reply-feedback-id')?.value;
+    const replyText = document.getElementById('feedback-reply-text')?.value.trim();
+    const newStatus = document.getElementById('feedback-reply-status')?.value || 'respondido';
+    const adminNotes = document.getElementById('feedback-admin-notes')?.value.trim();
+
+    if (!id || !replyText) {
+      alert('Por favor, digite uma resposta para salvar.');
+      return;
+    }
+
+    const btn = document.getElementById('btn-submit-reply');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Salvando...';
+    }
+
+    try {
+      const now = new Date().toISOString();
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/app_feedbacks?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: getHeaders(),
+        body: JSON.stringify({
+          admin_reply: replyText,
+          admin_replied_at: now,
+          status: newStatus,
+          admin_notes: adminNotes || null,
+          updated_at: now
+        })
+      });
+
+      if (res.ok) {
+        const item = state.feedbacks.find(f => f.id === id);
+        if (item) {
+          item.admin_reply = replyText;
+          item.admin_replied_at = now;
+          item.status = newStatus;
+          item.admin_notes = adminNotes || null;
+        }
+        updateCounters();
+        renderFeedbacks();
+        renderDashboard();
+        closeFeedbackReplyModal();
+        alert('✅ Resposta oficial salva com sucesso no sistema!');
+      } else {
+        alert('Erro ao salvar resposta no banco de dados.');
+      }
+    } catch (err) {
+      console.error('Erro ao salvar resposta:', err);
+      alert('Erro de conexão ao salvar resposta: ' + err.message);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Resposta Oficial';
+      }
+    }
+  }
+
+  function sendReplyViaWhatsApp() {
+    if (!currentReplyFeedback || !currentReplyFeedback.user_phone) {
+      alert('Este usuário não informou telefone/WhatsApp.');
+      return;
+    }
+    const cleanPhone = currentReplyFeedback.user_phone.replace(/\D/g, '');
+    const replyText = document.getElementById('feedback-reply-text')?.value.trim() || '';
+    const message = `Olá ${currentReplyFeedback.user_name || ''}! Aqui é da equipe do Trampou.\n\nEm resposta à sua mensagem sobre "${currentReplyFeedback.title || 'o aplicativo'}":\n\n${replyText}\n\nMuito obrigado pela colaboração!`;
+    const url = `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+  }
+
+  function sendReplyViaEmail() {
+    if (!currentReplyFeedback || !currentReplyFeedback.user_email) {
+      alert('Este usuário não informou e-mail.');
+      return;
+    }
+    const replyText = document.getElementById('feedback-reply-text')?.value.trim() || '';
+    const subject = encodeURIComponent(`Resposta da equipe Trampou: ${currentReplyFeedback.title || 'Seu Feedback'}`);
+    const body = encodeURIComponent(`Olá ${currentReplyFeedback.user_name || ''},\n\nAqui é da equipe de suporte do Trampou!\n\n${replyText}\n\nMuito obrigado pelo seu feedback!\n\nAtenciosamente,\nEquipe Trampou`);
+    window.location.href = `mailto:${currentReplyFeedback.user_email}?subject=${subject}&body=${body}`;
+  }
+
   async function updateFeedbackStatus(id, newStatus) {
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/app_feedbacks?id=eq.${id}`, {
@@ -1371,6 +1760,7 @@
         if (item) item.status = newStatus;
         updateCounters();
         renderFeedbacks();
+        renderDashboard();
       }
     } catch (err) {
       console.error('Erro ao atualizar status do feedback:', err);
@@ -1388,6 +1778,7 @@
         state.feedbacks = state.feedbacks.filter(f => f.id !== id);
         updateCounters();
         renderFeedbacks();
+        renderDashboard();
       }
     } catch (err) {
       console.error('Erro ao excluir feedback:', err);
@@ -1417,10 +1808,22 @@
     triggerCelebration,
     closeCelebration,
     shareMilestoneOnWhatsapp,
-    refreshFeedbacks: fetchFeedbacks,
+    refreshFeedbacks: async function () {
+      await fetchFeedbacks();
+      renderFeedbacks();
+      renderDashboard();
+    },
     filterFeedbacks: renderFeedbacks,
     updateFeedbackStatus,
-    deleteFeedback
+    deleteFeedback,
+    openFeedbackReplyModal,
+    closeFeedbackReplyModal,
+    saveFeedbackReply,
+    sendReplyViaWhatsApp,
+    sendReplyViaEmail,
+    toggleMobileSidebar,
+    closeMobileSidebar,
+    promptInstallPWA
   };
 
   // Dispara no carregamento da DOM

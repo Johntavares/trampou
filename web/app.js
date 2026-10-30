@@ -2798,7 +2798,9 @@ function renderVitrineView() {
   }
 
   const nameElem = document.getElementById('vitrine-name');
-  if (nameElem) nameElem.innerText = p.name;
+  if (nameElem) {
+    nameElem.innerHTML = `${escapeHTML(p.name || 'Profissional')}${p.verified ? ' <i class="fa-solid fa-circle-check" style="color: #7C3AED; font-size: 15px;" title="Profissional Verificado"></i>' : ''}`;
+  }
 
   const specialtyElem = document.getElementById('vitrine-specialty');
   if (specialtyElem) specialtyElem.innerText = p.specialty;
@@ -3156,8 +3158,8 @@ async function loadProfessionalsFromSupabase() {
             reviewsCount: Number(lp.rating_count) || 0,
             worksCount: combinedPosts.length,
             completedServices: existingLocal ? (existingLocal.completedServices || 0) : 0,
-            verified: lp.is_verified ?? true,
-            experience: proDetails.years_experience ? `${proDetails.years_experience} anos` : 'Profissional Verificado',
+            verified: Boolean(proDetails.verified || lp.is_verified),
+            experience: proDetails.years_experience ? `${proDetails.years_experience} anos` : (Boolean(proDetails.verified || lp.is_verified) ? 'Profissional Verificado' : 'Profissional Cadastrado'),
             avatar: lp.avatar_url || (existingLocal && existingLocal.avatar) || 'trampou_app_icon.png',
             bio: lp.bio || (existingLocal && existingLocal.bio) || `Atendimento profissional em toda a cidade de ${city}, ${state}.`,
             servedNeighborhoods: [`Toda a cidade (${city}, ${state})`],
