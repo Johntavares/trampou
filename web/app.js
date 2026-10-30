@@ -2984,6 +2984,57 @@ function loadProfessionalsFromStorage() {
   }
 }
 
+// Migra automaticamente para o Supabase qualquer foto antiga que estava salva apenas no localStorage do aparelho
+let isSyncingLocalPortfolio = false;
+async function syncPendingLocalPortfolioToSupabase() {
+  if (isSyncingLocalPortfolio || !Array.isArray(PROFESSIONALS)) return;
+  isSyncingLocalPortfolio = true;
+  try {
+    let anySynced = false;
+    for (const pro of PROFESSIONALS) {
+      if (!pro || !pro.dbId || String(pro.dbId).startsWith('u_')) continue;
+      const posts = Array.isArray(pro.posts) ? pro.posts : [];
+      for (const post of posts) {
+        if (!post || !post.image) continue;
+        const isAlreadyInDb = Boolean(post.dbItemId || /^[0-9a-f-]{36}$/i.test(String(post.id)));
+        if (isAlreadyInDb) continue;
+
+        try {
+          const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/add_portfolio_item`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({
+              p_professional_id: pro.dbId,
+              p_title: post.title || `Serviço de ${pro.specialty || 'Profissional'}`,
+              p_description: post.description || `Serviço executado com qualidade em ${pro.city || 'Parauapebas'}, ${pro.state || 'PA'}.`,
+              p_image_url: post.image,
+              p_service_category: post.serviceCategory || pro.specialty || 'Serviço Profissional',
+              p_city_label: post.neighborhood || `${pro.city || 'Parauapebas'}, ${pro.state || 'PA'}`
+            })
+          });
+          if (res.ok) {
+            const newUuid = await res.json();
+            if (newUuid && typeof newUuid === 'string') {
+              post.id = newUuid;
+              post.dbItemId = newUuid;
+              anySynced = true;
+            }
+          }
+        } catch (_) {}
+      }
+    }
+    if (anySynced) {
+      saveProfessionalsToStorage();
+    }
+  } finally {
+    isSyncingLocalPortfolio = false;
+  }
+}
+
 async function loadProfessionalsFromSupabase() {
   const statusPills = document.querySelectorAll('.db-status-pill');
   try {
@@ -3086,6 +3137,9 @@ async function loadProfessionalsFromSupabase() {
 
         PROFESSIONALS = loadedFromDb;
         saveProfessionalsToStorage();
+
+        // Sobe automaticamente para o banco qualquer foto que estava salva apenas no localStorage deste aparelho
+        syncPendingLocalPortfolioToSupabase();
 
         // Se a vitrine de um profissional estiver aberta, atualiza os trabalhos em tempo real
         if (currentVitrinePro) {
