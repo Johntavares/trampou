@@ -2658,10 +2658,102 @@ function openNotificationsFromHome() {
 
 function markAllNotificationsAsRead() {
   conversations.forEach(c => { c.unread = 0; });
+  saveStoredConversations();
   updateNotificationBadges();
   renderConversations();
   showToast('Todas as notificações foram marcadas como lidas.');
 }
+
+// Utilitário de formatação leve para balões de chat (Markdown simplificado)
+function formatChatBubbleText(text) {
+  if (text === null || text === undefined) return '';
+  let str = escapeHTML(text);
+  // Negrito **texto**
+  str = str.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  // Quebras de linha
+  str = str.replace(/\n/g, '<br>');
+  return str;
+}
+window.formatChatBubbleText = formatChatBubbleText;
+
+// ==============================================================================
+// SAUDAÇÃO DE BOAS-VINDAS PERSONALIZADA (CLIENTES E PROFISSIONAIS)
+// Notificação com contador, badge e conversa amigável com guia do app
+// ==============================================================================
+function ensureWelcomeNotification(user, notifyUser = false) {
+  if (!user || !user.role) return;
+
+  const role = user.role === 'professional' ? 'professional' : 'client';
+  const userId = user.id || user.email || 'user';
+  const welcomeKey = `trampou_welcome_delivered_${role}_${userId}`;
+
+  const welcomeConvId = `welcome_trampou_${role}_${userId}`;
+  const existingConvIndex = conversations.findIndex(c => c.id === welcomeConvId || (c.isOfficial && c.id.startsWith('welcome_trampou_')));
+
+  const isPro = role === 'professional';
+  const firstName = (user.name || '').trim().split(' ')[0] || (isPro ? 'Profissional' : 'Amigo(a)');
+  const city = user.city || currentActiveLocation.city || 'Parauapebas';
+
+  const welcomeTitle = 'Equipe Trampou';
+  const welcomeService = isPro ? 'Guia do Profissional' : 'Guia de Boas-Vindas';
+  const welcomeSnippet = isPro
+    ? '⭐ Parabéns! Sua vitrine profissional está ativa no Trampou. Confira as dicas para bombar seu perfil!'
+    : '👋 Seja bem-vindo(a) ao Trampou! Veja como funciona para encontrar serviços de confiança.';
+
+  const welcomeBody = isPro
+    ? `⭐ Olá, ${firstName}! Parabéns! Sua vitrine profissional oficial no Trampou já está ativa em ${city}!\n\nAgora clientes de toda a cidade e região podem encontrar seus serviços, ver seus trabalhos e entrar em contato direto com você.\n\n💼 **Dicas valiosas para bombar seu perfil e fechar mais serviços:**\n\n1️⃣ **Publique Fotos na sua Vitrine**\nProfissionais com fotos reais de serviços atraem até 5x mais clientes! Adicione fotos de trabalhos concluídos e transformações de "Antes & Depois" para ganhar destaque gratuito na tela inicial.\n\n2️⃣ **Ative o Plantão SOS 24h**\nTrabalha com atendimentos de urgência ou plantão? Mantenha o botão SOS ativado no seu perfil para receber chamados de emergência no seu radar.\n\n3️⃣ **Responda com Agilidade no Chat**\nClientes costumam fechar com os primeiros que respondem. Fique atento às notificações de mensagens para não perder oportunidades de orçamento.\n\n4️⃣ **Peça Avaliações aos Clientes**\nAo concluir um serviço com capricho, peça para o cliente avaliar você com 5 estrelas. Boas notas colocam seu perfil no topo das recomendações.\n\n5️⃣ **Zero Comissões**\nO Trampou não cobra nenhuma taxa ou comissão sobre o que você recebe. O valor acordado com o cliente é 100% seu!\n\nDesejamos muito trabalho e sucesso no seu negócio! Tamo junto! 🛠️🚀`
+    : `👋 Olá, ${firstName}! Seja muito bem-vindo(a) ao Trampou!\n\nEstamos muito felizes em ter você aqui. O Trampou foi criado para facilitar o seu dia a dia e conectar você aos melhores profissionais autônomos de confiança em ${city}.\n\n💡 **Veja como aproveitar ao máximo o aplicativo:**\n\n1️⃣ **Encontre o Especialista Ideal**\nNavegue pelas categorias na tela inicial ou busque por eletricistas, encanadores, pintores, diaristas, técnicos e muito mais.\n\n2️⃣ **Plantão SOS 24h**\nPrecisou de socorro urgente? Em imprevistos (cano estourado, pane elétrica, chaveiro), acione o Radar SOS no topo da tela para encontrar atendimento rápido.\n\n3️⃣ **Negocie Direto pelo Chat**\nTire dúvidas, envie fotos do serviço e combine orçamentos diretamente com o prestador pelo chat, com total liberdade, sem taxas e sem intermediários.\n\n4️⃣ **Vitrine & Avaliações Reais**\nConfira fotos de trabalhos reais já realizados e leia a opinião de outros clientes antes de contratar.\n\n✨ **Dica:** Sempre combine os detalhes e prazos com clareza no chat antes de iniciar o trabalho.\n\nSe precisar de qualquer suporte, nossa equipe está à disposição. Boas contratações! 🚀`;
+
+  const alreadyDelivered = localStorage.getItem(welcomeKey);
+  if (alreadyDelivered && existingConvIndex >= 0) {
+    return; // Já entregue
+  }
+
+  if (existingConvIndex >= 0) {
+    conversations[existingConvIndex].service = welcomeService;
+    conversations[existingConvIndex].lastMsg = welcomeSnippet;
+    conversations[existingConvIndex].isOfficial = true;
+    if (conversations[existingConvIndex].messages && conversations[existingConvIndex].messages.length > 0) {
+      conversations[existingConvIndex].messages[0].text = welcomeBody;
+    }
+  } else {
+    const welcomeConv = {
+      id: welcomeConvId,
+      proName: welcomeTitle,
+      proId: 'trampou_official',
+      clientName: user.name || 'Usuário',
+      service: welcomeService,
+      isOfficial: true,
+      lastMsg: welcomeSnippet,
+      time: 'Agora',
+      unread: 1,
+      messages: [
+        {
+          isMe: false,
+          isOfficial: true,
+          text: welcomeBody,
+          time: 'Agora'
+        }
+      ],
+      attendance: null
+    };
+
+    conversations.unshift(welcomeConv);
+  }
+
+  localStorage.setItem(welcomeKey, new Date().toISOString());
+  saveStoredConversations();
+  renderConversations();
+  updateNotificationBadges();
+
+  if (notifyUser) {
+    if (navigator && navigator.vibrate) {
+      try { navigator.vibrate([100, 60, 140]); } catch (_) {}
+    }
+    showToast(isPro ? '⭐ Guia do Profissional disponível nas suas Mensagens!' : '👋 Guia de Boas-Vindas disponível nas suas Mensagens!');
+  }
+}
+window.ensureWelcomeNotification = ensureWelcomeNotification;
 
 // Renderiza Conversas e Notificações
 function renderConversations() {
@@ -2683,20 +2775,35 @@ function renderConversations() {
     return;
   }
 
-  container.innerHTML = conversations.map(c => `
-    <div class="conversation-item ${c.unread > 0 ? 'has-unread' : ''}" onclick="openChatWith('${c.proName}', '${c.service}', '${c.proId || ''}')">
-      <div class="chat-avatar" style="${c.unread > 0 ? 'box-shadow: 0 0 0 2px #7C3AED;' : ''}">${c.proName[0]}</div>
-      <div class="chat-item-info">
-        <div class="chat-item-top">
-          <h5 style="${c.unread > 0 ? 'font-weight: 800; color: #0F172A;' : ''}">${c.proName}</h5>
-          <span class="chat-time" style="${c.unread > 0 ? 'color: #7C3AED; font-weight: 700;' : ''}">${c.time}</span>
+  container.innerHTML = conversations.map(c => {
+    const isOff = !!c.isOfficial || c.proName === 'Equipe Trampou';
+    const avatarHtml = isOff
+      ? `<div class="chat-avatar" style="background: linear-gradient(135deg, #7C3AED, #4F46E5); color: #fff; font-size: 15px; display:flex; align-items:center; justify-content:center; ${c.unread > 0 ? 'box-shadow: 0 0 0 2px #7C3AED;' : ''}"><i class="fa-solid fa-bolt"></i></div>`
+      : `<div class="chat-avatar" style="${c.unread > 0 ? 'box-shadow: 0 0 0 2px #7C3AED;' : ''}">${escapeHTML((c.proName || 'P')[0])}</div>`;
+
+    const verifiedBadge = isOff
+      ? `<span style="display:inline-flex; align-items:center; gap:3px; font-size:10px; background:#EFF6FF; color:#1D4ED8; padding:1px 6px; border-radius:10px; font-weight:700; margin-left:6px; border:1px solid #BFDBFE;"><i class="fa-solid fa-circle-check" style="font-size:10px; color:#2563EB;"></i> Oficial</span>`
+      : '';
+
+    const serviceTagStyle = isOff
+      ? 'background: #F3E8FF; color: #6B21A8; font-weight: 700;'
+      : '';
+
+    return `
+      <div class="conversation-item ${c.unread > 0 ? 'has-unread' : ''}" onclick="openChatWith('${escapeHTML(c.proName)}', '${escapeHTML(c.service)}', '${c.proId || ''}')">
+        ${avatarHtml}
+        <div class="chat-item-info">
+          <div class="chat-item-top">
+            <h5 style="${c.unread > 0 ? 'font-weight: 800; color: #0F172A;' : ''}">${escapeHTML(c.proName)}${verifiedBadge}</h5>
+            <span class="chat-time" style="${c.unread > 0 ? 'color: #7C3AED; font-weight: 700;' : ''}">${escapeHTML(c.time)}</span>
+          </div>
+          <span class="chat-tag-service" style="${serviceTagStyle}">${escapeHTML(c.service)}</span>
+          <div class="chat-last-msg" style="${c.unread > 0 ? 'font-weight: 600; color: #1E293B;' : ''}">${escapeHTML(c.lastMsg)}</div>
         </div>
-        <span class="chat-tag-service">${c.service}</span>
-        <div class="chat-last-msg" style="${c.unread > 0 ? 'font-weight: 600; color: #1E293B;' : ''}">${c.lastMsg}</div>
+        ${c.unread > 0 ? `<div class="unread-badge">${c.unread}</div>` : ''}
       </div>
-      ${c.unread > 0 ? `<div class="unread-badge">${c.unread}</div>` : ''}
-    </div>
-  `).join('');
+    `;
+  }).join('');
 
   updateNotificationBadges();
 }
@@ -4844,51 +4951,79 @@ function openChatWith(name, service, proId) {
   const contactAvatarElem = document.getElementById('chat-contact-avatar');
   const roleLabelElem = document.getElementById('chat-active-role-label');
 
+  const isOfficialChat = name === 'Equipe Trampou' || proId === 'trampou_official';
+
   // Encontra o profissional correspondente para avatar e navegação
   let targetPro = null;
-  if (proId) {
-    targetPro = PROFESSIONALS.find(p => p.id === proId);
-  }
-  if (!targetPro && name) {
-    const cleanName = name.toLowerCase().trim();
-    targetPro = PROFESSIONALS.find(p => {
-      const pName = (p.name || '').toLowerCase();
-      return pName === cleanName || pName.includes(cleanName) || cleanName.includes(pName);
-    });
-  }
-  if (!targetPro && service) {
-    const serv = service.toLowerCase().replace(/\[sos\]/gi, '').trim();
-    targetPro = PROFESSIONALS.find(p => {
-      const spec = (p.specialty || '').toLowerCase();
-      return spec.includes(serv) || serv.includes(spec);
-    });
-  }
-  if (!targetPro) {
-    targetPro = (PROFESSIONALS && PROFESSIONALS.length > 0) ? PROFESSIONALS[0] : null;
+  if (!isOfficialChat) {
+    if (proId) {
+      targetPro = PROFESSIONALS.find(p => p.id === proId);
+    }
+    if (!targetPro && name) {
+      const cleanName = name.toLowerCase().trim();
+      targetPro = PROFESSIONALS.find(p => {
+        const pName = (p.name || '').toLowerCase();
+        return pName === cleanName || pName.includes(cleanName) || cleanName.includes(pName);
+      });
+    }
+    if (!targetPro && service) {
+      const serv = service.toLowerCase().replace(/\[sos\]/gi, '').trim();
+      targetPro = PROFESSIONALS.find(p => {
+        const spec = (p.specialty || '').toLowerCase();
+        return spec.includes(serv) || serv.includes(spec);
+      });
+    }
+    if (!targetPro) {
+      targetPro = (PROFESSIONALS && PROFESSIONALS.length > 0) ? PROFESSIONALS[0] : null;
+    }
   }
 
-  if (contactNameElem) contactNameElem.innerText = name;
-  if (contactServElem) contactServElem.innerText = service ? `${service} • Ver trabalhos` : 'Ver perfil e trabalhos';
+  if (contactNameElem) {
+    if (isOfficialChat) {
+      contactNameElem.innerHTML = `Equipe Trampou <i class="fa-solid fa-circle-check" style="color: #2563EB; font-size: 13px; margin-left: 4px;" title="Canal Oficial"></i>`;
+    } else {
+      contactNameElem.innerText = name;
+    }
+  }
+
+  if (contactServElem) {
+    if (isOfficialChat) {
+      contactServElem.innerText = `${service || 'Canal Oficial'} • Boas-Vindas & Dicas`;
+    } else {
+      contactServElem.innerText = service ? `${service} • Ver trabalhos` : 'Ver perfil e trabalhos';
+    }
+  }
+
   if (contactAvatarElem) {
-    if (targetPro && targetPro.avatar) {
+    if (isOfficialChat) {
+      contactAvatarElem.innerHTML = `<div style="width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg, #7C3AED, #4F46E5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;"><i class="fa-solid fa-bolt"></i></div>`;
+    } else if (targetPro && targetPro.avatar) {
       contactAvatarElem.innerHTML = `<img src="${targetPro.avatar}" alt="${name}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
     } else {
       contactAvatarElem.innerText = (name || 'P').trim()[0].toUpperCase();
     }
   }
-  if (roleLabelElem) roleLabelElem.innerText = chatPerspective === 'client' ? 'Você: Cliente' : 'Você: Profissional';
+
+  if (roleLabelElem) {
+    if (isOfficialChat) {
+      roleLabelElem.innerText = 'Canal Oficial Trampou';
+    } else {
+      roleLabelElem.innerText = chatPerspective === 'client' ? 'Você: Cliente' : 'Você: Profissional';
+    }
+  }
 
   // Localiza ou cria a conversa
-  activeChat = conversations.find(c => c.proName === name);
+  activeChat = conversations.find(c => c.proName === name || (isOfficialChat && (c.isOfficial || c.proId === 'trampou_official')));
   if (!activeChat) {
     activeChat = {
-      id: 'c_' + Date.now(),
+      id: isOfficialChat ? 'welcome_trampou' : ('c_' + Date.now()),
       proName: name,
       proId: targetPro ? targetPro.id : (proId || null),
       clientName: (currentUser && currentUser.name) ? currentUser.name : 'Cliente Trampou',
       service: service || 'Negociação de Serviço',
+      isOfficial: isOfficialChat,
       messages: [
-        { isMe: false, text: `Olá! Como posso ajudar com seu pedido de ${service || 'serviço'}?`, time: 'Agora' }
+        { isMe: false, isOfficial: isOfficialChat, text: `Olá! Como posso ajudar com seu pedido de ${service || 'serviço'}?`, time: 'Agora' }
       ],
       attendance: null
     };
@@ -4902,9 +5037,10 @@ function openChatWith(name, service, proId) {
     activeChat.attendance = null;
   }
 
-  // Marca mensagens desta conversa como lidas
-  if (activeChat) {
+  // Marca mensagens desta conversa como lidas e persiste
+  if (activeChat && activeChat.unread > 0) {
     activeChat.unread = 0;
+    saveStoredConversations();
     updateNotificationBadges();
   }
 
@@ -4918,6 +5054,11 @@ function openChatWith(name, service, proId) {
 // Navegar para o perfil e portfólio de trabalhos do profissional a partir do chat
 function openProProfileFromChat() {
   if (!activeChat) return;
+
+  if (activeChat.isOfficial || activeChat.proId === 'trampou_official') {
+    showToast('Canal Oficial de Boas-Vindas e Notificações do Trampou.');
+    return;
+  }
 
   let pro = null;
   if (activeChat.proId) {
@@ -4954,6 +5095,7 @@ window.openProProfileFromChat = openProProfileFromChat;
 function closeChat() {
   const chatOverlay = document.getElementById('chat-overlay');
   if (chatOverlay) chatOverlay.classList.remove('active');
+  saveStoredConversations();
   renderConversations();
   updateNotificationBadges();
 }
@@ -4967,15 +5109,17 @@ function renderChatMessages() {
       return `
         <div style="text-align: center; margin: 8px 0;">
           <span style="display: inline-block; background: #EEF2FF; color: #4338CA; border: 1px solid #C7D2FE; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 500;">
-            ${m.text}
+            ${formatChatBubbleText(m.text)}
           </span>
         </div>
       `;
     }
+    const isOfficialBubble = m.isOfficial || (activeChat.isOfficial && !m.isMe);
+    const bubbleClass = `chat-bubble ${m.isMe ? 'me' : 'other'} ${isOfficialBubble ? 'official-welcome' : ''}`;
     return `
-      <div class="chat-bubble ${m.isMe ? 'me' : 'other'}">
-        <div>${m.text}</div>
-        <span class="bubble-time">${m.time}</span>
+      <div class="${bubbleClass}">
+        <div>${formatChatBubbleText(m.text)}</div>
+        <span class="bubble-time">${escapeHTML(m.time)}</span>
       </div>
     `;
   }).join('');
@@ -5003,6 +5147,38 @@ function sendChatMessage() {
   input.value = '';
   renderChatMessages();
   renderConversations();
+  saveStoredConversations();
+
+  if (activeChat.isOfficial || activeChat.proId === 'trampou_official') {
+    setTimeout(() => {
+      const replyText = 'Agradecemos a sua mensagem! Este é o canal automático oficial de orientações do Trampou. Caso precise de suporte ou tenha alguma dúvida, fale com nossa equipe também pelo WhatsApp oficial da plataforma.';
+      const replyNow = new Date();
+      const replyTimeStr = `${String(replyNow.getHours()).padStart(2, '0')}:${String(replyNow.getMinutes()).padStart(2, '0')}`;
+      
+      activeChat.messages.push({
+        isMe: false,
+        isOfficial: true,
+        text: replyText,
+        time: replyTimeStr
+      });
+      activeChat.lastMsg = replyText;
+      activeChat.time = replyTimeStr;
+
+      const chatOverlay = document.getElementById('chat-overlay');
+      const isChatActive = chatOverlay && chatOverlay.classList.contains('active');
+      
+      if (!isChatActive) {
+        activeChat.unread = (activeChat.unread || 0) + 1;
+        showToast('🔔 Nova resposta da Equipe Trampou');
+      }
+
+      saveStoredConversations();
+      renderChatMessages();
+      renderConversations();
+      updateNotificationBadges();
+    }, 700);
+    return;
+  }
 
   setTimeout(() => {
     const replyText = 'Entendido! Podemos negociar os detalhes e combinar diretamente por aqui.';
@@ -5025,6 +5201,7 @@ function sendChatMessage() {
       showToast(`🔔 Nova mensagem de ${activeChat.proName}: "${replyText.slice(0, 30)}..."`);
     }
 
+    saveStoredConversations();
     renderChatMessages();
     renderConversations();
     updateNotificationBadges();
@@ -5038,6 +5215,18 @@ function sendChatMessage() {
 function renderAttendanceCard() {
   const wrapper = document.getElementById('chat-attendance-card-wrapper');
   if (!wrapper || !activeChat) return;
+
+  if (activeChat.isOfficial || activeChat.proId === 'trampou_official') {
+    wrapper.innerHTML = `
+      <div style="background: #F8FAFC; border-bottom: 1px solid #E2E8F0; padding: 7px 12px; font-size: 11px; color: #64748B; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+        <span style="display:flex; align-items:center; gap:6px;">
+          <i class="fa-solid fa-circle-check" style="color: #2563EB;"></i>
+          <span><strong>Canal Oficial Trampou:</strong> Dicas e orientações da plataforma.</span>
+        </span>
+      </div>
+    `;
+    return;
+  }
 
   const att = activeChat.attendance;
 
@@ -6765,10 +6954,13 @@ let currentUser = null;
 
 // Inicializa o Gerenciador de Autenticação
 function initAuthManager() {
-  getCurrentUser();
+  const user = getCurrentUser();
   renderAuthUI();
   if (typeof populateProCategoryOptions === 'function') {
     populateProCategoryOptions();
+  }
+  if (user) {
+    ensureWelcomeNotification(user, false);
   }
   syncCurrentUserProfileFromSupabase();
 }
@@ -6819,6 +7011,7 @@ async function syncCurrentUserProfileFromSupabase() {
     currentUser = user;
     localStorage.setItem('go_currentUser', JSON.stringify(currentUser));
     renderAuthUI();
+    ensureWelcomeNotification(currentUser, false);
   } catch (_) {}
 }
 
@@ -7344,6 +7537,7 @@ async function handleLoginSubmit(event) {
       currentUser = loggedUser;
       localStorage.setItem('go_currentUser', JSON.stringify(currentUser));
       renderAuthUI();
+      ensureWelcomeNotification(currentUser, false);
 
       closeAuthModal('auth-login-modal');
       showToast(`Bem-vindo de volta, ${currentUser.name}!`);
@@ -7542,6 +7736,7 @@ async function handleClientSignupSubmit(event) {
 
     renderAuthUI();
     closeAuthModal('auth-client-signup-modal');
+    ensureWelcomeNotification(currentUser, true);
     showToast(`🎉 Conta criada com sucesso! Bem-vindo(a), ${name.split(' ')[0]}!`);
     switchTab('home');
 
@@ -8322,6 +8517,7 @@ async function handleProSignupFinalSubmit() {
 
     renderAuthUI();
     closeAuthModal('auth-pro-signup-modal');
+    ensureWelcomeNotification(currentUser, true);
 
     // Abre a vitrine recém-criada diretamente em modo de dono (proprietário)
     openProVitrine(finalProCardId, true);

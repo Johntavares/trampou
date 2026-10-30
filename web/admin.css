@@ -650,10 +650,11 @@ body {
   width: 260px;
 }
 
-.btn-admin-primary {
+.btn-admin-primary,
+.btn-action-primary {
   background: var(--admin-brand);
   color: #FFFFFF;
-  border: none;
+  border: 1px solid var(--admin-brand);
   border-radius: 8px;
   padding: 8px 14px;
   font-size: 12.5px;
@@ -661,13 +662,18 @@ body {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  transition: background 0.15s, transform 0.1s;
+  transition: all 0.15s ease;
+  text-decoration: none;
 }
 
-.btn-admin-primary:hover {
+.btn-admin-primary:hover,
+.btn-action-primary:hover {
   background: var(--admin-brand-dark);
+  border-color: var(--admin-brand-dark);
   transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(104, 37, 179, 0.2);
 }
 
 .table-responsive-wrap {
@@ -744,19 +750,22 @@ body {
   color: #64748B;
 }
 
-.badge-status {
+.badge-status,
+.badge-status-pill {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   font-size: 11px;
   font-weight: 700;
-  padding: 4px 8px;
-  border-radius: 6px;
+  padding: 4px 9px;
+  border-radius: 20px;
 }
 
-.badge-status.active, .badge-status.verified {
+.badge-status.active, .badge-status.verified,
+.badge-status-pill.success {
   background: #ECFDF5;
   color: #059669;
+  border: 1px solid #A7F3D0;
 }
 
 .badge-status.pending {
@@ -764,15 +773,24 @@ body {
   color: #D97706;
 }
 
-.badge-status.pro {
+.badge-status.pro,
+.badge-status-pill.pro {
   background: #EDE9FE;
   color: #6825B3;
   border: 1px solid #D8B4FE;
 }
 
-.badge-status.inactive {
+.badge-status.inactive,
+.badge-status-pill.neutral {
   background: #F1F5F9;
-  color: #64748B;
+  color: #475569;
+  border: 1px solid #E2E8F0;
+}
+
+.badge-status-pill.danger {
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
 }
 
 .table-actions-cell {
@@ -1432,6 +1450,614 @@ body {
 }
 
 /* =========================================================
+   PWA & MOBILE APP RESPONSIVE SYSTEM
+   ========================================================= */
+
+/* Botão de Menu Mobile & Fechar Sidebar */
+.btn-topbar-menu {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  color: #0F172A;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-topbar-menu:hover,
+.btn-topbar-menu:active {
+  background: #E2E8F0;
+  color: #3B82F6;
+}
+
+.topbar-left-cluster {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-sidebar-close {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: #94A3B8;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-sidebar-close:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #FFFFFF;
+}
+
+/* Botão de Instalação do PWA */
+.btn-install-pwa {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  color: #FFFFFF;
+  border: none;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: pwaPulse 2.5s infinite;
+}
+
+.btn-install-pwa:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.45);
+}
+
+@keyframes pwaPulse {
+  0%, 100% { box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+  50% { box-shadow: 0 4px 20px rgba(37, 99, 235, 0.6); }
+}
+
+/* Overlay da Sidebar Mobile */
+.admin-sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 998;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.admin-sidebar-overlay.active {
+  display: block;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Bottom Navigation Bar (Barra Inferior do App no Celular) */
+.admin-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(64px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid #E2E8F0;
+  z-index: 900;
+  align-items: center;
+  justify-content: space-around;
+  box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
+}
+
+.bottom-nav-item {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 8px 4px;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-nav-item i {
+  font-size: 19px;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bottom-nav-item span {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+
+.bottom-nav-item.active {
+  color: #2563EB;
+}
+
+.bottom-nav-item.active i {
+  transform: translateY(-2px) scale(1.1);
+  color: #2563EB;
+}
+
+.bottom-nav-item.active span {
+  font-weight: 800;
+}
+
+.bottom-nav-badge {
+  position: absolute;
+  top: 4px;
+  right: calc(50% - 18px);
+  background: #EF4444;
+  color: #FFFFFF;
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 10px;
+  border: 1.5px solid #FFFFFF;
+  line-height: 1;
+}
+
+/* =========================================================
+   MEDIA QUERIES PARA CELULARES & TABLETS (PWA MOBILE)
+   ========================================================= */
+@media (max-width: 991px) {
+  /* Sidebar retrátil (Drawer) */
+  .admin-sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: -290px;
+    width: 280px;
+    z-index: 999;
+    box-shadow: none;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+  }
+
+  .admin-sidebar.open {
+    left: 0;
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.4);
+  }
+
+  .btn-sidebar-close {
+    display: flex;
+  }
+
+  .btn-topbar-menu {
+    display: flex;
+  }
+
+  /* Main Wrap ocupa toda a largura */
+  .admin-main-wrap {
+    margin-left: 0 !important;
+    width: 100% !important;
+    min-height: 100vh;
+  }
+
+  /* Padding inferior para dar espaço à Bottom Navigation Bar */
+  .admin-content-body {
+    padding: 16px 14px calc(80px + env(safe-area-inset-bottom, 0px)) 14px !important;
+  }
+
+  /* Exibe a Bottom Bar */
+  .admin-bottom-nav {
+    display: flex;
+  }
+
+  /* Ajustes na Topbar */
+  .admin-topbar {
+    padding: 10px 14px;
+    height: 60px;
+  }
+
+  .topbar-page-info h2 {
+    font-size: 16.5px;
+  }
+
+  .status-text-desktop,
+  .avatar-name-desktop,
+  .topbar-time {
+    display: none !important;
+  }
+
+  .system-status-indicator {
+    padding: 6px 8px;
+  }
+
+  .admin-avatar-pill {
+    padding: 3px;
+  }
+
+  /* Odômetro Mobile */
+  .admin-time-clock-banner {
+    padding: 16px 14px;
+  }
+
+  .admin-time-clock-content {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .odometer-digits-track {
+    justify-content: center;
+    gap: 3px;
+  }
+
+  .odometer-digit-box {
+    width: 32px;
+    height: 44px;
+    font-size: 24px;
+    border-radius: 7px;
+  }
+
+  .odometer-digit-sublabel {
+    font-size: 8px;
+  }
+
+  /* KPIs e Grids */
+  .kpi-cards-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .kpi-stat-card {
+    padding: 14px !important;
+  }
+
+  .kpi-card-value {
+    font-size: 20px !important;
+  }
+
+  /* Banner Grid */
+  .admin-banners-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Modais no Mobile (Estilo Bottom Sheet / Full Screen limpo) */
+  .admin-modal-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 10px;
+    max-height: calc(100vh - 40px);
+    border-radius: 18px !important;
+  }
+
+  .admin-modal-body {
+    max-height: 65vh;
+  }
+}
+
+@media (max-width: 520px) {
+  .kpi-cards-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .admin-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .admin-card-actions {
+    width: 100%;
+  }
+
+  .admin-search-input-wrap {
+    width: 100%;
+  }
+
+  .btn-install-pwa span {
+    display: none;
+  }
+
+  .btn-install-pwa {
+    padding: 8px 10px;
+  }
+
+  .admin-stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .tab-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tab-actions-row,
+  .tab-actions-row button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .admin-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-search-wrap,
+  .filter-select-wrap {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .admin-feedbacks-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* =========================================================
+   ESTILOS COMPLEMENTARES: CABEÇALHOS DE ABA, STATS, FILTROS & MODAIS
+   ========================================================= */
+.tab-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: #FFFFFF;
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--admin-shadow-sm);
+}
+
+.tab-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--admin-text-main);
+  letter-spacing: -0.3px;
+  margin-bottom: 4px;
+}
+
+.tab-subtitle {
+  font-size: 13px;
+  color: var(--admin-text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.tab-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-admin-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFFFFF;
+  border: 1px solid var(--admin-border);
+  color: #334155;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: var(--admin-shadow-sm);
+}
+
+.btn-admin-secondary:hover {
+  background: #F8FAFC;
+  border-color: var(--admin-brand);
+  color: var(--admin-brand);
+  transform: translateY(-1px);
+}
+
+/* Grid de Estatísticas de Feedbacks */
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.admin-stat-card {
+  background: #FFFFFF;
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: var(--admin-shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--admin-shadow-md);
+}
+
+.stat-icon-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  flex-shrink: 0;
+}
+
+.stat-icon-circle.purple {
+  background: #EDE9FE;
+  color: var(--admin-brand);
+}
+
+.stat-icon-circle.gold {
+  background: #FEF3C7;
+  color: #D97706;
+}
+
+.stat-icon-circle.blue {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.stat-icon-circle.red {
+  background: #FEF2F2;
+  color: #DC2626;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.stat-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--admin-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stat-number {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--admin-text-main);
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+/* Barra de Filtros de Feedbacks */
+.admin-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: #FFFFFF;
+  border: 1px solid var(--admin-border);
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 22px;
+  box-shadow: var(--admin-shadow-sm);
+}
+
+.filter-search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 240px;
+  display: flex;
+  align-items: center;
+}
+
+.filter-search-wrap i {
+  position: absolute;
+  left: 14px;
+  color: #94A3B8;
+  font-size: 13.5px;
+  pointer-events: none;
+}
+
+.filter-search-wrap input {
+  width: 100%;
+  height: 40px;
+  padding: 0 14px 0 38px;
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--admin-text-main);
+  background: var(--admin-surface-2);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.filter-search-wrap input:focus {
+  background: #FFFFFF;
+  border-color: var(--admin-brand);
+  box-shadow: 0 0 0 3px rgba(104, 37, 179, 0.1);
+}
+
+.filter-select-wrap {
+  min-width: 185px;
+}
+
+.filter-select-wrap select {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  background: #FFFFFF;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-select-wrap select:hover,
+.filter-select-wrap select:focus {
+  border-color: var(--admin-brand);
+}
+
+/* Inputs de Modais */
+.admin-modal-body .admin-input-group input[type="text"],
+.admin-modal-body .admin-input-group input[type="number"],
+.admin-modal-body .admin-input-group input[type="date"],
+.admin-modal-body .admin-input-group textarea,
+.admin-modal-body .admin-input-group select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--admin-border);
+  border-radius: 10px;
+  font-size: 13.5px;
+  color: var(--admin-text-main);
+  background: #F8FAFC;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.admin-modal-body .admin-input-group textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.45;
+}
+
+.admin-modal-body .admin-input-group input:focus,
+.admin-modal-body .admin-input-group textarea:focus,
+.admin-modal-body .admin-input-group select:focus {
+  background: #FFFFFF;
+  border-color: var(--admin-brand);
+  box-shadow: 0 0 0 3px rgba(104, 37, 179, 0.12);
+}
+
+
+
+/* =========================================================
    ESTILOS: ABA DE SUGESTÕES & FEEDBACKS (ADMIN)
    ========================================================= */
 .admin-feedbacks-grid {
@@ -1671,4 +2297,55 @@ body {
   color: #1E293B;
   margin-bottom: 4px;
 }
+
+.admin-feedback-card.status-respondido {
+  border-left: 4px solid #6366F1;
+}
+
+.fb-reply-box {
+  background: #F5F3FF;
+  border: 1px solid #DDD6FE;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-top: 10px;
+}
+
+.fb-reply-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.fb-reply-header span {
+  font-size: 11px;
+  font-weight: 800;
+  color: #581C87;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.fb-reply-text {
+  font-size: 12.5px;
+  color: #3B0764;
+  line-height: 1.5;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.fb-notes-box {
+  background: #FEF9C3;
+  border: 1px solid #FEF08A;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 11.5px;
+  color: #854D0E;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+
 

@@ -26,3 +26,4 @@ require('dotenv').config();
   console.log('Tabelas com Realtime:', r.rows.map(x => x.tablename).join(', '));
   await c.end();
 })();
+

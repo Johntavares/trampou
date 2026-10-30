@@ -160,16 +160,18 @@ async function seedAll() {
       await pgClient.query(`
         UPDATE profiles
         SET full_name = $1,
-            phone_whatsapp = $2,
-            avatar_url = $3,
-            neighborhood = $4,
-            bio = $5,
+            email = $2,
+            role = 'professional',
+            phone_whatsapp = $3,
+            avatar_url = $4,
+            neighborhood = $5,
+            bio = $6,
             is_verified = true,
-            rating_average = $6,
-            rating_count = $7,
+            rating_average = $7,
+            rating_count = $8,
             updated_at = NOW()
-        WHERE id = $8;
-      `, [pro.name, pro.phone, pro.avatar, pro.neighborhood, pro.bio, pro.rating, pro.ratingCount, userId]);
+        WHERE id = $9;
+      `, [pro.name, pro.email, pro.phone, pro.avatar, pro.neighborhood, pro.bio, pro.rating, pro.ratingCount, userId]);
 
       // 3. Upsert professional_profiles
       const catId = catMap[pro.categorySlug] || null;
