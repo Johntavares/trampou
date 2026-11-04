@@ -538,7 +538,7 @@
     });
 
     const sorted = Object.keys(cityCounts).sort();
-    let options = [`<option value="all">📍 Todas as Cidades (${state.professionals.length})</option>`];
+    let options = [`<option value="all" ${currentVal === 'all' ? 'selected' : ''}>📍 Todas as Cidades (${state.professionals.length})</option>`];
     sorted.forEach(loc => {
       options.push(`<option value="${escapeHTML(loc)}" ${loc === currentVal ? 'selected' : ''}>📍 ${escapeHTML(loc)} (${cityCounts[loc]})</option>`);
     });
@@ -559,7 +559,7 @@
     });
 
     const sorted = Object.keys(cityCounts).sort();
-    let options = [`<option value="all">📍 Todas as Cidades (${state.users.length})</option>`];
+    let options = [`<option value="all" ${currentVal === 'all' ? 'selected' : ''}>📍 Todas as Cidades (${state.users.length})</option>`];
     sorted.forEach(loc => {
       options.push(`<option value="${escapeHTML(loc)}" ${loc === currentVal ? 'selected' : ''}>📍 ${escapeHTML(loc)} (${cityCounts[loc]})</option>`);
     });
@@ -578,6 +578,9 @@
 
     tbody.innerHTML = list.map(p => {
       const name = p.profiles ? p.profiles.full_name : 'Profissional';
+      const city = (p.profiles && p.profiles.city) || (p.service_cities && p.service_cities[0]) || 'Parauapebas';
+      const stateUf = (p.profiles && p.profiles.state) || 'PA';
+      const neigh = (p.profiles && p.profiles.neighborhood) ? p.profiles.neighborhood : '';
       const email = p.profiles ? (p.profiles.email || 'Não informado') : 'Não informado';
       const phone = p.profiles ? (p.profiles.phone_whatsapp || p.profiles.phone || '') : '';
       const avatar = p.profiles ? p.profiles.avatar_url : null;
@@ -702,6 +705,9 @@
 
     tbody.innerHTML = list.map(u => {
       const name = u.full_name || 'Usuário Sem Nome';
+      const city = u.city || 'Parauapebas';
+      const stateUf = u.state || 'PA';
+      const neigh = u.neighborhood || '';
       const email = u.email || 'Não informado';
       const phone = u.phone_whatsapp || u.phone || '';
       const cleanPhone = phone ? phone.replace(/\D/g, '') : '';
