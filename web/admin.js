@@ -2202,43 +2202,49 @@
       const dateStr = n.created_at ? new Date(n.created_at).toLocaleString('pt-BR') : '—';
 
       return `
-        <tr>
-          <td>
-            <div style="font-weight: 800; color: #0F172A; font-size: 13px; margin-bottom: 2px;">
-              ${escapeHTML(n.title)}
-            </div>
-            <div style="font-size: 11.5px; color: #64748B; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-              ${escapeHTML(n.body)}
-            </div>
-          </td>
-          <td>
-            <span class="badge-status-pill" style="background: rgba(0,0,0,0.04); color: ${aud.color}; border: 1px solid rgba(0,0,0,0.08);">
-              <i class="fa-solid ${aud.icon}" style="margin-right: 4px;"></i> ${aud.text}
-            </span>
-            <div style="font-size: 11px; color: #64748B; font-weight: 600; margin-top: 3px;">
-              ${geoBadgeText}
+        <tr class="mobile-table-card">
+          <td data-label="Notificação" class="td-card-header">
+            <div>
+              <div style="font-weight: 800; color: #0F172A; font-size: 13.5px; margin-bottom: 2px;">
+                ${escapeHTML(n.title)}
+              </div>
+              <div style="font-size: 11.5px; color: #64748B; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                ${escapeHTML(n.body)}
+              </div>
             </div>
           </td>
-          <td>
+          <td data-label="Público & Região">
+            <div>
+              <span class="badge-status-pill" style="background: rgba(0,0,0,0.04); color: ${aud.color}; border: 1px solid rgba(0,0,0,0.08);">
+                <i class="fa-solid ${aud.icon}" style="margin-right: 4px;"></i> ${aud.text}
+              </span>
+              <div style="font-size: 11px; color: #64748B; font-weight: 600; margin-top: 3px;">
+                ${geoBadgeText}
+              </div>
+            </div>
+          </td>
+          <td data-label="Categoria">
             <span class="badge-status-pill ${cat.badge}">
               ${cat.text}
             </span>
           </td>
-          <td>
-            <div style="font-size: 12px; font-weight: 600; color: #334155;">
-              ${actionText}
+          <td data-label="Ação no Toque">
+            <div>
+              <div style="font-size: 12px; font-weight: 600; color: #334155;">
+                ${actionText}
+              </div>
+              ${n.action_url ? `<a href="${escapeHTML(n.action_url)}" target="_blank" style="font-size: 11px; color: var(--admin-brand); text-decoration: none; max-width: 150px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHTML(n.action_url)}</a>` : ''}
             </div>
-            ${n.action_url ? `<a href="${escapeHTML(n.action_url)}" target="_blank" style="font-size: 11px; color: var(--admin-brand); text-decoration: none; max-width: 150px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHTML(n.action_url)}</a>` : ''}
           </td>
-          <td style="font-size: 12px; color: #64748B; white-space: nowrap;">
+          <td data-label="Data de Envio" style="font-size: 12px; color: #64748B; white-space: nowrap;">
             ${dateStr}
           </td>
-          <td>
+          <td data-label="Status">
             <span class="badge-status-pill success">
               <i class="fa-solid fa-check"></i> Enviada
             </span>
           </td>
-          <td style="text-align: right; white-space: nowrap;">
+          <td data-label="Ações" style="text-align: right; white-space: nowrap;">
             <button class="btn-action-icon" title="Reenviar / Usar como base" onclick="window.AdminApp.resendNotification('${n.id}')" style="margin-right: 4px;">
               <i class="fa-solid fa-arrow-rotate-right" style="color: #6825B3;"></i>
             </button>
