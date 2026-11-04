@@ -799,8 +799,11 @@
               <div class="admin-card-actions">
                 <div class="admin-search-input-wrap">
                   <i class="fa-solid fa-magnifying-glass"></i>
-                  <input type="text" id="search-pros-input" placeholder="Buscar por nome, fone..." oninput="window.AdminApp.filterProfessionals()">
+                  <input type="text" id="search-pros-input" placeholder="Buscar por nome, fone, cidade..." oninput="window.AdminApp.filterProfessionals()">
                 </div>
+                <select id="filter-pro-city" onchange="window.AdminApp.filterProfessionals()" style="padding: 8px 12px; border: 1.5px solid var(--admin-border); border-radius: 8px; font-size: 12.5px; background: #FFF; outline: none; font-weight: 600; color: #334155;">
+                  <option value="all">📍 Todas as Cidades</option>
+                </select>
                 <select id="filter-pro-status" onchange="window.AdminApp.filterProfessionals()" style="padding: 8px 12px; border: 1px solid var(--admin-border); border-radius: 8px; font-size: 12.5px; background: #FFF; outline: none;">
                   <option value="all">Todos os Status</option>
                   <option value="verified">Apenas Verificados</option>
@@ -814,6 +817,7 @@
                 <thead>
                   <tr>
                     <th>Profissional</th>
+                    <th>Cidade / Estado</th>
                     <th>E-mail</th>
                     <th>WhatsApp / Contato</th>
                     <th>Especialidade</th>
@@ -844,8 +848,11 @@
               <div class="admin-card-actions">
                 <div class="admin-search-input-wrap">
                   <i class="fa-solid fa-magnifying-glass"></i>
-                  <input type="text" id="search-users-input" placeholder="Buscar cliente..." oninput="window.AdminApp.filterUsers()">
+                  <input type="text" id="search-users-input" placeholder="Buscar por nome, e-mail, cidade..." oninput="window.AdminApp.filterUsers()">
                 </div>
+                <select id="filter-user-city" onchange="window.AdminApp.filterUsers()" style="padding: 8px 12px; border: 1.5px solid var(--admin-border); border-radius: 8px; font-size: 12.5px; background: #FFF; outline: none; font-weight: 600; color: #334155;">
+                  <option value="all">📍 Todas as Cidades</option>
+                </select>
               </div>
             </div>
 
@@ -854,6 +861,7 @@
                 <thead>
                   <tr>
                     <th>Usuário</th>
+                    <th>Cidade / Estado</th>
                     <th>E-mail</th>
                     <th>Telefone</th>
                     <th>Tipo</th>

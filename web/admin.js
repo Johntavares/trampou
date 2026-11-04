@@ -370,12 +370,19 @@
       } else {
         dashPros.innerHTML = recentPros.map(p => {
           const name = p.profiles ? p.profiles.full_name : 'Profissional';
+      const city = (p.profiles?.city) || (p.service_cities?.[0]) || 'Parauapebas';
+      const stateUf = (p.profiles?.state) || 'PA';
+      const neigh = (p.profiles?.neighborhood) ? p.profiles.neighborhood : '';
           const spec = p.specialty || (p.categories ? p.categories.name : 'Geral');
           return `
             <tr class="mobile-table-card">
               <td data-label="Profissional" class="td-card-header">
                 <div style="font-weight: 700; color: #0F172A;">${escapeHTML(name)}</div>
-              </td>
+                <div style="font-size: 11px; color: #64748B; margin-top: 2px; display: flex; align-items: center; gap: 4px;">
+                  <i class="fa-solid fa-location-dot" style="color: #6366F1; font-size: 10px;"></i>
+                  <span>${escapeHTML((p.profiles?.city) || (p.service_cities?.[0]) || 'Parauapebas')}, ${escapeHTML((p.profiles?.state) || 'PA')}</span>
+                </div>
+                </td>
               <td data-label="Especialidade">${escapeHTML(spec)}</td>
               <td data-label="Status">
                 ${p.verified 
@@ -516,12 +523,56 @@
   // =========================================================
   // RENDERIZAÇÃO: PROFISSIONAIS
   // =========================================================
+  
+  function populateProCityFilter() {
+    const select = document.getElementById('filter-pro-city');
+    if (!select) return;
+    const currentVal = select.value || 'all';
+
+    const cityCounts = {};
+    state.professionals.forEach(p => {
+      const city = (p.profiles?.city) || (p.service_cities?.[0]) || 'Parauapebas';
+      const stateUf = (p.profiles?.state) || 'PA';
+      const key = `${city}, ${stateUf}`;
+      cityCounts[key] = (cityCounts[key] || 0) + 1;
+    });
+
+    const sorted = Object.keys(cityCounts).sort();
+    let options = [`<option value="all">📍 Todas as Cidades (${state.professionals.length})</option>`];
+    sorted.forEach(loc => {
+      options.push(`<option value="${escapeHTML(loc)}" ${loc === currentVal ? 'selected' : ''}>📍 ${escapeHTML(loc)} (${cityCounts[loc]})</option>`);
+    });
+    select.innerHTML = options.join('');
+  }
+
+  function populateUserCityFilter() {
+    const select = document.getElementById('filter-user-city');
+    if (!select) return;
+    const currentVal = select.value || 'all';
+
+    const cityCounts = {};
+    state.users.forEach(u => {
+      const city = u.city || 'Parauapebas';
+      const stateUf = u.state || 'PA';
+      const key = `${city}, ${stateUf}`;
+      cityCounts[key] = (cityCounts[key] || 0) + 1;
+    });
+
+    const sorted = Object.keys(cityCounts).sort();
+    let options = [`<option value="all">📍 Todas as Cidades (${state.users.length})</option>`];
+    sorted.forEach(loc => {
+      options.push(`<option value="${escapeHTML(loc)}" ${loc === currentVal ? 'selected' : ''}>📍 ${escapeHTML(loc)} (${cityCounts[loc]})</option>`);
+    });
+    select.innerHTML = options.join('');
+  }
+
   function renderProfessionals(list = state.professionals) {
     const tbody = document.getElementById('pro-table-body');
     if (!tbody) return;
+    if (list === state.professionals) populateProCityFilter();
 
     if (list.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 32px; color: #94A3B8;">Nenhum profissional cadastrado ou correspondente ao filtro.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 32px; color: #94A3B8;">Nenhum profissional cadastrado ou correspondente ao filtro.</td></tr>`;
       return;
     }
 
@@ -548,6 +599,13 @@
                 <div style="font-size: 11px; color: #94A3B8;">ID: ${p.id.substring(0, 8)}...</div>
               </div>
             </div>
+          </td>
+          <td data-label="Cidade / Estado">
+            <div style="font-weight: 700; color: #1E293B; display: flex; align-items: center; gap: 5px;">
+              <i class="fa-solid fa-location-dot" style="color: #6366F1; font-size: 12px;"></i>
+              <span>${escapeHTML(city)}, ${escapeHTML(stateUf)}</span>
+            </div>
+            ${neigh && !neigh.includes(city) ? `<div style="font-size: 11px; color: #64748B; margin-left: 17px;">${escapeHTML(neigh)}</div>` : ''}
           </td>
           <td data-label="E-mail">
             ${email !== 'Não informado' 
@@ -600,20 +658,30 @@
   function filterProfessionals() {
     const query = (document.getElementById('search-pros-input')?.value || '').toLowerCase().trim();
     const status = document.getElementById('filter-pro-status')?.value || 'all';
+    const cityFilter = document.getElementById('filter-pro-city')?.value || 'all';
 
     const filtered = state.professionals.filter(p => {
       const name = (p.profiles?.full_name || '').toLowerCase();
       const email = (p.profiles?.email || '').toLowerCase();
       const phone = (p.profiles?.phone_whatsapp || p.profiles?.phone || '').toLowerCase();
       const spec = (p.specialty || p.categories?.name || '').toLowerCase();
+      const city = ((p.profiles?.city) || (p.service_cities?.[0]) || 'Parauapebas').toLowerCase();
+      const stateUf = ((p.profiles?.state) || 'PA').toLowerCase();
+      const neigh = (p.profiles?.neighborhood || '').toLowerCase();
 
-      const matchesQuery = !query || name.includes(query) || email.includes(query) || phone.includes(query) || spec.includes(query);
+      const matchesQuery = !query || name.includes(query) || email.includes(query) || phone.includes(query) || spec.includes(query) || city.includes(query) || neigh.includes(query);
 
       let matchesStatus = true;
       if (status === 'verified') matchesStatus = p.verified === true;
       if (status === 'unverified') matchesStatus = !p.verified;
 
-      return matchesQuery && matchesStatus;
+      let matchesCity = true;
+      if (cityFilter !== 'all') {
+        const key = `${(p.profiles?.city) || (p.service_cities?.[0]) || 'Parauapebas'}, ${(p.profiles?.state) || 'PA'}`;
+        matchesCity = key.toLowerCase() === cityFilter.toLowerCase();
+      }
+
+      return matchesQuery && matchesStatus && matchesCity;
     });
 
     renderProfessionals(filtered);
@@ -625,9 +693,10 @@
   function renderUsers(list = state.users) {
     const tbody = document.getElementById('users-table-body');
     if (!tbody) return;
+    if (list === state.users) populateUserCityFilter();
 
     if (list.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 32px; color: #94A3B8;">Nenhum cliente cadastrado.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 32px; color: #94A3B8;">Nenhum cliente cadastrado.</td></tr>`;
       return;
     }
 
@@ -648,6 +717,13 @@
               </div>
               <div style="font-weight: 700; color: #0F172A;">${escapeHTML(name)}</div>
             </div>
+          </td>
+          <td data-label="Cidade / Estado">
+            <div style="font-weight: 700; color: #1E293B; display: flex; align-items: center; gap: 5px;">
+              <i class="fa-solid fa-location-dot" style="color: #6366F1; font-size: 12px;"></i>
+              <span>${escapeHTML(city)}, ${escapeHTML(stateUf)}</span>
+            </div>
+            ${neigh && !neigh.includes(city) ? `<div style="font-size: 11px; color: #64748B; margin-left: 17px;">${escapeHTML(neigh)}</div>` : ''}
           </td>
           <td data-label="E-mail">
             ${email !== 'Não informado' 
@@ -677,12 +753,27 @@
 
   function filterUsers() {
     const query = (document.getElementById('search-users-input')?.value || '').toLowerCase().trim();
+    const cityFilter = document.getElementById('filter-user-city')?.value || 'all';
+
     const filtered = state.users.filter(u => {
       const name = (u.full_name || '').toLowerCase();
       const email = (u.email || '').toLowerCase();
       const phone = (u.phone_whatsapp || u.phone || '').toLowerCase();
-      return !query || name.includes(query) || email.includes(query) || phone.includes(query);
+      const city = (u.city || 'Parauapebas').toLowerCase();
+      const stateUf = (u.state || 'PA').toLowerCase();
+      const neigh = (u.neighborhood || '').toLowerCase();
+
+      const matchesQuery = !query || name.includes(query) || email.includes(query) || phone.includes(query) || city.includes(query) || neigh.includes(query);
+
+      let matchesCity = true;
+      if (cityFilter !== 'all') {
+        const key = `${u.city || 'Parauapebas'}, ${u.state || 'PA'}`;
+        matchesCity = key.toLowerCase() === cityFilter.toLowerCase();
+      }
+
+      return matchesQuery && matchesCity;
     });
+
     renderUsers(filtered);
   }
 
