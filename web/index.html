@@ -2882,6 +2882,154 @@
           </div>
         </div>
 
+        <!-- ================================================
+             MODAL: PASSO A PASSO DE COMO INSTALAR O APP (PWA)
+             ================================================ -->
+        <div id="modal-pwa-install-guide" class="modal-overlay" style="background: transparent !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;" onclick="if(event.target === this) closePwaInstallModal()">
+          <div class="modal-content auth-form-content pwa-install-modal-content" style="margin: auto !important; max-width: 480px !important; border-radius: 20px !important; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 40px rgba(0,0,0,0.25);">
+            
+            <!-- Modal Header -->
+            <div class="auth-modal-header" style="padding: 14px 18px; border-bottom: 1px solid var(--border-grey); display: flex; align-items: center; justify-content: space-between; background: #FFFFFF;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, #7C3AED, #4F46E5); color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 17px; box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);">
+                  <i class="fa-solid fa-mobile-screen-button"></i>
+                </div>
+                <div>
+                  <h5 style="margin: 0; font-size: 15px; font-weight: 800; color: #0F172A;">Como Instalar o Aplicativo</h5>
+                  <span style="font-size: 11.5px; color: #64748B;">Direto pelo navegador, sem ocupar memória</span>
+                </div>
+              </div>
+              <button class="v-nav-icon-btn" onclick="closePwaInstallModal()" title="Fechar" style="background: #F1F5F9; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #475569;">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <!-- Modal Body (Scrollable) -->
+            <div class="pwa-guide-modal-body" style="padding: 18px; overflow-y: auto; flex: 1; background: #FFFFFF;">
+              
+              <!-- Direct Install Banner (se o navegador tiver o prompt disponível) -->
+              <div id="pwa-direct-install-box" style="display: none; margin-bottom: 16px; background: linear-gradient(135deg, #EDE9FE, #FAF5FF); border: 1.5px solid #C4B5FD; border-radius: 14px; padding: 14px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                  <i class="fa-solid fa-circle-check" style="color: #7C3AED; font-size: 18px;"></i>
+                  <span style="font-size: 13px; font-weight: 700; color: #5B21B6;">Instalação direta disponível no seu navegador!</span>
+                </div>
+                <button type="button" onclick="triggerPWAInstall()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #7C3AED, #6D28D9); color: #FFF; border: none; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(109, 40, 217, 0.35);">
+                  <i class="fa-solid fa-download"></i> Instalar Trampou Agora
+                </button>
+              </div>
+
+              <!-- Selector Android vs iPhone -->
+              <div class="pwa-guide-os-tabs" style="display: flex; background: #F1F5F9; border-radius: 12px; padding: 4px; gap: 4px; margin-bottom: 18px;">
+                <button type="button" id="tab-btn-android" class="pwa-os-tab active" onclick="switchPwaGuideTab('android')" style="flex: 1; border: none; background: #FFF; padding: 10px 8px; border-radius: 9px; font-weight: 700; font-size: 13px; color: #0F172A; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: all 0.2s;">
+                  <i class="fa-brands fa-android" style="color: #10B981; font-size: 16px;"></i> Android (Chrome)
+                </button>
+                <button type="button" id="tab-btn-ios" class="pwa-os-tab" onclick="switchPwaGuideTab('ios')" style="flex: 1; border: none; background: transparent; padding: 10px 8px; border-radius: 9px; font-weight: 600; font-size: 13px; color: #64748B; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
+                  <i class="fa-brands fa-apple" style="font-size: 16px;"></i> iPhone (Safari)
+                </button>
+              </div>
+
+              <!-- Content: Android -->
+              <div id="pwa-guide-content-android" class="pwa-guide-tab-pane">
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                  
+                  <div class="pwa-step-card" style="display: flex; gap: 12px; align-items: flex-start; background: #FFFFFF; border: 1.5px solid #F1F5F9; box-shadow: 0 1px 3px rgba(0,0,0,0.03); border-radius: 12px; padding: 12px 14px;">
+                    <div class="pwa-step-number" style="width: 26px; height: 26px; border-radius: 50%; background: #10B981; color: #FFF; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">1</div>
+                    <div>
+                      <strong style="font-size: 13.5px; color: #0F172A; display: block; margin-bottom: 2px;">Abra o menu do Chrome</strong>
+                      <span style="font-size: 12.5px; color: #475569; line-height: 1.4;">Toque no ícone de <strong>3 pontinhos (⋮)</strong> no canto superior direito do navegador.</span>
+                    </div>
+                  </div>
+
+                  <div class="pwa-step-card" style="display: flex; gap: 12px; align-items: flex-start; background: #FFFFFF; border: 1.5px solid #F1F5F9; box-shadow: 0 1px 3px rgba(0,0,0,0.03); border-radius: 12px; padding: 12px 14px;">
+                    <div class="pwa-step-number" style="width: 26px; height: 26px; border-radius: 50%; background: #10B981; color: #FFF; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">2</div>
+                    <div>
+                      <strong style="font-size: 13.5px; color: #0F172A; display: block; margin-bottom: 2px;">Toque em Instalar</strong>
+                      <span style="font-size: 12.5px; color: #475569; line-height: 1.4;">Selecione a opção <strong>"Instalar aplicativo"</strong> ou <strong>"Adicionar à tela inicial"</strong>.</span>
+                    </div>
+                  </div>
+
+                  <div class="pwa-step-card" style="display: flex; gap: 12px; align-items: flex-start; background: #FFFFFF; border: 1.5px solid #F1F5F9; box-shadow: 0 1px 3px rgba(0,0,0,0.03); border-radius: 12px; padding: 12px 14px;">
+                    <div class="pwa-step-number" style="width: 26px; height: 26px; border-radius: 50%; background: #10B981; color: #FFF; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">3</div>
+                    <div>
+                      <strong style="font-size: 13.5px; color: #0F172A; display: block; margin-bottom: 2px;">Confirme a instalação</strong>
+                      <span style="font-size: 12.5px; color: #475569; line-height: 1.4;">Toque em <strong>"Instalar"</strong>. Em segundos o ícone do Trampou estará na sua tela inicial!</span>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Content: iOS (iPhone/iPad) -->
+              <div id="pwa-guide-content-ios" class="pwa-guide-tab-pane" style="display: none;">
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                  
+                  <div class="pwa-step-card" style="display: flex; gap: 12px; align-items: flex-start; background: #FFFFFF; border: 1.5px solid #F1F5F9; box-shadow: 0 1px 3px rgba(0,0,0,0.03); border-radius: 12px; padding: 12px 14px;">
+                    <div class="pwa-step-number" style="width: 26px; height: 26px; border-radius: 50%; background: #2563EB; color: #FFF; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">1</div>
+                    <div>
+                      <strong style="font-size: 13.5px; color: #0F172A; display: block; margin-bottom: 2px;">Abra no Safari</strong>
+                      <span style="font-size: 12.5px; color: #475569; line-height: 1.4;">No iPhone, abra este site diretamente pelo navegador nativo <strong>Safari</strong>.</span>
+                    </div>
+                  </div>
+
+                  <div class="pwa-step-card" style="display: flex; gap: 12px; align-items: flex-start; background: #FFFFFF; border: 1.5px solid #F1F5F9; box-shadow: 0 1px 3px rgba(0,0,0,0.03); border-radius: 12px; padding: 12px 14px;">
+                    <div class="pwa-step-number" style="width: 26px; height: 26px; border-radius: 50%; background: #2563EB; color: #FFF; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">2</div>
+                    <div>
+                      <strong style="font-size: 13.5px; color: #0F172A; display: block; margin-bottom: 2px;">Toque em Compartilhar</strong>
+                      <span style="font-size: 12.5px; color: #475569; line-height: 1.4;">Na barra inferior do Safari, toque no ícone de <strong>Compartilhar</strong> <i class="fa-solid fa-arrow-up-from-bracket" style="color: #2563EB;"></i> (quadrado com seta para cima).</span>
+                    </div>
+                  </div>
+
+                  <div class="pwa-step-card" style="display: flex; gap: 12px; align-items: flex-start; background: #FFFFFF; border: 1.5px solid #F1F5F9; box-shadow: 0 1px 3px rgba(0,0,0,0.03); border-radius: 12px; padding: 12px 14px;">
+                    <div class="pwa-step-number" style="width: 26px; height: 26px; border-radius: 50%; background: #2563EB; color: #FFF; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">3</div>
+                    <div>
+                      <strong style="font-size: 13.5px; color: #0F172A; display: block; margin-bottom: 2px;">Adicionar à Tela de Início</strong>
+                      <span style="font-size: 12.5px; color: #475569; line-height: 1.4;">Role a lista para baixo e toque em <strong>"Adicionar à Tela de Início"</strong> <i class="fa-regular fa-square-plus" style="color: #2563EB;"></i>.</span>
+                    </div>
+                  </div>
+
+                  <div class="pwa-step-card" style="display: flex; gap: 12px; align-items: flex-start; background: #FFFFFF; border: 1.5px solid #F1F5F9; box-shadow: 0 1px 3px rgba(0,0,0,0.03); border-radius: 12px; padding: 12px 14px;">
+                    <div class="pwa-step-number" style="width: 26px; height: 26px; border-radius: 50%; background: #2563EB; color: #FFF; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">4</div>
+                    <div>
+                      <strong style="font-size: 13.5px; color: #0F172A; display: block; margin-bottom: 2px;">Toque em Adicionar</strong>
+                      <span style="font-size: 12.5px; color: #475569; line-height: 1.4;">No canto superior direito, toque em <strong>"Adicionar"</strong>. Pronto! O Trampou aparecerá como app no seu iPhone.</span>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Benefícios Rápidos -->
+              <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid #E2E8F0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center;">
+                <div style="background: #FAF5FF; border: 1px solid #F3E8FF; border-radius: 10px; padding: 8px 4px;">
+                  <i class="fa-solid fa-feather" style="color: #7C3AED; font-size: 14px; margin-bottom: 3px; display: block;"></i>
+                  <span style="font-size: 11px; font-weight: 700; color: #581C87; display: block;">Super Leve</span>
+                  <span style="font-size: 10px; color: #7E22CE;">Não ocupa espaço</span>
+                </div>
+                <div style="background: #F0FDF4; border: 1px solid #DCFCE7; border-radius: 10px; padding: 8px 4px;">
+                  <i class="fa-solid fa-bolt" style="color: #16A34A; font-size: 14px; margin-bottom: 3px; display: block;"></i>
+                  <span style="font-size: 11px; font-weight: 700; color: #14532D; display: block;">Mais Rápido</span>
+                  <span style="font-size: 10px; color: #15803D;">Abre com 1 toque</span>
+                </div>
+                <div style="background: #EFF6FF; border: 1px solid #DBEAFE; border-radius: 10px; padding: 8px 4px;">
+                  <i class="fa-solid fa-bell" style="color: #2563EB; font-size: 14px; margin-bottom: 3px; display: block;"></i>
+                  <span style="font-size: 11px; font-weight: 700; color: #1E3A8A; display: block;">Avisos Push</span>
+                  <span style="font-size: 10px; color: #1D4ED8;">Novidades na hora</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div style="padding: 12px 18px; border-top: 1px solid var(--border-grey); background: #FFFFFF;">
+              <button type="button" onclick="closePwaInstallModal()" style="width: 100%; border: none; background: #F1F5F9; color: #334155; font-size: 13.5px; font-weight: 700; padding: 12px; border-radius: 10px; cursor: pointer; transition: background 0.15s ease;">
+                Entendi, vou instalar!
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+
         <!-- =========================================================
              1. CENTRAL DE PRIVACIDADE, LGPD E MEUS DADOS
              ========================================================= -->

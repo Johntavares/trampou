@@ -13259,3 +13259,64 @@ body {
   padding: 6px 10px;
   line-height: 1.35;
 }
+
+/* =========================================================
+   ESTILOS: CARD E MODAL DO GUIA DE INSTALAÇÃO DO PWA
+   ========================================================= */
+#modal-pwa-install-guide {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.news-card-compact.clickable-news-card {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.news-card-compact.clickable-news-card:hover {
+  transform: translateY(-1px);
+  border-color: #C4B5FD;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.08);
+}
+
+.news-card-compact.clickable-news-card:active {
+  transform: scale(0.99);
+}
+
+.news-badge-pill {
+  font-size: 10px;
+  font-weight: 800;
+  background: #EDE9FE;
+  color: #6D28D9;
+  padding: 2px 7px;
+  border-radius: 10px;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+}
+
+.news-chevron {
+  color: #94A3B8;
+  font-size: 12px;
+  margin-left: 6px;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.news-card-compact.clickable-news-card:hover .news-chevron {
+  color: #6D28D9;
+  transform: translateX(2px);
+}
+
+.news-icon-pill.tone-purple {
+  background: #EDE9FE !important;
+  color: #7C3AED !important;
+}
+
+.pwa-install-modal-content {
+  background: #FFFFFF !important;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 20px !important;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+}

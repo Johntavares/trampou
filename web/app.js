@@ -1436,30 +1436,47 @@ function setupProsScrollIndicator() {
 // 5. Renderiza Feed Compacto de Dicas e Novidades
 function renderNewsFeed() {
   const container = document.getElementById('news-feed-container');
+  if (!container) return;
+
   const items = [
+    {
+      id: 'pwa-install-guide-card',
+      icon: 'fa-mobile-screen-button',
+      tone: 'tone-purple',
+      badge: 'Instalar',
+      title: 'Saiba como instalar o aplicativo no celular',
+      desc: 'Toque para ver o passo a passo fácil e rápido pelo navegador.',
+      action: 'openPwaInstallModal()'
+    },
     {
       icon: 'fa-shield-halved',
       tone: 'tone-green',
       title: 'Dica de Segurança: negocie tudo pelo chat',
-      desc: 'Orçamentos e prazos combinados no chat garantem histórico protegido.'
+      desc: 'Orçamentos e prazos combinados no chat garantem histórico protegido.',
+      action: null
     },
     {
       icon: 'fa-bolt',
       tone: 'tone-amber',
       title: 'Serviços elétricos em Parauapebas',
-      desc: 'Saiba o que checar no quadro de distribuição antes de chamar um técnico.'
+      desc: 'Saiba o que checar no quadro de distribuição antes de chamar um técnico.',
+      action: null
     }
   ];
 
   container.innerHTML = items.map(item => `
-    <div class="news-card-compact">
+    <div class="news-card-compact ${item.action ? 'clickable-news-card' : ''}" ${item.action ? `onclick="${item.action}" role="button" tabindex="0"` : ''}>
       <div class="news-icon-pill ${item.tone || ''}">
         <i class="fa-solid ${item.icon}" aria-hidden="true"></i>
       </div>
       <div class="news-compact-info">
-        <h6>${item.title}</h6>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+          <h6>${item.title}</h6>
+          ${item.badge ? `<span class="news-badge-pill">${item.badge}</span>` : ''}
+        </div>
         <p>${item.desc}</p>
       </div>
+      ${item.action ? `<i class="fa-solid fa-chevron-right news-chevron" aria-hidden="true"></i>` : ''}
     </div>
   `).join('');
 }
@@ -9600,3 +9617,77 @@ if ('serviceWorker' in navigator) {
     }
   });
 }
+
+// =========================================================
+// MODAL: TUTORIAL / PASSO A PASSO DE INSTALAÇÃO DO PWA
+// =========================================================
+function openPwaInstallModal() {
+  const modal = document.getElementById('modal-pwa-install-guide');
+  if (!modal) return;
+
+  // Detecta se é iOS / Safari ou Android / Desktop
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent || '') ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  if (isIOS) {
+    switchPwaGuideTab('ios');
+  } else {
+    switchPwaGuideTab('android');
+  }
+
+  // Se tiver prompt nativo do navegador pendente, exibe o botão direto de instalação
+  const directBox = document.getElementById('pwa-direct-install-box');
+  if (directBox) {
+    if (window.deferredInstallPrompt && !isPWAInstalled()) {
+      directBox.style.display = 'block';
+    } else {
+      directBox.style.display = 'none';
+    }
+  }
+
+  modal.classList.add('active');
+}
+
+function closePwaInstallModal() {
+  const modal = document.getElementById('modal-pwa-install-guide');
+  if (modal) modal.classList.remove('active');
+}
+
+function switchPwaGuideTab(os) {
+  const btnAndroid = document.getElementById('tab-btn-android');
+  const btnIos = document.getElementById('tab-btn-ios');
+  const contentAndroid = document.getElementById('pwa-guide-content-android');
+  const contentIos = document.getElementById('pwa-guide-content-ios');
+
+  if (os === 'ios') {
+    if (btnIos) {
+      btnIos.style.background = '#FFFFFF';
+      btnIos.style.color = '#0F172A';
+      btnIos.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+    }
+    if (btnAndroid) {
+      btnAndroid.style.background = 'transparent';
+      btnAndroid.style.color = '#64748B';
+      btnAndroid.style.boxShadow = 'none';
+    }
+    if (contentIos) contentIos.style.display = 'block';
+    if (contentAndroid) contentAndroid.style.display = 'none';
+  } else {
+    if (btnAndroid) {
+      btnAndroid.style.background = '#FFFFFF';
+      btnAndroid.style.color = '#0F172A';
+      btnAndroid.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+    }
+    if (btnIos) {
+      btnIos.style.background = 'transparent';
+      btnIos.style.color = '#64748B';
+      btnIos.style.boxShadow = 'none';
+    }
+    if (contentAndroid) contentAndroid.style.display = 'block';
+    if (contentIos) contentIos.style.display = 'none';
+  }
+}
+
+window.openPwaInstallModal = openPwaInstallModal;
+window.closePwaInstallModal = closePwaInstallModal;
+window.switchPwaGuideTab = switchPwaGuideTab;
