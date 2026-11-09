@@ -3305,7 +3305,7 @@ function openProVitrine(id, asOwner = false) {
     return;
   }
 
-  // NUNCA permite modo proprietário se o usuário logado não for o verdadeiro dono deste perfil
+  // Trava de segurança rigorosa: apenas o verdadeiro dono autenticado tem acesso ao modo proprietário
   const isRealOwner = isCurrentUserOwnerOfPro(currentVitrinePro);
   isVitrineOwner = isRealOwner;
   currentVitrineTab = 'posts';
@@ -3361,11 +3361,9 @@ function renderVitrineView() {
   if (!currentVitrinePro) return;
   const p = currentVitrinePro;
 
-  // Bloqueio de segurança: se o usuário logado não é o dono real, garante isVitrineOwner = false
+  // Bloqueio de segurança: se o usuário logado não for o dono real, NUNCA permite modo proprietário
   const isRealOwner = isCurrentUserOwnerOfPro(p);
-  if (!isRealOwner) {
-    isVitrineOwner = false;
-  }
+  isVitrineOwner = isRealOwner;
 
   // 1. Barra Superior e Menu de 3 Pontinhos Dinâmico (Dono vs Visitante)
   const handleElem = document.getElementById('vitrine-handle');
@@ -3383,13 +3381,13 @@ function renderVitrineView() {
           <i class="fa-solid fa-camera"></i>
           <span>Publicar foto de serviço</span>
         </button>
-        <button class="dropdown-item" onclick="toggleVitrineMode()">
-          <i class="fa-solid fa-eye"></i>
-          <span>${isVitrineOwner ? 'Ver como Cliente' : 'Voltar ao Modo Proprietário'}</span>
+        <button class="dropdown-item" onclick="toggleVitrineMenu(); openShareProModal(null, 'owner');">
+          <i class="fa-solid fa-id-card" style="color: #7C3AED;"></i>
+          <span>Meu Cartão Digital & QR Code</span>
         </button>
-        <button class="dropdown-item" onclick="toggleVitrineMenu(); shareProProfile();">
-          <i class="fa-solid fa-share-nodes"></i>
-          <span>Compartilhar perfil</span>
+        <button class="dropdown-item" onclick="toggleVitrineMenu(); openAskReviewModal();">
+          <i class="fa-solid fa-star" style="color: #F59E0B;"></i>
+          <span>Pedir Avaliação 5★ no WhatsApp</span>
         </button>
       `;
     } else {
@@ -3397,7 +3395,7 @@ function renderVitrineView() {
       dropdownMenu.innerHTML = `
         <button class="dropdown-item" onclick="toggleVitrineMenu(); shareProProfile();">
           <i class="fa-solid fa-share-nodes"></i>
-          <span>Compartilhar perfil</span>
+          <span>Recomendar este profissional</span>
         </button>
         <button class="dropdown-item" onclick="toggleVitrineMenu(); toggleProFavorite('${p.id}');">
           <i class="${isFav ? 'fa-solid fa-heart' : 'fa-regular fa-heart'}"></i>
@@ -3459,32 +3457,30 @@ function renderVitrineView() {
     expandedBioElem.innerHTML = `<p>${p.bio || ''} Especialista em ${p.headline || p.specialty || 'serviços gerais'} com atendimento em toda a cidade de ${p.city || 'Parauapebas'}, ${p.state || 'PA'}. Solicite orçamento e confira abaixo o portfólio de serviços realizados.</p>`;
   }
 
-  // 4. Botões de Ação (Owner vs Visitor)
+  // 4. Botões de Ação (Owner vs Visitor) — Sem botão favoritar para o próprio profissional e sem ícone duplicado
   const buttonsContainer = document.getElementById('vitrine-action-buttons');
   if (buttonsContainer) {
     if (isVitrineOwner) {
+      // Visão do próprio profissional: Apenas "Editar Perfil" elegante e direto (a foto é adicionada no botão flutuante +)
       buttonsContainer.innerHTML = `
-        <button class="v-btn-solid" onclick="openEditProModal()">
-          Editar perfil
-        </button>
-        <button class="v-btn-outline" onclick="shareProProfile()">
-          Compartilhar perfil
-        </button>
-        <button class="v-btn-share-square" onclick="shareProProfile()" title="Compartilhar">
-          <i class="fa-solid fa-share-nodes"></i>
+        <button class="v-btn-solid" onclick="openEditProModal()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 18px; font-size: 13.5px; font-weight: 700; border-radius: 12px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.25);">
+          <i class="fa-solid fa-pen-to-square"></i>
+          <span>Editar Meu Perfil</span>
         </button>
       `;
     } else {
+      // Visão de cliente/visitante: Conversar, Favoritar e Ícone de Compartilhar/Indicar
       const isFav = typeof isProFavorited === 'function' ? isProFavorited(p.id) : false;
       buttonsContainer.innerHTML = `
-        <button class="v-btn-solid" onclick="startChatWithPro()">
-          Conversar
+        <button class="v-btn-solid" onclick="startChatWithPro()" style="flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+          <i class="fa-solid fa-comments"></i>
+          <span>Conversar</span>
         </button>
-        <button class="v-btn-outline ${isFav ? 'favorited' : ''}" id="btn-vitrine-toggle-fav" onclick="toggleProFavorite('${p.id}')">
+        <button class="v-btn-outline ${isFav ? 'favorited' : ''}" id="btn-vitrine-toggle-fav" onclick="toggleProFavorite('${p.id}')" style="flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
           <i class="${isFav ? 'fa-solid fa-heart' : 'fa-regular fa-heart'}"></i>
           <span>${isFav ? 'Favoritado' : 'Favoritar'}</span>
         </button>
-        <button class="v-btn-share-square" onclick="shareProProfile()" title="Compartilhar">
+        <button class="v-btn-share-square" onclick="shareProProfile()" title="Indicar este profissional" aria-label="Indicar este profissional">
           <i class="fa-solid fa-share-nodes"></i>
         </button>
       `;
@@ -3521,6 +3517,45 @@ function renderVitrineView() {
     }
   }
 
+  // 4.1. Trampou Viral Loop: Banner de Divulgação de Alto Impacto (EXCLUSIVO DO PROFISSIONAL)
+  const viralBannerContainer = document.getElementById('vitrine-viral-growth-container');
+  if (viralBannerContainer) {
+    if (isVitrineOwner) {
+      viralBannerContainer.innerHTML = `
+        <div class="vitrine-viral-banner-highlight">
+          <div class="viral-banner-top">
+            <div class="viral-banner-icon-pulse">
+              <i class="fa-solid fa-bullhorn"></i>
+            </div>
+            <div class="viral-banner-text-group">
+              <div class="viral-banner-badge">
+                <i class="fa-solid fa-rocket"></i> ACELERE SEUS ORÇAMENTOS
+              </div>
+              <h4 class="viral-banner-title">Divulgue sua vitrine e ganhe mais clientes!</h4>
+            </div>
+          </div>
+          <p class="viral-banner-desc">
+            Compartilhe seu cartão profissional com fotos e avaliações no WhatsApp. Clientes contratam até <strong>3x mais rápido</strong> ao ver sua reputação oficial!
+          </p>
+          <div class="viral-banner-actions">
+            <button type="button" class="btn-viral-wa-primary" onclick="openShareProModal(null, 'owner')">
+              <i class="fa-brands fa-whatsapp"></i>
+              <span>Compartilhar Meu Cartão</span>
+            </button>
+            <button type="button" class="btn-viral-star-secondary" onclick="openAskReviewModal()">
+              <i class="fa-solid fa-star"></i>
+              <span>Pedir Avaliação 5★</span>
+            </button>
+          </div>
+        </div>
+      `;
+    } else {
+      // Na visão do cliente: o banner é oculto! O cliente não vê o cartão de divulgação do profissional
+      viralBannerContainer.style.display = 'none';
+      viralBannerContainer.innerHTML = '';
+    }
+  }
+
   // 5. Card e Badge de Plantão 24h & Emergência
   renderVitrineEmergencyCard();
   updateVitrine24hBadge();
@@ -3532,7 +3567,7 @@ function renderVitrineView() {
   }
   const headerAddWorkBtn = document.getElementById('btn-header-add-work');
   if (headerAddWorkBtn) {
-    headerAddWorkBtn.style.display = isVitrineOwner ? 'inline-flex' : 'none';
+    headerAddWorkBtn.style.display = 'none'; // Desativado para evitar redundância com o botão flutuante +
   }
 
   // 7. Grade 3 Colunas de Trabalhos
@@ -9930,3 +9965,97 @@ function switchPwaGuideTab(os) {
 window.openPwaInstallModal = openPwaInstallModal;
 window.closePwaInstallModal = closePwaInstallModal;
 window.switchPwaGuideTab = switchPwaGuideTab;
+
+
+/**
+ * =========================================================
+ * TRAMPOU VIRAL LOOP: PEDIR AVALIAÇÃO AO CLIENTE NO WHATSAPP
+ * =========================================================
+ */
+let currentAskReviewPro = null;
+
+function openAskReviewModal(proOrId) {
+  let p = null;
+  if (proOrId && typeof proOrId === 'object') p = proOrId;
+  else if (typeof proOrId === 'string') p = (PROFESSIONALS || []).find(x => x.id === proOrId);
+  else if (currentVitrinePro) p = currentVitrinePro;
+  else if (PROFESSIONALS && PROFESSIONALS.length > 0) p = PROFESSIONALS[0];
+
+  currentAskReviewPro = p;
+  const modal = document.getElementById('modal-ask-review-overlay');
+  if (!modal) return;
+
+  const nameInput = document.getElementById('ask-review-client-name');
+  if (nameInput) nameInput.value = '';
+
+  updateAskReviewMessagePreview();
+  modal.classList.add('active');
+}
+
+function closeAskReviewModal() {
+  const modal = document.getElementById('modal-ask-review-overlay');
+  if (modal) modal.classList.remove('active');
+}
+
+function getAskReviewTargetUrl(pro) {
+  const origin = window.location.origin || 'http://localhost:3000';
+  const idOrHandle = pro ? (pro.handle || pro.id) : 'pro';
+  return `${origin}/#pro/${idOrHandle}`;
+}
+
+function buildAskReviewMessage(pro, clientName = '') {
+  const proName = pro ? pro.name : 'Profissional';
+  const proSpec = pro ? (pro.specialty || 'serviços') : 'serviços';
+  const link = getAskReviewTargetUrl(pro);
+  const saudacao = (clientName && clientName.trim()) ? `Olá ${clientName.trim()}!` : 'Olá!';
+
+  return `${saudacao} Muito obrigado pela oportunidade e confiança no meu trabalho de ${proSpec}! 🛠️\n\nSe você gostou do atendimento, poderia deixar uma avaliação rápida de 1 minuto no meu perfil oficial do Trampou? Isso me ajuda muito a crescer e ser recomendado aqui na nossa cidade:\n\n⭐ Avaliar no Trampou:\n${link}\n\nAgradeço de coração pelo apoio!`;
+}
+
+function updateAskReviewMessagePreview() {
+  const nameInput = document.getElementById('ask-review-client-name');
+  const previewText = document.getElementById('ask-review-preview-text');
+  if (!previewText) return;
+
+  const clientName = nameInput ? nameInput.value : '';
+  const msg = buildAskReviewMessage(currentAskReviewPro, clientName);
+  previewText.innerText = msg;
+}
+
+function sendAskReviewViaWhatsApp() {
+  const nameInput = document.getElementById('ask-review-client-name');
+  const clientName = nameInput ? nameInput.value : '';
+  const msg = buildAskReviewMessage(currentAskReviewPro, clientName);
+  const waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  window.open(waUrl, '_blank');
+}
+
+function copyAskReviewMessage() {
+  const nameInput = document.getElementById('ask-review-client-name');
+  const clientName = nameInput ? nameInput.value : '';
+  const msg = buildAskReviewMessage(currentAskReviewPro, clientName);
+
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(msg).then(() => {
+      const btnText = document.getElementById('btn-copy-ask-review-text');
+      if (btnText) {
+        const old = btnText.innerText;
+        btnText.innerText = '✅ Mensagem Copiada!';
+        setTimeout(() => { btnText.innerText = old; }, 2500);
+      }
+      if (typeof showToast === 'function') {
+        showToast('📋 Mensagem pronta copiada para a área de transferência!');
+      }
+    }).catch(() => {
+      alert('Mensagem pronta:\n\n' + msg);
+    });
+  } else {
+    alert('Mensagem pronta:\n\n' + msg);
+  }
+}
+
+window.openAskReviewModal = openAskReviewModal;
+window.closeAskReviewModal = closeAskReviewModal;
+window.updateAskReviewMessagePreview = updateAskReviewMessagePreview;
+window.sendAskReviewViaWhatsApp = sendAskReviewViaWhatsApp;
+window.copyAskReviewMessage = copyAskReviewMessage;

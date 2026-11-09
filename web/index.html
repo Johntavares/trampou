@@ -517,6 +517,9 @@
                 <!-- Injetado dinamicamente via JS de acordo com Modo Dono vs Modo Visitante -->
               </div>
 
+              <!-- Trampou Viral Loop: Banner de Alto Impacto de Divulgação (Sempre Visível) -->
+              <div id="vitrine-viral-growth-container"></div>
+
               <!-- Card Exclusivo do Dono: Publicar Antes & Depois (Showcase Trampou PRO) -->
               <div id="vitrine-owner-showcase-box" style="display: none; padding: 0 16px 14px;"></div>
 
@@ -548,9 +551,7 @@
               <div class="vitrine-works-section">
                 <div class="works-header-row" style="display: flex; justify-content: space-between; align-items: center;">
                   <h3 class="works-section-title">Meus trabalhos</h3>
-                  <button type="button" id="btn-header-add-work" onclick="triggerAddMediaFlow()" style="display: none; align-items: center; gap: 6px; background: #4F46E5; color: #FFFFFF; border: none; border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 10px rgba(79,70,229,0.25);">
-                    <i class="fa-solid fa-camera"></i> + Publicar Foto
-                  </button>
+                  
                 </div>
 
                 <!-- Grade com 3 colunas de trabalhos fotográficos -->
@@ -2332,7 +2333,77 @@
         <!-- =========================================================
              MODAL: COMPARTILHAMENTO VIRAL / CARTÃO DIGITAL / RECOMENDAÇÃO
              ========================================================= -->
-        <div id="share-pro-modal-overlay" class="modal-overlay" style="z-index: 1350;" onclick="if(event.target === this) closeShareProModal()">
+        
+        <!-- =========================================================
+             TRAMPOU VIRAL LOOP: MODAL PEDIR AVALIAÇÃO AO CLIENTE
+             ========================================================= -->
+        <div id="modal-ask-review-overlay" class="modal-overlay" style="z-index: 1360;" onclick="if(event.target === this) closeAskReviewModal()">
+          <div class="modal-content" style="max-width: 440px; border-radius: 20px; overflow: hidden; background: #FFFFFF;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%); border-bottom: 1px solid #E9D5FF; padding: 18px 20px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 38px; height: 38px; border-radius: 10px; background: #7C3AED; color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 17px; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);">
+                  <i class="fa-solid fa-star"></i>
+                </div>
+                <div>
+                  <h4 style="margin: 0; font-size: 16px; font-weight: 800; color: #1E1B4B;">Pedir Avaliação 5★</h4>
+                  <span style="font-size: 11.5px; color: #6B7280;">Fortaleça sua reputação pós-serviço</span>
+                </div>
+              </div>
+              <button type="button" class="close-x-btn" onclick="closeAskReviewModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="modal-body" style="padding: 20px;">
+              <p style="font-size: 13px; color: #475569; line-height: 1.45; margin-bottom: 16px;">
+                Clientes satisfeitos trazem novos clientes! Envie uma mensagem rápida no WhatsApp do cliente para ele avaliar seu serviço no Trampou com 1 toque.
+              </p>
+
+              <!-- Campo Opcional: Nome do Cliente -->
+              <div style="margin-bottom: 14px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 6px;">
+                  Nome do Cliente (opcional)
+                </label>
+                <div style="position: relative;">
+                  <i class="fa-solid fa-user" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94A3B8; font-size: 13px;"></i>
+                  <input 
+                    type="text" 
+                    id="ask-review-client-name" 
+                    placeholder="Ex: Dona Maria, Carlos..." 
+                    style="width: 100%; padding: 10px 14px 10px 38px; border: 1.5px solid #CBD5E1; border-radius: 10px; font-size: 13px; outline: none; box-sizing: border-box;"
+                    oninput="updateAskReviewMessagePreview()"
+                  >
+                </div>
+              </div>
+
+              <!-- Pré-visualização da Mensagem do WhatsApp -->
+              <div style="margin-bottom: 18px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 6px;">
+                  Mensagem que será enviada:
+                </label>
+                <div id="ask-review-preview-box" style="background: #F0FDF4; border: 1.5px solid #BBF7D0; border-radius: 12px; padding: 14px; font-size: 12.5px; color: #166534; line-height: 1.45; position: relative;">
+                  <i class="fa-brands fa-whatsapp" style="position: absolute; right: 12px; top: 12px; font-size: 18px; color: #22C55E; opacity: 0.8;"></i>
+                  <div id="ask-review-preview-text">
+                    Carregando mensagem...
+                  </div>
+                </div>
+              </div>
+
+              <!-- Botões de Ação Rápida -->
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button type="button" class="btn-action-primary" id="btn-send-ask-review-wa" onclick="sendAskReviewViaWhatsApp()" style="width: 100%; padding: 13px; font-size: 13.5px; font-weight: 800; border-radius: 12px; background: #16A34A; border: none; color: #FFF; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(22, 163, 74, 0.3); cursor: pointer;">
+                  <i class="fa-brands fa-whatsapp" style="font-size: 17px;"></i>
+                  <span>Enviar no WhatsApp do Cliente</span>
+                </button>
+
+                <button type="button" class="btn-action-secondary" onclick="copyAskReviewMessage()" style="width: 100%; padding: 11px; font-size: 12.5px; font-weight: 700; border-radius: 10px; border: 1px solid #CBD5E1; background: #F8FAFC; color: #334155; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;">
+                  <i class="fa-regular fa-copy"></i>
+                  <span id="btn-copy-ask-review-text">Copiar Mensagem Pronta</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+<div id="share-pro-modal-overlay" class="modal-overlay" style="z-index: 1350;" onclick="if(event.target === this) closeShareProModal()">
           <div class="modal-content share-modal-box">
             <div class="modal-header">
               <div style="display: flex; align-items: center; gap: 8px;">
@@ -2385,6 +2456,15 @@
                 <div class="btn-share-texts">
                   <span class="btn-share-title" id="share-whatsapp-title">Compartilhar no WhatsApp</span>
                   <span class="btn-share-sub" id="share-whatsapp-sub">Com mensagem pronta para grupos e vizinhos</span>
+                </div>
+              </button>
+
+              <!-- Botão Viral: Pedir Avaliação 5 Estrelas ao Cliente -->
+              <button type="button" class="btn-share-whatsapp" onclick="closeShareProModal(); openAskReviewModal();" style="background: linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%); border: 1.5px solid #D8B4FE; color: #6B21A8; margin-top: 8px;">
+                <i class="fa-solid fa-star" style="color: #F59E0B; font-size: 20px;"></i>
+                <div class="btn-share-texts">
+                  <span class="btn-share-title" style="color: #581C87;">Pedir Avaliação 5★ no WhatsApp</span>
+                  <span class="btn-share-sub" style="color: #7E22CE;">Mensagem pós-serviço para o cliente te avaliar</span>
                 </div>
               </button>
 
