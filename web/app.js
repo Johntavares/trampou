@@ -870,47 +870,147 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Renderiza Carrossel de Anúncios antes das categorias (Integrado com Supabase + Painel Admin)
-async function renderAdBannerCarousel(refreshOnly = false) {
+/**
+ * =========================================================
+ * TRAMPOU ADS DELIVERY ENGINE
+ * Geo-Targeting, Placements Múltiplos e Rotação Justa (Fair-Share)
+ * =========================================================
+ */
+
+// Memória local de banners para rápida alternância
+let TRAMPOU_ADS_CACHE = [];
+let TRAMPOU_ACTIVE_FEED_BANNER = null;
+let TRAMPOU_ACTIVE_SEARCH_BANNER = null;
+let TRAMPOU_ACTIVE_PROFILE_BANNER = null;
+
+// Rastreamento atômico de visualizações (Impressions)
+function trackTrampouBannerViews(bannerIds) {
+  if (!Array.isArray(bannerIds) || bannerIds.length === 0) return;
+  const realDbIds = bannerIds.filter(id => typeof id === 'string' && id.includes('-'));
+  if (realDbIds.length === 0) return;
+
+  fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_banner_views`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ p_banner_ids: realDbIds })
+  }).catch(() => {});
+}
+
+// Rastreamento atômico de cliques (Clicks & CTR)
+function trackTrampouBannerClick(bannerId) {
+  if (!bannerId || typeof bannerId !== 'string' || !bannerId.includes('-')) return;
+
+  fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_banner_click`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ p_banner_id: bannerId })
+  }).catch(() => {});
+}
+
+// Manipulador universal de cliques em banners
+function handleTrampouBannerClick(banner) {
+  if (!banner) return;
+  trackTrampouBannerClick(banner.id);
+
+  const link = (banner.cta_link || '').trim();
+  if (!link || link === 'share' || link === '#share') {
+    if (typeof openShareAppModal === 'function') {
+      openShareAppModal();
+    } else if (navigator.share) {
+      navigator.share({
+        title: 'Trampou — Profissionais Perto de Você',
+        text: 'Conheça o Trampou: encontre eletricistas, encanadores, pintores e diaristas de confiança!',
+        url: OFFICIAL_APP_URL
+      }).catch(() => {});
+    }
+  } else if (link === 'pwa' || link === '#pwa' || link === 'install') {
+    if (typeof triggerPWAInstall === 'function') {
+      triggerPWAInstall();
+    }
+  } else {
+    window.open(link, '_blank', 'noopener,noreferrer');
+  }
+}
+
+// Filtro de elegibilidade geográfica e público-alvo
+function isTrampouBannerEligible(b, curCity, curState, userRole) {
+  if (b.status && b.status !== 'active') return false;
+
+  // Período de vigência
+  const now = new Date();
+  if (b.starts_at && new Date(b.starts_at) > now) return false;
+  if (b.expires_at && new Date(b.expires_at) < now) return false;
+
+  // Segmentação por público
+  const aud = (b.target_audience || 'all').toLowerCase();
+  if (aud === 'clients' && userRole === 'professional') return false;
+  if (aud === 'professionals' && userRole !== 'professional') return false;
+
+  // Segmentação geográfica (Nacional, Estado, Cidade)
+  const scope = (b.target_scope || 'all').toLowerCase();
+  if (scope === 'all' || scope === 'national') return true;
+
+  const tState = (b.target_state || 'all').toLowerCase();
+  const tCity = (b.target_city || 'all').toLowerCase();
+
+  if (scope === 'state') {
+    return tState === 'all' || tState === curState;
+  }
+  if (scope === 'city') {
+    const stateMatch = tState === 'all' || tState === curState;
+    const cityMatch = tCity === 'all' || tCity === curCity;
+    return stateMatch && cityMatch;
+  }
+
+  return true;
+}
+
+// Banners padrão de fallback para o Carrossel da Home
+const defaultCarouselBanners = [
+  {
+    id: 'default-share',
+    image_url: 'banner-share-trampou.webp',
+    image_url_fallback: 'banner-share-trampou.png',
+    badge_text: 'Compartilhe o Trampou',
+    title: 'Indique o Trampou para amigos e vizinhos!',
+    description: 'Ajude a valorizar os profissionais autônomos da nossa cidade. Compartilhe no WhatsApp!',
+    cta_text: 'Compartilhar App',
+    cta_link: 'share',
+    theme: 'purple-viral'
+  },
+  {
+    id: 'default-pwa',
+    image_url: 'banner-home-2.webp',
+    image_url_fallback: 'banner-home-2.jpg',
+    badge_text: 'APP LEVE & RÁPIDO',
+    title: 'O Trampou não consome o seu espaço!',
+    description: 'O app é leve, otimizado e não ocupa armazenamento no seu celular. Mais praticidade para o seu dia a dia!',
+    cta_text: 'Instalar App',
+    cta_link: 'pwa',
+    theme: 'amber-deal'
+  }
+];
+
+// 1. RENDERIZADOR: CARROSSEL TOPO HOME (home_carousel)
+function renderAdBannerCarouselView(eligibleBanners, refreshOnly = false) {
   const track = document.getElementById('home-banner-track');
   const dotsContainer = document.getElementById('carousel-dots');
   if (!track) return;
 
-  // Banners padrão de exibição imediata
-  const defaultBanners = [
-    {
-      id: 'default-share',
-      image_url: 'banner-share-trampou.webp',
-      image_url_fallback: 'banner-share-trampou.png',
-      badge_text: 'Compartilhe o Trampou',
-      title: 'Indique o Trampou para amigos e vizinhos!',
-      description: 'Ajude a valorizar os profissionais autônomos da nossa cidade. Compartilhe no WhatsApp!',
-      cta_text: 'Compartilhar App',
-      cta_link: 'share',
-      theme: 'purple-viral'
-    },
-    {
-      id: 'default-pwa',
-      image_url: 'banner-home-2.webp',
-      image_url_fallback: 'banner-home-2.jpg',
-      badge_text: 'APP LEVE & RÁPIDO',
-      title: 'O Trampou não consome o seu espaço!',
-      description: 'O app é leve, otimizado e não ocupa armazenamento no seu celular. Mais praticidade para o seu dia a dia!',
-      cta_text: 'Instalar App',
-      cta_link: 'pwa',
-      theme: 'amber-deal'
-    }
-  ];
-
-  // Renderizador de HTML de um banner
   function buildBannerHtml(banner, index) {
-    // Se o banner possuir imagem dedicada (1080x432 px / 2.5:1)
     if (banner.image_url) {
       let finalImgUrl = banner.image_url;
-      // Garante protocolo HTTPS e suporta URLs relativas ou absolutas
       if (finalImgUrl.startsWith('//')) {
         finalImgUrl = 'https:' + finalImgUrl;
       } else if (!finalImgUrl.startsWith('http://') && !finalImgUrl.startsWith('https://') && !finalImgUrl.startsWith('./')) {
-        // Se for nome de arquivo local
         finalImgUrl = `./${finalImgUrl}`;
       }
 
@@ -952,40 +1052,6 @@ async function renderAdBannerCarousel(refreshOnly = false) {
     `;
   }
 
-  function handleBannerClick(banner) {
-    // Registra clique atômico no Supabase (+1 clicks_count)
-    if (banner.id && typeof banner.id === 'string' && banner.id.includes('-')) {
-      fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_banner_click`, {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ p_banner_id: banner.id })
-      }).catch(() => {});
-    }
-
-    const link = (banner.cta_link || '').trim();
-    if (!link || link === 'share' || link === '#share') {
-      if (typeof openShareAppModal === 'function') {
-        openShareAppModal();
-      } else if (navigator.share) {
-        navigator.share({
-          title: 'Trampou — Profissionais Perto de Você',
-          text: 'Conheça o Trampou: encontre eletricistas, encanadores, pintores e diaristas de confiança em Parauapebas!',
-          url: OFFICIAL_APP_URL
-        }).catch(() => {});
-      }
-    } else if (link === 'pwa' || link === '#pwa' || link === 'install') {
-      if (typeof triggerPWAInstall === 'function') {
-        triggerPWAInstall();
-      }
-    } else {
-      window.open(link, '_blank', 'noopener,noreferrer');
-    }
-  }
-
   let currentBannerIdx = 0;
   window.goToBannerSlide = function(idx) {
     if (!track) return;
@@ -1003,13 +1069,12 @@ async function renderAdBannerCarousel(refreshOnly = false) {
     }
   };
 
-  let activeBannersCurrentList = defaultBanners;
+  let activeBannersCurrentList = defaultCarouselBanners;
 
   function scheduleNextBannerSlide() {
     if (window._bannerCarouselInterval) clearTimeout(window._bannerCarouselInterval);
     if (!activeBannersCurrentList || activeBannersCurrentList.length <= 1) return;
 
-    // Tempo de exibição configurado no admin para o banner atual (padrão: 5s, mín 2s, máx 60s)
     const currentBanner = activeBannersCurrentList[currentBannerIdx] || {};
     const seconds = Math.min(60, Math.max(2, parseInt(currentBanner.display_seconds, 10) || 5));
     const delayMs = seconds * 1000;
@@ -1023,28 +1088,22 @@ async function renderAdBannerCarousel(refreshOnly = false) {
     }, delayMs);
   }
 
-  function startBannerAutoPlay() {
-    scheduleNextBannerSlide();
-  }
-
   function applyBanners(bannersList) {
     if (!bannersList || bannersList.length === 0) {
-      bannersList = defaultBanners;
+      bannersList = defaultCarouselBanners;
     }
     activeBannersCurrentList = bannersList;
 
     track.innerHTML = bannersList.map((b, idx) => buildBannerHtml(b, idx)).join('');
 
-    // Adiciona listener de clique em cada card
     const cards = track.querySelectorAll('.ad-slide-card');
     cards.forEach((card, idx) => {
       card.addEventListener('click', (e) => {
         e.stopPropagation();
-        handleBannerClick(bannersList[idx]);
+        handleTrampouBannerClick(bannersList[idx]);
       });
     });
 
-    // Configuração dos pontinhos (dots) se houver mais de 1 banner
     if (dotsContainer) {
       if (bannersList.length > 1) {
         dotsContainer.style.display = 'flex';
@@ -1066,15 +1125,12 @@ async function renderAdBannerCarousel(refreshOnly = false) {
           });
         };
 
-        // Pausa ao interagir (touch ou hover) e retoma após soltar
         track.onmouseenter = () => { if (window._bannerCarouselInterval) clearTimeout(window._bannerCarouselInterval); };
         track.onmouseleave = () => { scheduleNextBannerSlide(); };
         track.ontouchstart = () => { if (window._bannerCarouselInterval) clearTimeout(window._bannerCarouselInterval); };
         track.ontouchend = () => { scheduleNextBannerSlide(); };
 
-        // Inicia a rotação dinâmica respeitando o tempo de cada banner
         scheduleNextBannerSlide();
-
       } else {
         dotsContainer.style.display = 'none';
         if (window._bannerCarouselInterval) clearTimeout(window._bannerCarouselInterval);
@@ -1082,12 +1138,158 @@ async function renderAdBannerCarousel(refreshOnly = false) {
     }
   }
 
-  // Renderização inicial rápida com fallback (apenas na primeira carga)
-  if (!refreshOnly) {
-    applyBanners(defaultBanners);
+  // Algoritmo Fair-Share: seleciona no máximo 4 banners priorizando menor views_count
+  let selectedBanners = [];
+  if (eligibleBanners.length <= 4) {
+    selectedBanners = eligibleBanners.length > 0 ? eligibleBanners : defaultCarouselBanners;
+  } else {
+    const sortedByViews = [...eligibleBanners].sort((a, b) => {
+      const diff = (parseInt(a.views_count, 10) || 0) - (parseInt(b.views_count, 10) || 0);
+      return diff !== 0 ? diff : (Math.random() - 0.5);
+    });
+    selectedBanners = sortedByViews.slice(0, 4).sort(() => Math.random() - 0.5);
   }
 
-  // Busca banners ativos em tempo real do Supabase com Geo-Targeting & Rotação Justa
+  applyBanners(selectedBanners);
+
+  // Registra impressões atômicas dos banners exibidos no carrossel
+  const realIds = selectedBanners.map(b => b.id).filter(id => id && typeof id === 'string' && id.includes('-'));
+  if (realIds.length > 0) {
+    trackTrampouBannerViews(realIds);
+  }
+}
+
+// 2. RENDERIZADOR: FEED NATIVO DA HOME (home_feed)
+function renderHomeFeedAdView(eligibleFeedBanners) {
+  const section = document.getElementById('home-feed-ad-section');
+  const container = document.getElementById('home-feed-ad-container');
+  const geoBadge = document.getElementById('home-feed-ad-geo-badge');
+  if (!section || !container) return;
+
+  if (!eligibleFeedBanners || eligibleFeedBanners.length === 0) {
+    section.style.display = 'none';
+    TRAMPOU_ACTIVE_FEED_BANNER = null;
+    return;
+  }
+
+  // Seleciona o banner com menor número de visualizações
+  const sorted = [...eligibleFeedBanners].sort((a, b) => (parseInt(a.views_count, 10) || 0) - (parseInt(b.views_count, 10) || 0));
+  const b = sorted[0];
+  TRAMPOU_ACTIVE_FEED_BANNER = b;
+
+  if (geoBadge) {
+    if (b.target_scope === 'city') {
+      geoBadge.innerText = `${b.target_city || 'Parauapebas'}, ${b.target_state || 'PA'}`;
+    } else if (b.target_scope === 'state') {
+      geoBadge.innerText = `Estado: ${b.target_state || 'PA'}`;
+    } else {
+      geoBadge.innerText = '🇧🇷 Brasil';
+    }
+  }
+
+  container.innerHTML = `
+    ${b.image_url ? `<img src="${escapeHTML(b.image_url)}" alt="${escapeHTML(b.title || 'Anúncio')}" class="native-feed-ad-img" onerror="this.style.display='none';">` : ''}
+    <div class="native-feed-ad-body">
+      <h5 class="native-feed-ad-title">${escapeHTML(b.title)}</h5>
+      ${b.description ? `<p class="native-feed-ad-desc">${escapeHTML(b.description)}</p>` : ''}
+      <div class="native-feed-ad-footer">
+        <span style="font-size: 11px; color: #94A3B8; font-weight: 600;">${b.advertiser_name ? escapeHTML(b.advertiser_name) : 'Trampou Parceiro'}</span>
+        <button type="button" class="native-feed-ad-btn">
+          <span>${escapeHTML(b.cta_text || 'Saiba Mais')}</span>
+          <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 11px;"></i>
+        </button>
+      </div>
+    </div>
+  `;
+
+  container.onclick = () => handleTrampouBannerClick(b);
+  section.style.display = 'block';
+
+  // Registra visualização
+  trackTrampouBannerViews([b.id]);
+}
+
+// 3. RENDERIZADOR: BUSCA PATROCINADA (search_sponsored)
+function renderSearchSponsoredAdView(eligibleSearchBanners) {
+  const wrap = document.getElementById('search-sponsored-ad-wrap');
+  if (!wrap) return;
+
+  if (!eligibleSearchBanners || eligibleSearchBanners.length === 0) {
+    wrap.style.display = 'none';
+    TRAMPOU_ACTIVE_SEARCH_BANNER = null;
+    return;
+  }
+
+  const sorted = [...eligibleSearchBanners].sort((a, b) => (parseInt(a.views_count, 10) || 0) - (parseInt(b.views_count, 10) || 0));
+  const b = sorted[0];
+  TRAMPOU_ACTIVE_SEARCH_BANNER = b;
+
+  wrap.innerHTML = `
+    <div class="search-sponsored-ad-card" onclick="handleTrampouBannerClick(TRAMPOU_ACTIVE_SEARCH_BANNER)">
+      ${b.image_url ? `<img src="${escapeHTML(b.image_url)}" alt="${escapeHTML(b.title)}" class="search-sponsored-thumb" onerror="this.style.display='none';">` : ''}
+      <div class="search-sponsored-info">
+        <div class="search-sponsored-header">
+          <span class="ad-sponsored-pill" style="font-size: 9.5px; padding: 2px 6px;">Patrocinado</span>
+          ${b.advertiser_name ? `<span style="font-size: 11px; color: #64748B; font-weight: 600;">${escapeHTML(b.advertiser_name)}</span>` : ''}
+        </div>
+        <h5 class="search-sponsored-title">${escapeHTML(b.title)}</h5>
+        ${b.description ? `<p class="search-sponsored-desc">${escapeHTML(b.description)}</p>` : ''}
+      </div>
+      <button type="button" class="search-sponsored-btn">
+        <span>${escapeHTML(b.cta_text || 'Acessar')}</span>
+        <i class="fa-solid fa-arrow-right" style="font-size: 10px;"></i>
+      </button>
+    </div>
+  `;
+
+  wrap.style.display = 'block';
+  trackTrampouBannerViews([b.id]);
+}
+
+// 4. RENDERIZADOR: RODAPÉ DE PERFIL (profile_footer)
+function renderProfileFooterAdView(eligibleProfileBanners) {
+  const wrap = document.getElementById('vitrine-sponsored-ad-wrap');
+  if (!wrap) return;
+
+  if (!eligibleProfileBanners || eligibleProfileBanners.length === 0) {
+    wrap.style.display = 'none';
+    TRAMPOU_ACTIVE_PROFILE_BANNER = null;
+    return;
+  }
+
+  const sorted = [...eligibleProfileBanners].sort((a, b) => (parseInt(a.views_count, 10) || 0) - (parseInt(b.views_count, 10) || 0));
+  const b = sorted[0];
+  TRAMPOU_ACTIVE_PROFILE_BANNER = b;
+
+  wrap.innerHTML = `
+    <div class="profile-footer-ad-card" style="border: 1px solid #E2E8F0; border-radius: 14px; overflow: hidden; background: #FFFFFF; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.04);" onclick="handleTrampouBannerClick(TRAMPOU_ACTIVE_PROFILE_BANNER)">
+      ${b.image_url ? `<img src="${escapeHTML(b.image_url)}" alt="${escapeHTML(b.title)}" style="width: 100%; aspect-ratio: 2.5/1; object-fit: cover; display: block;" onerror="this.style.display='none';">` : ''}
+      <div style="padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+            <span class="ad-sponsored-pill" style="font-size: 9.5px; padding: 2px 6px;">Patrocinado</span>
+            <span style="font-size: 11px; color: #64748B;">${b.advertiser_name ? escapeHTML(b.advertiser_name) : 'Parceiro Oficial'}</span>
+          </div>
+          <strong style="font-size: 13px; color: #0F172A; display: block;">${escapeHTML(b.title)}</strong>
+        </div>
+        <button type="button" style="padding: 6px 12px; background: #7C3AED; color: #FFF; border: none; border-radius: 8px; font-weight: 700; font-size: 11.5px; white-space: nowrap;">
+          ${escapeHTML(b.cta_text || 'Conferir')}
+        </button>
+      </div>
+    </div>
+  `;
+
+  wrap.style.display = 'block';
+  trackTrampouBannerViews([b.id]);
+}
+
+// 5. MOTOR CENTRAL: Dispara todos os posicionamentos
+async function renderAdBannerCarousel(refreshOnly = false) {
+  // Renderização inicial imediata do carrossel com fallbacks locais
+  if (!refreshOnly) {
+    renderAdBannerCarouselView(defaultCarouselBanners, false);
+  }
+
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/banners?active=eq.true&order=sort_order.asc,created_at.desc`, {
       headers: {
@@ -1096,92 +1298,43 @@ async function renderAdBannerCarousel(refreshOnly = false) {
       },
       cache: 'no-store'
     });
+
     if (res.ok) {
       const dbBanners = await res.json();
-      
-      // 1. Filtro Geográfico Inteligente & Segmentação por Público
+      TRAMPOU_ADS_CACHE = Array.isArray(dbBanners) ? dbBanners : [];
+
       const curCity = ((currentActiveLocation && currentActiveLocation.city) || localStorage.getItem('trampou_active_city') || 'Parauapebas').toLowerCase().trim();
       const curState = ((currentActiveLocation && currentActiveLocation.state) || localStorage.getItem('trampou_active_state') || 'PA').toLowerCase().trim();
       const userRole = (typeof getCurrentUserRole === 'function' ? getCurrentUserRole() : 'client');
 
-      const eligible = (Array.isArray(dbBanners) ? dbBanners : []).filter(b => {
-        // Posicionamento no app
-        const placement = b.placement || 'home_carousel';
-        if (placement !== 'home_carousel') return false;
+      // Filtra banners elegíveis para a localização atual
+      const eligible = TRAMPOU_ADS_CACHE.filter(b => isTrampouBannerEligible(b, curCity, curState, userRole));
 
-        // Status ativo e validado
-        if (b.status && b.status !== 'active') return false;
+      // 1. Carrossel Topo
+      const carouselBanners = eligible.filter(b => (b.placement || 'home_carousel') === 'home_carousel');
+      renderAdBannerCarouselView(carouselBanners, refreshOnly);
 
-        // Período de vigência
-        const now = new Date();
-        if (b.starts_at && new Date(b.starts_at) > now) return false;
-        if (b.expires_at && new Date(b.expires_at) < now) return false;
+      // 2. Feed Meio Home
+      const feedBanners = eligible.filter(b => b.placement === 'home_feed');
+      renderHomeFeedAdView(feedBanners);
 
-        // Segmentação por público
-        const aud = (b.target_audience || 'all').toLowerCase();
-        if (aud === 'clients' && userRole === 'professional') return false;
-        if (aud === 'professionals' && userRole !== 'professional') return false;
+      // 3. Busca Patrocinada
+      const searchBanners = eligible.filter(b => b.placement === 'search_sponsored');
+      renderSearchSponsoredAdView(searchBanners);
 
-        // Segmentação geográfica (Nacional, Estado, Cidade)
-        const scope = (b.target_scope || 'all').toLowerCase();
-        if (scope === 'all' || scope === 'national') return true;
-
-        const tState = (b.target_state || 'all').toLowerCase();
-        const tCity = (b.target_city || 'all').toLowerCase();
-
-        if (scope === 'state') {
-          return tState === 'all' || tState === curState;
-        }
-        if (scope === 'city') {
-          const stateMatch = tState === 'all' || tState === curState;
-          const cityMatch = tCity === 'all' || tCity === curCity;
-          return stateMatch && cityMatch;
-        }
-
-        return true;
-      });
-
-      // 2. Algoritmo de Rotação Justa (Fair-Share Delivery — Máximo 4 banners por sessão)
-      let selectedBanners = [];
-      if (eligible.length <= 4) {
-        selectedBanners = eligible.length > 0 ? eligible : defaultBanners;
-      } else {
-        // Ordena pelos que têm menos visualizações acumuladas (views_count) com jitter aleatório
-        const sortedByViews = [...eligible].sort((a, b) => {
-          const diff = (parseInt(a.views_count, 10) || 0) - (parseInt(b.views_count, 10) || 0);
-          return diff !== 0 ? diff : (Math.random() - 0.5);
-        });
-        // Pega os 4 prioritários com menos visualizações e embaralha a ordem entre eles
-        selectedBanners = sortedByViews.slice(0, 4).sort(() => Math.random() - 0.5);
-      }
-
-      const signature = JSON.stringify(selectedBanners.map(b => [b.id, b.image_url, b.cta_link, b.title, b.sort_order, b.updated_at]));
-      if (signature !== window._lastBannersSignature) {
-        window._lastBannersSignature = signature;
-        applyBanners(selectedBanners);
-
-        // 3. Incremento atômico de visualizações (+1 view) no Supabase em segundo plano
-        const realDbIds = selectedBanners
-          .map(b => b.id)
-          .filter(id => id && typeof id === 'string' && id.includes('-'));
-
-        if (realDbIds.length > 0) {
-          fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_banner_views`, {
-            method: 'POST',
-            headers: {
-              'apikey': SUPABASE_ANON_KEY,
-              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ p_banner_ids: realDbIds })
-          }).catch(() => {});
-        }
-      }
+      // 4. Rodapé de Perfil
+      const profileBanners = eligible.filter(b => b.placement === 'profile_footer');
+      renderProfileFooterAdView(profileBanners);
     }
   } catch (err) {
-    console.warn('Usando banners padrão locais:', err);
+    console.warn('Trampou Ads: utilizando fallback local:', err);
   }
 }
+
+// Expõe globalmente
+window.renderAdBannerCarousel = renderAdBannerCarousel;
+window.handleTrampouBannerClick = handleTrampouBannerClick;
+
 
 // Busca Categorias do Supabase (Compacta)
 async function fetchCategories() {

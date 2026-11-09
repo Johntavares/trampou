@@ -161,16 +161,14 @@
               </div>
             </div>
 
-            <!-- 6. Espaço Reservado para Publicidade Local -->
-            <div class="home-block ad-block">
-              <div class="ad-tag-label">Publicidade</div>
-              <div class="ad-banner-compact">
-                <div class="ad-icon"><i class="fa-solid fa-store"></i></div>
-                <div class="ad-content">
-                  <h5>Anuncie seus serviços em Parauapebas</h5>
-                  <p>Apareça para milhares de moradores buscando autônomos na região.</p>
-                </div>
-                <button class="ad-btn" onclick="openProDashboard()">Anunciar</button>
+            <!-- 6. Trampou Ads: Anúncio Nativo In-Feed (Geo-Targeting) -->
+            <div class="home-block home-feed-ad-section" id="home-feed-ad-section" style="display: none; margin-bottom: 24px;">
+              <div class="block-title-row" style="margin-bottom: 8px;">
+                <span class="ad-sponsored-pill"><i class="fa-solid fa-bullhorn"></i> Patrocinado</span>
+                <span id="home-feed-ad-geo-badge" style="font-size: 11px; color: #64748B; font-weight: 600;">Parauapebas, PA</span>
+              </div>
+              <div id="home-feed-ad-container" class="native-feed-ad-card">
+                <!-- Preenchido dinamicamente via Trampou Ads Engine -->
               </div>
             </div>
 
@@ -260,6 +258,11 @@
                   <option value="name">Nome (A–Z)</option>
                 </select>
               </div>
+            </div>
+
+            <!-- Trampou Ads: Busca Patrocinada (Geo-Targeting) -->
+            <div id="search-sponsored-ad-wrap" class="search-sponsored-ad-wrap" style="display: none; margin: 10px 0 16px 0;">
+              <!-- Preenchido dinamicamente via Trampou Ads Engine -->
             </div>
 
             <!-- Listagem Compacta de Profissionais (Blocos Horizontais Compactos de 90–115px) -->
@@ -554,6 +557,11 @@
                 <div class="vitrine-works-grid" id="vitrine-works-grid">
                   <!-- Fotos dos trabalhos injetadas dinamicamente via JS -->
                 </div>
+              </div>
+
+              <!-- Trampou Ads: Rodapé Patrocinado no Perfil (Geo-Targeting) -->
+              <div id="vitrine-sponsored-ad-wrap" class="vitrine-sponsored-ad-wrap" style="display: none; padding: 14px 16px 20px;">
+                <!-- Preenchido dinamicamente via Trampou Ads Engine -->
               </div>
 
               <!-- Espaçador para o FAB não cobrir conteúdo ao rolar -->
