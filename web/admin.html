@@ -418,18 +418,96 @@
              ABA 2: GERENCIADOR DE BANNERS DE ANÚNCIOS
              ========================================== -->
         <section class="admin-tab-pane" id="tab-banners">
+          <!-- Cards de Métricas e Performance de Publicidade -->
+          <div class="admin-stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px;">
+            <div class="admin-stat-card" style="padding: 16px;">
+              <div class="admin-stat-icon purple" style="width: 42px; height: 42px; font-size: 18px;">
+                <i class="fa-solid fa-rectangle-ad"></i>
+              </div>
+              <div>
+                <span class="admin-stat-label">Anúncios Ativos</span>
+                <h3 class="admin-stat-val" id="kpi-ads-active">0</h3>
+              </div>
+            </div>
+            <div class="admin-stat-card" style="padding: 16px;">
+              <div class="admin-stat-icon amber" style="width: 42px; height: 42px; font-size: 18px;">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+              </div>
+              <div>
+                <span class="admin-stat-label">Para Moderação</span>
+                <h3 class="admin-stat-val" id="kpi-ads-pending" style="color: #D97706;">0</h3>
+              </div>
+            </div>
+            <div class="admin-stat-card" style="padding: 16px;">
+              <div class="admin-stat-icon blue" style="width: 42px; height: 42px; font-size: 18px;">
+                <i class="fa-solid fa-eye"></i>
+              </div>
+              <div>
+                <span class="admin-stat-label">Visualizações</span>
+                <h3 class="admin-stat-val" id="kpi-ads-views">0</h3>
+              </div>
+            </div>
+            <div class="admin-stat-card" style="padding: 16px;">
+              <div class="admin-stat-icon emerald" style="width: 42px; height: 42px; font-size: 18px;">
+                <i class="fa-solid fa-arrow-pointer"></i>
+              </div>
+              <div>
+                <span class="admin-stat-label">Cliques & CTR</span>
+                <h3 class="admin-stat-val" id="kpi-ads-clicks">0</h3>
+              </div>
+            </div>
+            <div class="admin-stat-card" style="padding: 16px;">
+              <div class="admin-stat-icon green" style="width: 42px; height: 42px; font-size: 18px;">
+                <i class="fa-solid fa-coins"></i>
+              </div>
+              <div>
+                <span class="admin-stat-label">Receita em Ads</span>
+                <h3 class="admin-stat-val" id="kpi-ads-revenue" style="color: #059669;">R$ 0,00</h3>
+              </div>
+            </div>
+          </div>
+
           <div class="admin-card-section">
             <div class="admin-card-header">
               <div class="admin-card-title-group">
-                <h4>Banners de Anúncios no App</h4>
-                <span>Crie, edite e ative/desative campanhas publicitárias visíveis para todos os clientes</span>
+                <h4>Central de Anúncios Trampou Ads</h4>
+                <span>Controle de publicidade geo-segmentada, campanhas e aprovação de anunciantes</span>
               </div>
               <div class="admin-card-actions">
                 <button class="btn-action-primary" onclick="window.AdminApp.openBannerModal()">
                   <i class="fa-solid fa-plus"></i>
-                  <span>Criar Novo Banner</span>
+                  <span>Criar Novo Anúncio</span>
                 </button>
               </div>
+            </div>
+
+            <!-- Barra de Filtros Inteligentes -->
+            <div style="padding: 14px 20px; border-bottom: 1px solid var(--admin-border-subtle); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: #F8FAFC;">
+              <div class="admin-search-input-wrap" style="flex: 1; min-width: 200px;">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="search-ads-input" placeholder="Buscar por anunciante, título..." oninput="window.AdminApp.filterBanners()">
+              </div>
+              <select id="filter-ads-placement" onchange="window.AdminApp.filterBanners()" style="padding: 8px 12px; border: 1px solid var(--admin-border); border-radius: 8px; font-size: 12.5px; background: #FFF; outline: none; font-weight: 600; color: #334155;">
+                <option value="all">📍 Todas as Posições</option>
+                <option value="home_carousel">🎪 Carrossel Topo (Home)</option>
+                <option value="home_feed">📰 Feed do Meio (Home)</option>
+                <option value="search_sponsored">🔍 Busca Patrocinada</option>
+                <option value="profile_footer">👤 Rodapé de Perfil</option>
+              </select>
+              <select id="filter-ads-geo" onchange="window.AdminApp.filterBanners()" style="padding: 8px 12px; border: 1px solid var(--admin-border); border-radius: 8px; font-size: 12.5px; background: #FFF; outline: none; font-weight: 600; color: #334155;">
+                <option value="all">🌎 Todas as Regiões</option>
+                <option value="national">🇧🇷 Nacional (Brasil)</option>
+                <option value="state">📍 Estadual</option>
+                <option value="city">🏙️ Municipal (Cidade)</option>
+              </select>
+              <select id="filter-ads-status" onchange="window.AdminApp.filterBanners()" style="padding: 8px 12px; border: 1px solid var(--admin-border); border-radius: 8px; font-size: 12.5px; background: #FFF; outline: none; font-weight: 600; color: #334155;">
+                <option value="all">Todos os Status</option>
+                <option value="pending_review">🟡 Aguardando Moderação</option>
+                <option value="active">🟢 Ativos / No Ar</option>
+                <option value="paused">⏸️ Pausados</option>
+                <option value="rejected">❌ Recusados</option>
+                <option value="expired">⌛ Expirados</option>
+              </select>
             </div>
 
             <!-- Grid de Banners -->
@@ -1081,9 +1159,70 @@
       <form id="form-banner" onsubmit="event.preventDefault(); window.AdminApp.saveBanner();">
         <input type="hidden" id="banner-id">
         <div class="admin-modal-body">
-          <div class="admin-input-group">
-            <label for="banner-title">Nome do Anúncio / Anunciante *</label>
-            <input type="text" id="banner-title" required placeholder="Ex: HÜBB Mercados Autônomos">
+          <div class="admin-input-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="admin-input-group">
+              <label for="banner-title">Título do Anúncio *</label>
+              <input type="text" id="banner-title" required placeholder="Ex: Super Promoção de Tintas">
+            </div>
+            <div class="admin-input-group">
+              <label for="banner-advertiser-name">Nome do Anunciante / Empresa</label>
+              <input type="text" id="banner-advertiser-name" placeholder="Ex: HÜBB Mercados ou Carlos Silva">
+            </div>
+          </div>
+
+          <div class="admin-input-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="admin-input-group">
+              <label for="banner-placement">Posição no App *</label>
+              <select id="banner-placement" style="padding: 10px 12px; border: 1.5px solid var(--admin-border); border-radius: 8px; font-size: 13px; font-weight: 600; width: 100%;">
+                <option value="home_carousel">🎪 Carrossel Topo (Home)</option>
+                <option value="home_feed">📰 Feed do Meio (Home)</option>
+                <option value="search_sponsored">🔍 Busca Patrocinada (Explorar)</option>
+                <option value="profile_footer">👤 Rodapé de Perfil Profissional</option>
+              </select>
+            </div>
+            <div class="admin-input-group">
+              <label for="banner-target-audience">Público-Alvo *</label>
+              <select id="banner-target-audience" style="padding: 10px 12px; border: 1.5px solid var(--admin-border); border-radius: 8px; font-size: 13px; font-weight: 600; width: 100%;">
+                <option value="all">👥 Todos os Usuários</option>
+                <option value="clients">🛒 Apenas Clientes (Contratantes)</option>
+                <option value="professionals">🛠️ Apenas Profissionais (Prestadores)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Segmentação Geográfica -->
+          <div style="background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 12px 14px; margin-bottom: 14px;">
+            <label style="font-size: 12px; font-weight: 800; color: #1E293B; display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+              <i class="fa-solid fa-location-dot" style="color: #6366F1;"></i> Segmentação Geográfica (Onde vai aparecer)
+            </label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+              <div>
+                <label style="font-size: 11px; color: #64748B; font-weight: 600;">Abrangência</label>
+                <select id="banner-target-scope" onchange="window.AdminApp.handleBannerScopeChange()" style="width: 100%; padding: 8px; border: 1px solid var(--admin-border); border-radius: 8px; font-size: 12.5px;">
+                  <option value="all">🇧🇷 Nacional (Todo Brasil)</option>
+                  <option value="state">📍 Estadual</option>
+                  <option value="city">🏙️ Municipal (Cidade)</option>
+                </select>
+              </div>
+              <div id="group-target-state" style="display: none;">
+                <label style="font-size: 11px; color: #64748B; font-weight: 600;">Estado (UF)</label>
+                <select id="banner-target-state" style="width: 100%; padding: 8px; border: 1px solid var(--admin-border); border-radius: 8px; font-size: 12.5px;">
+                  <option value="PA">Pará (PA)</option>
+                  <option value="AM">Amazonas (AM)</option>
+                  <option value="MA">Maranhão (MA)</option>
+                  <option value="SP">São Paulo (SP)</option>
+                  <option value="RJ">Rio de Janeiro (RJ)</option>
+                  <option value="MG">Minas Gerais (MG)</option>
+                  <option value="BA">Bahia (BA)</option>
+                  <option value="CE">Ceará (CE)</option>
+                  <option value="all">Todos os Estados</option>
+                </select>
+              </div>
+              <div id="group-target-city" style="display: none;">
+                <label style="font-size: 11px; color: #64748B; font-weight: 600;">Cidade Específica</label>
+                <input type="text" id="banner-target-city" placeholder="Ex: Parauapebas" style="width: 100%; padding: 8px; border: 1px solid var(--admin-border); border-radius: 8px; font-size: 12.5px;">
+              </div>
+            </div>
           </div>
 
           <!-- Upload da imagem do banner -->

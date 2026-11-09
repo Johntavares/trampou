@@ -443,11 +443,131 @@
   // =========================================================
   // RENDERIZAÇÃO: BANNERS
   // =========================================================
-  function renderBanners() {
+  
+  function handleBannerScopeChange() {
+    const scope = document.getElementById('banner-target-scope')?.value || 'all';
+    const groupState = document.getElementById('group-target-state');
+    const groupCity = document.getElementById('group-target-city');
+    if (groupState) groupState.style.display = (scope === 'state' || scope === 'city') ? 'block' : 'none';
+    if (groupCity) groupCity.style.display = (scope === 'city') ? 'block' : 'none';
+  }
+
+  function filterBanners() {
+    const query = (document.getElementById('search-ads-input')?.value || '').toLowerCase().trim();
+    const placement = document.getElementById('filter-ads-placement')?.value || 'all';
+    const geo = document.getElementById('filter-ads-geo')?.value || 'all';
+    const status = document.getElementById('filter-ads-status')?.value || 'all';
+
+    const filtered = (state.banners || []).filter(b => {
+      const title = (b.title || '').toLowerCase();
+      const advName = (b.advertiser_name || '').toLowerCase();
+      const advPhone = (b.advertiser_phone || '').toLowerCase();
+      const city = (b.target_city || '').toLowerCase();
+      const stateUf = (b.target_state || '').toLowerCase();
+
+      const matchesQuery = !query || title.includes(query) || advName.includes(query) || advPhone.includes(query) || city.includes(query) || stateUf.includes(query);
+
+      let matchesPlacement = true;
+      if (placement !== 'all') {
+        matchesPlacement = (b.placement || 'home_carousel') === placement;
+      }
+
+      let matchesGeo = true;
+      if (geo !== 'all') {
+        matchesGeo = (b.target_scope || 'all') === geo;
+      }
+
+      let matchesStatus = true;
+      if (status !== 'all') {
+        if (status === 'active') matchesStatus = (b.status === 'active' && b.active === true);
+        else if (status === 'pending_review') matchesStatus = (b.status === 'pending_review');
+        else if (status === 'paused') matchesStatus = (b.status === 'paused' || !b.active);
+        else if (status === 'rejected') matchesStatus = (b.status === 'rejected');
+        else if (status === 'expired') matchesStatus = (b.status === 'expired');
+      }
+
+      return matchesQuery && matchesPlacement && matchesGeo && matchesStatus;
+    });
+
+    renderBanners(filtered);
+  }
+
+  async function approveBanner(id) {
+    if (!confirm('Deseja APROVAR este anúncio? Ele entrará em veiculação ativa imediatamente.')) return;
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/banners?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: getHeaders(),
+        body: JSON.stringify({
+          status: 'active',
+          active: true,
+          rejection_reason: null,
+          updated_at: new Date().toISOString()
+        })
+      });
+      if (res.ok) {
+        await fetchBanners();
+        renderBanners();
+        alert('✅ Anúncio APROVADO com sucesso!');
+      } else {
+        alert('Erro ao aprovar anúncio.');
+      }
+    } catch (err) {
+      alert('Erro de conexão ao aprovar anúncio: ' + err.message);
+    }
+  }
+
+  async function rejectBanner(id) {
+    const reason = prompt('Informe o motivo da recusa para o anunciante (ex: Imagem de baixa qualidade, Link com erro, etc.):');
+    if (reason === null) return;
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/banners?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: getHeaders(),
+        body: JSON.stringify({
+          status: 'rejected',
+          active: false,
+          rejection_reason: reason || 'Não atende às diretrizes de publicidade',
+          updated_at: new Date().toISOString()
+        })
+      });
+      if (res.ok) {
+        await fetchBanners();
+        renderBanners();
+        alert('Anúncio recusado. O status foi atualizado.');
+      } else {
+        alert('Erro ao recusar anúncio.');
+      }
+    } catch (err) {
+      alert('Erro de conexão: ' + err.message);
+    }
+  }
+
+  function renderBanners(list = state.banners) {
     const grid = document.getElementById('banners-grid');
     if (!grid) return;
 
-    if (state.banners.length === 0) {
+    // Atualiza KPIs da Central de Anúncios
+    const totalActive = (state.banners || []).filter(b => b.status === 'active' && b.active === true).length;
+    const totalPending = (state.banners || []).filter(b => b.status === 'pending_review').length;
+    const totalViews = (state.banners || []).reduce((acc, b) => acc + (parseInt(b.views_count, 10) || 0), 0);
+    const totalClicks = (state.banners || []).reduce((acc, b) => acc + (parseInt(b.clicks_count, 10) || 0), 0);
+    const totalRevenue = (state.banners || []).reduce((acc, b) => acc + (parseFloat(b.amount_paid) || 0), 0);
+    const ctrAvg = totalViews > 0 ? ((totalClicks / totalViews) * 100).toFixed(1) : '0.0';
+
+    const kActive = document.getElementById('kpi-ads-active');
+    const kPending = document.getElementById('kpi-ads-pending');
+    const kViews = document.getElementById('kpi-ads-views');
+    const kClicks = document.getElementById('kpi-ads-clicks');
+    const kRevenue = document.getElementById('kpi-ads-revenue');
+
+    if (kActive) kActive.innerText = totalActive;
+    if (kPending) kPending.innerText = totalPending;
+    if (kViews) kViews.innerText = totalViews.toLocaleString('pt-BR');
+    if (kClicks) kClicks.innerText = `${totalClicks.toLocaleString('pt-BR')} (${ctrAvg}%)`;
+    if (kRevenue) kRevenue.innerText = formatCurrency ? formatCurrency(totalRevenue) : `R$ ${totalRevenue.toFixed(2)}`;
+
+    if (!list || list.length === 0) {
       grid.innerHTML = `
         <div style="grid-column: 1 / -1; text-align: center; padding: 48px; background: #F8FAFC; border: 2px dashed #CBD5E1; border-radius: 16px;">
           <i class="fa-solid fa-rectangle-ad" style="font-size: 36px; color: #94A3B8; margin-bottom: 12px; display: block;"></i>
@@ -462,9 +582,45 @@
       return;
     }
 
-    grid.innerHTML = state.banners.map(b => {
+    const placementNames = {
+      home_carousel: '🎪 Carrossel Topo',
+      home_feed: '📰 Feed Meio',
+      search_sponsored: '🔍 Busca Patrocinada',
+      profile_footer: '👤 Rodapé de Perfil'
+    };
+
+    grid.innerHTML = list.map(b => {
+      const placementLabel = placementNames[b.placement || 'home_carousel'] || '🎪 Carrossel';
+      
+      let geoLabel = '🇧🇷 Nacional';
+      if (b.target_scope === 'state') geoLabel = `📍 Estado: ${b.target_state || 'PA'}`;
+      if (b.target_scope === 'city') geoLabel = `🏙️ ${b.target_city || 'Parauapebas'}, ${b.target_state || 'PA'}`;
+
+      const isPending = b.status === 'pending_review';
+      const isRejected = b.status === 'rejected';
+      const isExpired = b.status === 'expired';
+      const ctr = (b.views_count && b.views_count > 0) ? (((b.clicks_count || 0) / b.views_count) * 100).toFixed(1) : '0.0';
+
       return `
-        <div class="banner-item-card ${b.active ? '' : 'inactive'}" id="banner-card-${b.id}">
+        <div class="banner-item-card ${b.active ? '' : 'inactive'}" id="banner-card-${b.id}" style="position: relative; display: flex; flex-direction: column; gap: 10px;">
+          
+          <!-- Badges de Status, Placement e Geo -->
+          <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: space-between;">
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              <span class="badge-status-pill neutral" style="font-size: 11px; font-weight: 700;">
+                ${placementLabel}
+              </span>
+              <span class="badge-status-pill" style="font-size: 11px; font-weight: 700; background: #EDE9FE; color: #6D28D9; border: 1px solid #DDD6FE;">
+                ${geoLabel}
+              </span>
+            </div>
+            <div>
+              ${isPending ? `<span class="badge-status-pill warning" style="font-weight: 800; font-size: 11px;"><i class="fa-solid fa-clock"></i> Pendente</span>` : ''}
+              ${isRejected ? `<span class="badge-status-pill danger" style="font-weight: 800; font-size: 11px;"><i class="fa-solid fa-xmark"></i> Recusado</span>` : ''}
+              ${isExpired ? `<span class="badge-status-pill neutral" style="font-weight: 800; font-size: 11px;">Expirado</span>` : ''}
+              ${!isPending && !isRejected && !isExpired ? (b.active ? `<span class="badge-status-pill success" style="font-weight: 800; font-size: 11px;"><i class="fa-solid fa-circle-check"></i> No Ar</span>` : `<span class="badge-status-pill neutral" style="font-size: 11px;">Pausado</span>`) : ''}
+            </div>
+          </div>
           <!-- Prévia ao Vivo do Banner -->
           ${b.image_url ? `
             <div style="border-radius: 12px; overflow: hidden; aspect-ratio: 2.5 / 1; position: relative; background: #0F172A; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
@@ -500,6 +656,41 @@
           </div>
 
           <!-- Controles / Ações -->
+          <!-- Métricas de Performance do Anúncio -->
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 8px 12px; display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; gap: 4px; font-size: 11.5px;">
+            <div>
+              <span style="color: #64748B; display: block; font-size: 10px; font-weight: 700; text-transform: uppercase;">Views</span>
+              <strong style="color: #0F172A; font-size: 12.5px;">${(b.views_count || 0).toLocaleString('pt-BR')}</strong>
+            </div>
+            <div>
+              <span style="color: #64748B; display: block; font-size: 10px; font-weight: 700; text-transform: uppercase;">Cliques</span>
+              <strong style="color: #2563EB; font-size: 12.5px;">${(b.clicks_count || 0).toLocaleString('pt-BR')} <small style="font-size: 10px; opacity: 0.8;">(${ctr}%)</small></strong>
+            </div>
+            <div>
+              <span style="color: #64748B; display: block; font-size: 10px; font-weight: 700; text-transform: uppercase;">Receita</span>
+              <strong style="color: #059669; font-size: 12.5px;">R$ ${(parseFloat(b.amount_paid) || 0).toFixed(2)}</strong>
+            </div>
+          </div>
+
+          ${b.advertiser_name ? `
+            <div style="font-size: 11.5px; color: #475569; display: flex; align-items: center; justify-content: space-between;">
+              <span><strong>Anunciante:</strong> ${escapeHTML(b.advertiser_name)}</span>
+              ${b.advertiser_phone ? `<a href="https://wa.me/55${b.advertiser_phone.replace(/\D/g, '')}" target="_blank" style="color: #059669; font-weight: 700; text-decoration: none;"><i class="fa-brands fa-whatsapp"></i> Contato</a>` : ''}
+            </div>
+          ` : ''}
+
+          ${isPending ? `
+            <!-- Barra de Ações de Moderação Rápida -->
+            <div style="display: flex; gap: 8px; margin-top: 4px;">
+              <button type="button" onclick="window.AdminApp.approveBanner('${b.id}')" style="flex: 1; background: #059669; color: #FFF; border: none; border-radius: 8px; padding: 9px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                <i class="fa-solid fa-check"></i> Aprovar Anúncio
+              </button>
+              <button type="button" onclick="window.AdminApp.rejectBanner('${b.id}')" style="background: #FEE2E2; color: #DC2626; border: 1px solid #FECACA; border-radius: 8px; padding: 9px 12px; font-size: 12px; font-weight: 700; cursor: pointer;">
+                <i class="fa-solid fa-xmark"></i> Recusar
+              </button>
+            </div>
+          ` : ''}
+
           <div class="banner-controls-row">
             <label class="switch-toggle-label">
               <input type="checkbox" ${b.active ? 'checked' : ''} onchange="window.AdminApp.toggleBannerActive('${b.id}', this.checked)">
@@ -1182,6 +1373,12 @@
         image_url: finalImageUrl,
         sort_order: sortOrder,
         display_seconds: durationSec,
+        placement: (document.getElementById('banner-placement')?.value || 'home_carousel'),
+        target_scope: (document.getElementById('banner-target-scope')?.value || 'all'),
+        target_state: (document.getElementById('banner-target-state')?.value || 'all'),
+        target_city: (document.getElementById('banner-target-city')?.value || '').trim() || 'all',
+        target_audience: (document.getElementById('banner-target-audience')?.value || 'all'),
+        advertiser_name: (document.getElementById('banner-advertiser-name')?.value || '').trim() || null,
         active: isActive,
         updated_at: new Date().toISOString()
       };
