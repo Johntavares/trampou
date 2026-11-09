@@ -28,7 +28,23 @@ function loadStoredConversations() {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
-        conversations = parsed.filter(c => c && c.clientName !== 'João da Silva' && c.id !== 'c1' && c.id !== 'c2');
+        conversations = parsed.filter(c => c && c.clientName !== 'João da Silva' && c.id !== 'c1' && c.id !== 'c2').map(c => {
+          if (!c.isOfficial && c.proId !== 'trampou_official' && Array.isArray(c.messages)) {
+            // Remove respostas automáticas do robô falso gravadas em conversas anteriores
+            c.messages = c.messages.filter(m => 
+              m.text !== 'Entendido! Podemos negociar os detalhes e combinar diretamente por aqui.' &&
+              !m.text.startsWith('Olá! Como posso ajudar com seu pedido de')
+            );
+            if (c.messages.length > 0) {
+              const last = c.messages[c.messages.length - 1];
+              c.lastMsg = last.text;
+              c.time = last.time;
+            } else {
+              c.lastMsg = 'Iniciar conversa';
+            }
+          }
+          return c;
+        });
       }
     }
   } catch (e) {
@@ -5481,9 +5497,10 @@ function openChatWith(name, service, proId) {
       clientName: (currentUser && currentUser.name) ? currentUser.name : 'Cliente Trampou',
       service: service || 'Negociação de Serviço',
       isOfficial: isOfficialChat,
-      messages: [
-        { isMe: false, isOfficial: isOfficialChat, text: `Olá! Como posso ajudar com seu pedido de ${service || 'serviço'}?`, time: 'Agora' }
-      ],
+      // Apenas o canal oficial do app possui mensagem inicial. Para profissionais, o chat inicia 100% limpo!
+      messages: isOfficialChat ? [
+        { isMe: false, isOfficial: true, text: 'Olá! Seja bem-vindo ao canal oficial do Trampou. Como podemos ajudar?', time: 'Agora' }
+      ] : [],
       attendance: null
     };
     conversations.unshift(activeChat);
@@ -5563,6 +5580,19 @@ function renderChatMessages() {
   const container = document.getElementById('chat-messages-container');
   if (!activeChat || !container) return;
 
+  if (!activeChat.messages || activeChat.messages.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 40px 20px; color: #64748B;">
+        <div style="width: 52px; height: 52px; border-radius: 50%; background: #F1F5F9; color: #7C3AED; display: inline-flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 12px;">
+          <i class="fa-regular fa-comments"></i>
+        </div>
+        <h5 style="font-size: 14px; font-weight: 700; color: #1E293B; margin-bottom: 4px;">Inicie sua conversa</h5>
+        <p style="font-size: 12px; margin: 0; line-height: 1.4;">Digite sua mensagem abaixo para combinar o serviço, ou toque em <strong>WhatsApp</strong> no topo para contato direto.</p>
+      </div>
+    `;
+    return;
+  }
+
   container.innerHTML = activeChat.messages.map(m => {
     if (m.isSystem) {
       return `
@@ -5608,9 +5638,10 @@ function sendChatMessage() {
   renderConversations();
   saveStoredConversations();
 
+  // Se for o canal institucional oficial de ajuda da plataforma
   if (activeChat.isOfficial || activeChat.proId === 'trampou_official') {
     setTimeout(() => {
-      const replyText = 'Agradecemos a sua mensagem! Este é o canal automático oficial de orientações do Trampou. Caso precise de suporte ou tenha alguma dúvida, fale com nossa equipe também pelo WhatsApp oficial da plataforma.';
+      const replyText = 'Agradecemos a sua mensagem! Este é o canal oficial de orientações do Trampou. Caso precise de suporte ou tenha dúvidas, fale com nossa equipe pelo WhatsApp oficial.';
       const replyNow = new Date();
       const replyTimeStr = `${String(replyNow.getHours()).padStart(2, '0')}:${String(replyNow.getMinutes()).padStart(2, '0')}`;
       
@@ -5639,32 +5670,8 @@ function sendChatMessage() {
     return;
   }
 
-  setTimeout(() => {
-    const replyText = 'Entendido! Podemos negociar os detalhes e combinar diretamente por aqui.';
-    const replyNow = new Date();
-    const replyTimeStr = `${String(replyNow.getHours()).padStart(2, '0')}:${String(replyNow.getMinutes()).padStart(2, '0')}`;
-    
-    activeChat.messages.push({
-      isMe: false,
-      text: replyText,
-      time: replyTimeStr
-    });
-    activeChat.lastMsg = replyText;
-    activeChat.time = replyTimeStr;
-
-    const chatOverlay = document.getElementById('chat-overlay');
-    const isChatActive = chatOverlay && chatOverlay.classList.contains('active');
-    
-    if (!isChatActive) {
-      activeChat.unread = (activeChat.unread || 0) + 1;
-      showToast(`🔔 Nova mensagem de ${activeChat.proName}: "${replyText.slice(0, 30)}..."`);
-    }
-
-    saveStoredConversations();
-    renderChatMessages();
-    renderConversations();
-    updateNotificationBadges();
-  }, 1000);
+  // FLUXO LIMPO ENTRE CLIENTE E PROFISSIONAL:
+  // NENHUMA resposta automática falsa é gerada. A comunicação é 100% humana e autêntica.
 }
 
 // ==============================================================================
@@ -10059,3 +10066,41 @@ window.closeAskReviewModal = closeAskReviewModal;
 window.updateAskReviewMessagePreview = updateAskReviewMessagePreview;
 window.sendAskReviewViaWhatsApp = sendAskReviewViaWhatsApp;
 window.copyAskReviewMessage = copyAskReviewMessage;
+
+
+function openProWhatsAppFromChat() {
+  if (!activeChat) return;
+
+  if (activeChat.isOfficial || activeChat.proId === 'trampou_official') {
+    showToast('Canal Oficial de Atendimento Trampou.');
+    return;
+  }
+
+  let pro = null;
+  if (activeChat.proId) {
+    pro = PROFESSIONALS.find(p => p.id === activeChat.proId);
+  }
+  if (!pro && activeChat.proName) {
+    pro = PROFESSIONALS.find(p => p.name === activeChat.proName);
+  }
+  if (!pro && currentVitrinePro) {
+    pro = currentVitrinePro;
+  }
+  if (!pro) {
+    showToast('Contato do profissional não disponível.');
+    return;
+  }
+
+  const phone = pro.whatsapp || pro.phone || '';
+  const cleanPhone = phone.replace(/\D/g, '');
+  if (!cleanPhone) {
+    showToast('Este profissional ainda não cadastrou o número de WhatsApp.');
+    return;
+  }
+
+  const service = activeChat.service || pro.specialty || 'serviços';
+  const msg = `Olá ${pro.name}! Vi seu perfil no Trampou e gostaria de solicitar um orçamento para ${service}.`;
+  const url = `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+}
+window.openProWhatsAppFromChat = openProWhatsAppFromChat;

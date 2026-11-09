@@ -13706,3 +13706,29 @@ body {
 .btn-viral-star-secondary:active {
   transform: scale(0.97);
 }
+
+
+/* BOTÃO DE WHATSAPP DIRETO NO HEADER DO CHAT */
+.chat-header-wa-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #16A34A;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-left: auto;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.chat-header-wa-btn:hover {
+  background: #15803D;
+}
+.chat-header-wa-btn:active {
+  transform: scale(0.96);
+}
