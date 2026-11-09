@@ -3228,12 +3228,18 @@ function renderConversations() {
       ? 'background: #F3E8FF; color: #6B21A8; font-weight: 700;'
       : '';
 
+    const myId = (typeof getChatUserIdentity === 'function') ? getChatUserIdentity() : { role: 'client' };
+    const displayName = isOff 
+      ? 'Equipe Trampou' 
+      : (myId.role === 'professional' ? (c.clientName || c.proName || 'Cliente') : (c.proName || 'Profissional'));
+    const targetParamName = isOff ? 'Equipe Trampou' : displayName;
+
     return `
-      <div class="conversation-item ${c.unread > 0 ? 'has-unread' : ''}" onclick="openChatWith('${escapeHTML(c.proName)}', '${escapeHTML(c.service)}', '${c.proId || ''}')">
+      <div class="conversation-item ${c.unread > 0 ? 'has-unread' : ''}" onclick="openChatWith('${escapeHTML(targetParamName)}', '${escapeHTML(c.service)}', '${c.proId || ''}', '${c.clientId || ''}', '${c.convId || c.id || ''}')">
         ${avatarHtml}
         <div class="chat-item-info">
           <div class="chat-item-top">
-            <h5 style="${c.unread > 0 ? 'font-weight: 800; color: #0F172A;' : ''}">${escapeHTML(c.proName)}${verifiedBadge}</h5>
+            <h5 style="${c.unread > 0 ? 'font-weight: 800; color: #0F172A;' : ''}">${escapeHTML(displayName)}${verifiedBadge}</h5>
             <span class="chat-time" style="${c.unread > 0 ? 'color: #7C3AED; font-weight: 700;' : ''}">${escapeHTML(c.time)}</span>
           </div>
           <span class="chat-tag-service" style="${serviceTagStyle}">${escapeHTML(c.service)}</span>
@@ -3537,6 +3543,7 @@ function renderVitrineView() {
   const viralBannerContainer = document.getElementById('vitrine-viral-growth-container');
   if (viralBannerContainer) {
     if (isVitrineOwner) {
+      viralBannerContainer.style.display = 'block';
       viralBannerContainer.innerHTML = `
         <div class="vitrine-viral-banner-highlight">
           <div class="viral-banner-top">
@@ -5408,8 +5415,47 @@ function deleteService(index) {
 // CHAT INTERNO COM REGISTRO LEVE DE ATENDIMENTO E AVALIAÇÕES VERIFICADAS
 // ==============================================================================
 
-let chatPerspective = 'client'; // 'client' ou 'professional' (permite testar ambos os lados na mesma tela)
+// Identidade do usuário do chat (cliente ou profissional, autenticado ou convidado)
+function getChatUserIdentity() {
+  const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+  if (user && user.id) {
+    const isPro = user.role === 'professional';
+    let proDbId = user.id;
+    if (isPro && Array.isArray(PROFESSIONALS)) {
+      const myPro = PROFESSIONALS.find(p => p.dbId === user.id || p.id === user.proId || (user.email && p.email && user.email.toLowerCase() === p.email.toLowerCase()));
+      if (myPro && myPro.dbId) proDbId = myPro.dbId;
+    }
+    return {
+      id: String(user.id),
+      proDbId: proDbId ? String(proDbId) : String(user.id),
+      name: user.name || (isPro ? 'Profissional' : 'Cliente'),
+      role: isPro ? 'professional' : 'client',
+      email: user.email || ''
+    };
+  }
+
+  // Visitante não autenticado: identidade anônima estável no navegador
+  let guestId = localStorage.getItem('trampou_guest_client_id');
+  if (!guestId) {
+    guestId = 'client_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+    localStorage.setItem('trampou_guest_client_id', guestId);
+  }
+  let guestName = localStorage.getItem('trampou_guest_client_name') || 'Cliente';
+  return {
+    id: guestId,
+    proDbId: null,
+    name: guestName,
+    role: 'client',
+    email: ''
+  };
+}
+window.getChatUserIdentity = getChatUserIdentity;
+
+let chatPerspective = 'client';
 let activeReviewRating = 5;
+let activeChatPollTimer = null;
+let lastKnownChatMsgIds = new Set();
+let isFirstChatSync = true;
 
 function toggleChatPerspective() {
   const user = getCurrentUser();
@@ -5420,19 +5466,21 @@ function toggleChatPerspective() {
   }
 }
 
-function openChatWith(name, service, proId) {
+// Abre o chat direto entre Cliente e Profissional
+function openChatWith(name, service, proId, clientId, existingConvId) {
   const contactNameElem = document.getElementById('chat-contact-name');
   const contactServElem = document.getElementById('chat-contact-service');
   const contactAvatarElem = document.getElementById('chat-contact-avatar');
   const roleLabelElem = document.getElementById('chat-active-role-label');
 
+  const myIdentity = getChatUserIdentity();
   const isOfficialChat = name === 'Equipe Trampou' || proId === 'trampou_official';
 
-  // Encontra o profissional correspondente para avatar e navegação
+  // Localiza o profissional no catálogo
   let targetPro = null;
   if (!isOfficialChat) {
     if (proId) {
-      targetPro = PROFESSIONALS.find(p => p.id === proId);
+      targetPro = PROFESSIONALS.find(p => p.id === proId || p.dbId === proId);
     }
     if (!targetPro && name) {
       const cleanName = name.toLowerCase().trim();
@@ -5448,34 +5496,67 @@ function openChatWith(name, service, proId) {
         return spec.includes(serv) || serv.includes(spec);
       });
     }
-    if (!targetPro) {
+    if (!targetPro && myIdentity.role !== 'professional') {
       targetPro = (PROFESSIONALS && PROFESSIONALS.length > 0) ? PROFESSIONALS[0] : null;
     }
   }
 
+  // Gera ou reutiliza ID determinístico de conversa
+  let convId = existingConvId;
+  let targetRecipientId = '';
+  let targetRecipientName = '';
+
+  if (isOfficialChat) {
+    convId = 'welcome_trampou';
+    targetRecipientId = 'trampou_official';
+    targetRecipientName = 'Equipe Trampou';
+  } else if (existingConvId) {
+    convId = existingConvId;
+    if (myIdentity.role === 'professional') {
+      targetRecipientId = clientId || 'client_unknown';
+      targetRecipientName = name || 'Cliente';
+    } else {
+      targetRecipientId = (targetPro && (targetPro.dbId || targetPro.id)) || proId || 'pro_unknown';
+      targetRecipientName = targetPro ? targetPro.name : (name || 'Profissional');
+    }
+  } else {
+    if (myIdentity.role === 'professional') {
+      const cId = clientId || ('client_' + (name || 'user').toLowerCase().replace(/[^a-z0-9]/g, '_'));
+      convId = `conv_${cId}__${myIdentity.proDbId || myIdentity.id}`;
+      targetRecipientId = cId;
+      targetRecipientName = name || 'Cliente';
+    } else {
+      const pDbId = targetPro ? (targetPro.dbId || targetPro.id) : (proId || (name || 'pro').toLowerCase().replace(/[^a-z0-9]/g, '_'));
+      convId = `conv_${myIdentity.id}__${pDbId}`;
+      targetRecipientId = pDbId;
+      targetRecipientName = targetPro ? targetPro.name : (name || 'Profissional');
+    }
+  }
+
+  // Atualiza cabeçalho do chat
   if (contactNameElem) {
     if (isOfficialChat) {
       contactNameElem.innerHTML = `Equipe Trampou <i class="fa-solid fa-circle-check" style="color: #2563EB; font-size: 13px; margin-left: 4px;" title="Canal Oficial"></i>`;
     } else {
-      contactNameElem.innerText = name;
+      contactNameElem.innerText = targetRecipientName;
     }
   }
 
   if (contactServElem) {
     if (isOfficialChat) {
-      contactServElem.innerText = `${service || 'Canal Oficial'} • Boas-Vindas & Dicas`;
+      contactServElem.innerText = `Canal Oficial • Dicas & Ajuda`;
     } else {
-      contactServElem.innerText = service ? `${service} • Ver trabalhos` : 'Ver perfil e trabalhos';
+      contactServElem.innerText = service ? `${service} • Negociação no App` : 'Negociação de Serviços no App';
     }
   }
 
   if (contactAvatarElem) {
     if (isOfficialChat) {
       contactAvatarElem.innerHTML = `<div style="width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg, #7C3AED, #4F46E5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;"><i class="fa-solid fa-bolt"></i></div>`;
-    } else if (targetPro && targetPro.avatar) {
-      contactAvatarElem.innerHTML = `<img src="${targetPro.avatar}" alt="${name}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+    } else if (targetPro && targetPro.avatar && myIdentity.role !== 'professional') {
+      contactAvatarElem.innerHTML = `<img src="${targetPro.avatar}" alt="${escapeHTML(targetRecipientName)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
     } else {
-      contactAvatarElem.innerText = (name || 'P').trim()[0].toUpperCase();
+      contactAvatarElem.innerText = (targetRecipientName || 'U').trim()[0].toUpperCase();
     }
   }
 
@@ -5483,38 +5564,42 @@ function openChatWith(name, service, proId) {
     if (isOfficialChat) {
       roleLabelElem.innerText = 'Canal Oficial Trampou';
     } else {
-      roleLabelElem.innerText = chatPerspective === 'client' ? 'Você: Cliente' : 'Você: Profissional';
+      roleLabelElem.innerText = myIdentity.role === 'client' ? 'Você: Cliente' : 'Você: Profissional';
     }
   }
 
-  // Localiza ou cria a conversa
-  activeChat = conversations.find(c => c.proName === name || (isOfficialChat && (c.isOfficial || c.proId === 'trampou_official')));
+  // Localiza ou cria a conversa em memória
+  activeChat = conversations.find(c => c.convId === convId || c.id === convId || (isOfficialChat && (c.isOfficial || c.proId === 'trampou_official')));
   if (!activeChat) {
     activeChat = {
-      id: isOfficialChat ? 'welcome_trampou' : ('c_' + Date.now()),
-      proName: name,
+      id: convId,
+      convId: convId,
+      proName: (myIdentity.role === 'professional') ? (targetPro ? targetPro.name : 'Meu Perfil') : targetRecipientName,
       proId: targetPro ? targetPro.id : (proId || null),
-      clientName: (currentUser && currentUser.name) ? currentUser.name : 'Cliente Trampou',
+      proDbId: targetPro ? (targetPro.dbId || targetPro.id) : (proId || null),
+      clientName: (myIdentity.role === 'professional') ? targetRecipientName : myIdentity.name,
+      clientId: (myIdentity.role === 'professional') ? targetRecipientId : myIdentity.id,
       service: service || 'Negociação de Serviço',
       isOfficial: isOfficialChat,
-      // Apenas o canal oficial do app possui mensagem inicial. Para profissionais, o chat inicia 100% limpo!
       messages: isOfficialChat ? [
         { isMe: false, isOfficial: true, text: 'Olá! Seja bem-vindo ao canal oficial do Trampou. Como podemos ajudar?', time: 'Agora' }
       ] : [],
-      attendance: null
+      attendance: null,
+      unread: 0
     };
     conversations.unshift(activeChat);
-  } else if (!activeChat.proId && targetPro) {
-    activeChat.proId = targetPro.id;
+  } else {
+    activeChat.convId = convId;
+    if (!activeChat.proDbId && targetPro) {
+      activeChat.proDbId = targetPro.dbId || targetPro.id;
+    }
   }
 
-  // Se a conversa não tem attendance definido ainda, garante campo
   if (activeChat.attendance === undefined) {
     activeChat.attendance = null;
   }
 
-  // Marca mensagens desta conversa como lidas e persiste
-  if (activeChat && activeChat.unread > 0) {
+  if (activeChat.unread > 0) {
     activeChat.unread = 0;
     saveStoredConversations();
     updateNotificationBadges();
@@ -5525,6 +5610,94 @@ function openChatWith(name, service, proId) {
 
   const chatOverlay = document.getElementById('chat-overlay');
   if (chatOverlay) chatOverlay.classList.add('active');
+
+  // Carrega histórico de mensagens do Supabase e inicia polling em tempo real
+  fetchAndSyncActiveChatMessages();
+  if (activeChatPollTimer) clearInterval(activeChatPollTimer);
+  activeChatPollTimer = setInterval(fetchAndSyncActiveChatMessages, 2500);
+}
+
+// Sincroniza mensagens do Supabase da conversa atualmente aberta
+async function fetchAndSyncActiveChatMessages() {
+  if (!activeChat || !activeChat.convId) return;
+  const overlay = document.getElementById('chat-overlay');
+  if (!overlay || !overlay.classList.contains('active')) {
+    if (activeChatPollTimer) {
+      clearInterval(activeChatPollTimer);
+      activeChatPollTimer = null;
+    }
+    return;
+  }
+
+  const myIdentity = getChatUserIdentity();
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/chat_messages?conversation_id=eq.${encodeURIComponent(activeChat.convId)}&order=created_at.asc`, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    });
+    if (!res.ok) return;
+    const dbMsgs = await res.json();
+    if (!Array.isArray(dbMsgs)) return;
+
+    if (!Array.isArray(activeChat.messages)) activeChat.messages = [];
+    const existingIds = new Set(activeChat.messages.map(m => m.id).filter(Boolean));
+    const existingTexts = new Set(activeChat.messages.map(m => `${m.text}_${m.isMe}`));
+
+    let hasNew = false;
+    let unreadIdsToMark = [];
+
+    dbMsgs.forEach(m => {
+      const isMe = String(m.sender_id) === String(myIdentity.id);
+      const textKey = `${m.message_text}_${isMe}`;
+
+      if (!existingIds.has(m.id) && !existingTexts.has(textKey)) {
+        hasNew = true;
+        const d = new Date(m.created_at);
+        const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+
+        activeChat.messages.push({
+          id: m.id,
+          isMe: isMe,
+          text: m.message_text,
+          time: timeStr,
+          senderName: m.sender_name
+        });
+        existingIds.add(m.id);
+        existingTexts.add(textKey);
+
+        if (!isMe && !m.is_read) {
+          unreadIdsToMark.push(m.id);
+        }
+      }
+    });
+
+    if (hasNew) {
+      const last = activeChat.messages[activeChat.messages.length - 1];
+      if (last) {
+        activeChat.lastMsg = last.text;
+        activeChat.time = last.time;
+      }
+      renderChatMessages();
+      saveStoredConversations();
+    }
+
+    // Marca mensagens recebidas como lidas no banco
+    if (unreadIdsToMark.length > 0) {
+      fetch(`${SUPABASE_URL}/rest/v1/chat_messages?conversation_id=eq.${encodeURIComponent(activeChat.convId)}&recipient_id=eq.${encodeURIComponent(myIdentity.id)}&is_read=eq.false`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({ is_read: true })
+      }).catch(() => {});
+    }
+  } catch (err) {
+    console.warn('Erro ao sincronizar mensagens da conversa aberta:', err);
+  }
 }
 
 // Navegar para o perfil e portfólio de trabalhos do profissional a partir do chat
@@ -5536,11 +5709,19 @@ function openProProfileFromChat() {
     return;
   }
 
-  let pro = null;
-  if (activeChat.proId) {
-    pro = PROFESSIONALS.find(p => p.id === activeChat.proId);
+  const myIdentity = getChatUserIdentity();
+  if (myIdentity.role === 'professional') {
+    showToast(`Conversa direta com ${activeChat.clientName || 'o cliente'}.`);
+    return;
   }
 
+  let pro = null;
+  if (activeChat.proDbId) {
+    pro = PROFESSIONALS.find(p => p.dbId === activeChat.proDbId || p.id === activeChat.proDbId);
+  }
+  if (!pro && activeChat.proId) {
+    pro = PROFESSIONALS.find(p => p.id === activeChat.proId || p.dbId === activeChat.proId);
+  }
   if (!pro && activeChat.proName) {
     const cleanName = activeChat.proName.toLowerCase().trim();
     pro = PROFESSIONALS.find(p => {
@@ -5548,27 +5729,21 @@ function openProProfileFromChat() {
       return pName === cleanName || pName.includes(cleanName) || cleanName.includes(pName);
     });
   }
-
-  if (!pro && activeChat.service) {
-    const serv = activeChat.service.toLowerCase().replace(/\[sos\]/gi, '').trim();
-    pro = PROFESSIONALS.find(p => {
-      const spec = (p.specialty || '').toLowerCase();
-      return spec.includes(serv) || serv.includes(spec);
-    });
-  }
-
   if (!pro) {
     pro = PROFESSIONALS[0];
   }
 
   if (pro) {
-    // Abre vitrine em modo visitante para o cliente visualizar trabalhos, fotos e avaliações
     openProDetail(pro.id);
   }
 }
 window.openProProfileFromChat = openProProfileFromChat;
 
 function closeChat() {
+  if (activeChatPollTimer) {
+    clearInterval(activeChatPollTimer);
+    activeChatPollTimer = null;
+  }
   const chatOverlay = document.getElementById('chat-overlay');
   if (chatOverlay) chatOverlay.classList.remove('active');
   saveStoredConversations();
@@ -5587,7 +5762,7 @@ function renderChatMessages() {
           <i class="fa-regular fa-comments"></i>
         </div>
         <h5 style="font-size: 14px; font-weight: 700; color: #1E293B; margin-bottom: 4px;">Inicie sua conversa</h5>
-        <p style="font-size: 12px; margin: 0; line-height: 1.4;">Digite sua mensagem abaixo para combinar o serviço, ou toque em <strong>WhatsApp</strong> no topo para contato direto.</p>
+        <p style="font-size: 12px; margin: 0; line-height: 1.4;">Envie sua mensagem abaixo para combinar detalhes e orçamentos diretamente pelo app.</p>
       </div>
     `;
     return;
@@ -5616,20 +5791,25 @@ function renderChatMessages() {
   container.scrollTop = container.scrollHeight;
 }
 
-function sendChatMessage() {
+// Envia mensagem pelo chat 100% nativo no Supabase (Sem robôs, sem WhatsApp)
+async function sendChatMessage() {
   const input = document.getElementById('chat-input');
   if (!input) return;
   const text = input.value.trim();
   if (!text || !activeChat) return;
 
+  const myIdentity = getChatUserIdentity();
   const now = new Date();
   const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-  activeChat.messages.push({
+  const newMsgObj = {
     isMe: true,
     text: text,
-    time: timeStr
-  });
+    time: timeStr,
+    senderName: myIdentity.name
+  };
+
+  activeChat.messages.push(newMsgObj);
   activeChat.lastMsg = text;
   activeChat.time = timeStr;
 
@@ -5641,7 +5821,7 @@ function sendChatMessage() {
   // Se for o canal institucional oficial de ajuda da plataforma
   if (activeChat.isOfficial || activeChat.proId === 'trampou_official') {
     setTimeout(() => {
-      const replyText = 'Agradecemos a sua mensagem! Este é o canal oficial de orientações do Trampou. Caso precise de suporte ou tenha dúvidas, fale com nossa equipe pelo WhatsApp oficial.';
+      const replyText = 'Agradecemos a sua mensagem! Este é o canal oficial de boas-vindas do Trampou. Nossa equipe acompanha todas as novidades e melhorias diretamente pela plataforma.';
       const replyNow = new Date();
       const replyTimeStr = `${String(replyNow.getHours()).padStart(2, '0')}:${String(replyNow.getMinutes()).padStart(2, '0')}`;
       
@@ -5670,9 +5850,170 @@ function sendChatMessage() {
     return;
   }
 
-  // FLUXO LIMPO ENTRE CLIENTE E PROFISSIONAL:
-  // NENHUMA resposta automática falsa é gerada. A comunicação é 100% humana e autêntica.
+  // FLUXO LIMPO CLIENTE <-> PROFISSIONAL:
+  // Salva no banco de dados Supabase para que chegue no celular do outro participante
+  let recipientId = '';
+  let recipientName = '';
+
+  if (myIdentity.role === 'professional') {
+    recipientId = activeChat.clientId || 'client_unknown';
+    recipientName = activeChat.clientName || 'Cliente';
+  } else {
+    recipientId = activeChat.proDbId || activeChat.proId || 'pro_unknown';
+    recipientName = activeChat.proName || 'Profissional';
+  }
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/chat_messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({
+        conversation_id: activeChat.convId || activeChat.id,
+        sender_id: myIdentity.id,
+        sender_name: myIdentity.name,
+        sender_role: myIdentity.role,
+        recipient_id: recipientId,
+        recipient_name: recipientName,
+        pro_id: activeChat.proId || null,
+        service_title: activeChat.service || 'Negociação de Serviço',
+        message_text: text,
+        is_read: false
+      })
+    });
+
+    if (res.ok) {
+      const inserted = await res.json();
+      if (Array.isArray(inserted) && inserted[0]) {
+        newMsgObj.id = inserted[0].id;
+        lastKnownChatMsgIds.add(inserted[0].id);
+      }
+    }
+  } catch (err) {
+    console.error('Erro ao enviar mensagem para o Supabase:', err);
+  }
 }
+
+// Sincronização Global de Notificações e Conversas do Usuário
+async function syncGlobalChatNotifications() {
+  const myIdentity = getChatUserIdentity();
+  if (!myIdentity || !myIdentity.id) return;
+
+  const idList = [myIdentity.id];
+  if (myIdentity.proDbId && myIdentity.proDbId !== myIdentity.id) {
+    idList.push(myIdentity.proDbId);
+  }
+
+  const orFilter = idList.map(id => `sender_id.eq.${id},recipient_id.eq.${id}`).join(',');
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/chat_messages?or=(${orFilter})&order=created_at.desc&limit=60`, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    });
+
+    if (!res.ok) return;
+    const allMsgs = await res.json();
+    if (!Array.isArray(allMsgs) || allMsgs.length === 0) return;
+
+    const chatOverlay = document.getElementById('chat-overlay');
+    const isChatActive = chatOverlay && chatOverlay.classList.contains('active');
+
+    // Agrupa mensagens por conversa
+    const convMap = {};
+    allMsgs.forEach(m => {
+      if (!convMap[m.conversation_id]) {
+        convMap[m.conversation_id] = [];
+      }
+      convMap[m.conversation_id].push(m);
+
+      // Notificação in-app para nova mensagem recebida enquanto o app está aberto
+      const isIncoming = idList.includes(String(m.recipient_id));
+      if (!isFirstChatSync && isIncoming && !m.is_read && !lastKnownChatMsgIds.has(m.id)) {
+        if (!isChatActive || !activeChat || activeChat.convId !== m.conversation_id) {
+          showToast(`💬 ${m.sender_name || 'Nova mensagem'}: "${(m.message_text || '').slice(0, 35)}..."`);
+          try {
+            if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
+          } catch (_) {}
+        }
+      }
+      lastKnownChatMsgIds.add(m.id);
+    });
+    isFirstChatSync = false;
+
+    // Atualiza lista de conversas
+    Object.keys(convMap).forEach(convId => {
+      const msgs = [...convMap[convId]].reverse(); // ordem cronológica
+      const latest = msgs[msgs.length - 1];
+      const unreadCount = msgs.filter(m => idList.includes(String(m.recipient_id)) && !m.is_read).length;
+
+      const otherIsSender = !idList.includes(String(latest.sender_id));
+      const otherName = otherIsSender ? latest.sender_name : (latest.recipient_name || 'Usuário');
+      const otherId = otherIsSender ? latest.sender_id : latest.recipient_id;
+
+      const existing = conversations.find(c => c.convId === convId || c.id === convId);
+      const d = new Date(latest.created_at);
+      const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+
+      if (existing) {
+        existing.convId = convId;
+        existing.lastMsg = latest.message_text;
+        existing.time = timeStr;
+        existing.unread = unreadCount;
+        existing.proId = latest.pro_id || existing.proId;
+        if (myIdentity.role === 'professional') {
+          existing.clientName = otherName;
+          existing.clientId = otherId;
+        } else {
+          existing.proName = otherName;
+          existing.proDbId = otherId;
+        }
+      } else {
+        conversations.unshift({
+          id: convId,
+          convId: convId,
+          proName: (myIdentity.role === 'professional') ? (latest.recipient_name || 'Profissional') : otherName,
+          clientName: (myIdentity.role === 'professional') ? otherName : (latest.sender_name || 'Cliente'),
+          proId: latest.pro_id,
+          proDbId: (myIdentity.role === 'professional') ? myIdentity.id : otherId,
+          clientId: (myIdentity.role === 'professional') ? otherId : myIdentity.id,
+          service: latest.service_title || 'Negociação de Serviço',
+          lastMsg: latest.message_text,
+          time: timeStr,
+          unread: unreadCount,
+          messages: msgs.map(m => {
+            const isMe = idList.includes(String(m.sender_id));
+            const msgDate = new Date(m.created_at);
+            return {
+              id: m.id,
+              isMe: isMe,
+              text: m.message_text,
+              time: `${String(msgDate.getHours()).padStart(2, '0')}:${String(msgDate.getMinutes()).padStart(2, '0')}`,
+              senderName: m.sender_name
+            };
+          })
+        });
+      }
+    });
+
+    renderConversations();
+    updateNotificationBadges();
+    saveStoredConversations();
+  } catch (err) {
+    console.warn('Erro ao sincronizar notificações globais de chat:', err);
+  }
+}
+window.syncGlobalChatNotifications = syncGlobalChatNotifications;
+
+// Inicia polling global de mensagens a cada 8 segundos
+setInterval(syncGlobalChatNotifications, 8000);
+setTimeout(syncGlobalChatNotifications, 1000);
 
 // ==============================================================================
 // CONTROLE DO CARTÃO CONTEXTUAL DE ATENDIMENTO
@@ -6265,8 +6606,9 @@ function switchTab(tabId) {
   // 4. Executar callbacks específicos de cada aba
   if (tabId === 'search' && typeof renderSearchResults === 'function') {
     renderSearchResults();
-  } else if (tabId === 'chat' && typeof renderConversations === 'function') {
-    renderConversations();
+  } else if (tabId === 'chat') {
+    if (typeof renderConversations === 'function') renderConversations();
+    if (typeof syncGlobalChatNotifications === 'function') syncGlobalChatNotifications();
   } else if (tabId === 'profile' && typeof renderAuthUI === 'function') {
     renderAuthUI();
   } else if (tabId === 'home') {
@@ -10068,39 +10410,4 @@ window.sendAskReviewViaWhatsApp = sendAskReviewViaWhatsApp;
 window.copyAskReviewMessage = copyAskReviewMessage;
 
 
-function openProWhatsAppFromChat() {
-  if (!activeChat) return;
-
-  if (activeChat.isOfficial || activeChat.proId === 'trampou_official') {
-    showToast('Canal Oficial de Atendimento Trampou.');
-    return;
-  }
-
-  let pro = null;
-  if (activeChat.proId) {
-    pro = PROFESSIONALS.find(p => p.id === activeChat.proId);
-  }
-  if (!pro && activeChat.proName) {
-    pro = PROFESSIONALS.find(p => p.name === activeChat.proName);
-  }
-  if (!pro && currentVitrinePro) {
-    pro = currentVitrinePro;
-  }
-  if (!pro) {
-    showToast('Contato do profissional não disponível.');
-    return;
-  }
-
-  const phone = pro.whatsapp || pro.phone || '';
-  const cleanPhone = phone.replace(/\D/g, '');
-  if (!cleanPhone) {
-    showToast('Este profissional ainda não cadastrou o número de WhatsApp.');
-    return;
-  }
-
-  const service = activeChat.service || pro.specialty || 'serviços';
-  const msg = `Olá ${pro.name}! Vi seu perfil no Trampou e gostaria de solicitar um orçamento para ${service}.`;
-  const url = `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(msg)}`;
-  window.open(url, '_blank');
-}
-window.openProWhatsAppFromChat = openProWhatsAppFromChat;
+// WhatsApp removido do chat - fluxo 100% nativo no aplicativo
