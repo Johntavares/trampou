@@ -410,6 +410,7 @@ function setActiveLocation(city, state, lat = null, lng = null, isGps = false) {
   if (typeof renderRecommendedProfessionals === 'function') renderRecommendedProfessionals();
   if (typeof renderSearchResults === 'function') renderSearchResults();
   if (typeof loadProfessionalsFromSupabase === 'function') loadProfessionalsFromSupabase();
+  if (typeof renderAdBannerCarousel === 'function') renderAdBannerCarousel(true);
 }
 
 function openLocationPickerModal() {
@@ -952,6 +953,19 @@ async function renderAdBannerCarousel(refreshOnly = false) {
   }
 
   function handleBannerClick(banner) {
+    // Registra clique atômico no Supabase (+1 clicks_count)
+    if (banner.id && typeof banner.id === 'string' && banner.id.includes('-')) {
+      fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_banner_click`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ p_banner_id: banner.id })
+      }).catch(() => {});
+    }
+
     const link = (banner.cta_link || '').trim();
     if (!link || link === 'share' || link === '#share') {
       if (typeof openShareAppModal === 'function') {
@@ -1073,7 +1087,7 @@ async function renderAdBannerCarousel(refreshOnly = false) {
     applyBanners(defaultBanners);
   }
 
-  // Busca banners ativos em tempo real do Supabase
+  // Busca banners ativos em tempo real do Supabase com Geo-Targeting & Rotação Justa
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/banners?active=eq.true&order=sort_order.asc,created_at.desc`, {
       headers: {
@@ -1084,12 +1098,84 @@ async function renderAdBannerCarousel(refreshOnly = false) {
     });
     if (res.ok) {
       const dbBanners = await res.json();
-      const list = (Array.isArray(dbBanners) && dbBanners.length > 0) ? dbBanners : defaultBanners;
-      const signature = JSON.stringify(list.map(b => [b.id, b.image_url, b.cta_link, b.title, b.sort_order, b.updated_at]));
-      // Só re-renderiza se algo mudou (evita "piscar" o carrossel)
+      
+      // 1. Filtro Geográfico Inteligente & Segmentação por Público
+      const curCity = ((currentActiveLocation && currentActiveLocation.city) || localStorage.getItem('trampou_active_city') || 'Parauapebas').toLowerCase().trim();
+      const curState = ((currentActiveLocation && currentActiveLocation.state) || localStorage.getItem('trampou_active_state') || 'PA').toLowerCase().trim();
+      const userRole = (typeof getCurrentUserRole === 'function' ? getCurrentUserRole() : 'client');
+
+      const eligible = (Array.isArray(dbBanners) ? dbBanners : []).filter(b => {
+        // Posicionamento no app
+        const placement = b.placement || 'home_carousel';
+        if (placement !== 'home_carousel') return false;
+
+        // Status ativo e validado
+        if (b.status && b.status !== 'active') return false;
+
+        // Período de vigência
+        const now = new Date();
+        if (b.starts_at && new Date(b.starts_at) > now) return false;
+        if (b.expires_at && new Date(b.expires_at) < now) return false;
+
+        // Segmentação por público
+        const aud = (b.target_audience || 'all').toLowerCase();
+        if (aud === 'clients' && userRole === 'professional') return false;
+        if (aud === 'professionals' && userRole !== 'professional') return false;
+
+        // Segmentação geográfica (Nacional, Estado, Cidade)
+        const scope = (b.target_scope || 'all').toLowerCase();
+        if (scope === 'all' || scope === 'national') return true;
+
+        const tState = (b.target_state || 'all').toLowerCase();
+        const tCity = (b.target_city || 'all').toLowerCase();
+
+        if (scope === 'state') {
+          return tState === 'all' || tState === curState;
+        }
+        if (scope === 'city') {
+          const stateMatch = tState === 'all' || tState === curState;
+          const cityMatch = tCity === 'all' || tCity === curCity;
+          return stateMatch && cityMatch;
+        }
+
+        return true;
+      });
+
+      // 2. Algoritmo de Rotação Justa (Fair-Share Delivery — Máximo 4 banners por sessão)
+      let selectedBanners = [];
+      if (eligible.length <= 4) {
+        selectedBanners = eligible.length > 0 ? eligible : defaultBanners;
+      } else {
+        // Ordena pelos que têm menos visualizações acumuladas (views_count) com jitter aleatório
+        const sortedByViews = [...eligible].sort((a, b) => {
+          const diff = (parseInt(a.views_count, 10) || 0) - (parseInt(b.views_count, 10) || 0);
+          return diff !== 0 ? diff : (Math.random() - 0.5);
+        });
+        // Pega os 4 prioritários com menos visualizações e embaralha a ordem entre eles
+        selectedBanners = sortedByViews.slice(0, 4).sort(() => Math.random() - 0.5);
+      }
+
+      const signature = JSON.stringify(selectedBanners.map(b => [b.id, b.image_url, b.cta_link, b.title, b.sort_order, b.updated_at]));
       if (signature !== window._lastBannersSignature) {
         window._lastBannersSignature = signature;
-        applyBanners(list);
+        applyBanners(selectedBanners);
+
+        // 3. Incremento atômico de visualizações (+1 view) no Supabase em segundo plano
+        const realDbIds = selectedBanners
+          .map(b => b.id)
+          .filter(id => id && typeof id === 'string' && id.includes('-'));
+
+        if (realDbIds.length > 0) {
+          fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_banner_views`, {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ p_banner_ids: realDbIds })
+          }).catch(() => {});
+        }
       }
     }
   } catch (err) {
