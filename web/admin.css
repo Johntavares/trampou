@@ -2909,3 +2909,100 @@ body {
     display: none !important;
   }
 }
+
+
+/* =========================================================
+   TABELAS PROFISSIONAIS, USUÁRIOS E RESPONSIVIDADE ULTRA-MODERNA
+   ========================================================= */
+.admin-table-responsive-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: #FFFFFF;
+  border-radius: 12px;
+}
+
+.admin-table-responsive-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+.admin-table-responsive-wrapper::-webkit-scrollbar-track {
+  background: #F1F5F9;
+  border-radius: 4px;
+}
+.admin-table-responsive-wrapper::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+.admin-table-responsive-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+.admin-data-table {
+  width: 100%;
+  min-width: 780px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.admin-data-table th {
+  background: #F8FAFC;
+  padding: 13px 18px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #64748B;
+  border-bottom: 1.5px solid var(--admin-border);
+  white-space: nowrap;
+}
+
+.admin-data-table td {
+  padding: 13px 18px;
+  font-size: 13px;
+  color: #334155;
+  border-bottom: 1px solid var(--admin-border-subtle);
+  vertical-align: middle;
+}
+
+.admin-data-table tbody tr:hover {
+  background: #FAFAFC;
+}
+
+/* Links e contatos dentro da tabela */
+.admin-table-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-contact-link-wa {
+  color: #059669;
+  font-weight: 600;
+  font-size: 12px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.admin-contact-link-wa:hover {
+  text-decoration: underline;
+}
+
+.admin-contact-link-email {
+  color: #64748B;
+  font-size: 11.5px;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  max-width: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.admin-contact-link-email:hover {
+  color: var(--admin-brand);
+  text-decoration: underline;
+}

@@ -129,3 +129,4 @@ CREATE POLICY "Gerenciamento de banners para admin"
   ON public.banners FOR ALL
   USING (true)
   WITH CHECK (true);
+

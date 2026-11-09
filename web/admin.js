@@ -757,13 +757,13 @@
     select.innerHTML = options.join('');
   }
 
-  function renderProfessionals(list = state.professionals) {
+    function renderProfessionals(list = state.professionals) {
     const tbody = document.getElementById('pro-table-body');
     if (!tbody) return;
     if (list === state.professionals) populateProCityFilter();
 
     if (list.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 32px; color: #94A3B8;">Nenhum profissional cadastrado ou correspondente ao filtro.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 36px; color: #94A3B8; font-weight: 500;">Nenhum profissional cadastrado ou correspondente ao filtro.</td></tr>`;
       return;
     }
 
@@ -777,72 +777,82 @@
       const avatar = p.profiles ? p.profiles.avatar_url : null;
       const cleanPhone = phone ? phone.replace(/\D/g, '') : '';
       const categoryName = p.categories ? p.categories.name : (p.specialty || 'Diversos');
+      const isVerified = Boolean(p.verified);
 
       // Verifica se possui plano PRO ativo
       const hasPro = state.subscriptions.some(s => s.professional_id === p.id && s.status === 'active');
 
       return `
         <tr class="mobile-table-card">
+          <!-- 1. Profissional: Avatar + Nome + Especialidade + ID -->
           <td data-label="Profissional" class="td-card-header">
-            <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 11px;">
               ${avatar 
-                ? `<img src="${escapeHTML(avatar)}" alt="${escapeHTML(name)}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">` 
-                : `<div class="admin-avatar-circle" style="width: 36px; height: 36px; font-size: 13px;">${escapeHTML(name.substring(0, 2).toUpperCase())}</div>`}
-              <div>
-                <div style="font-weight: 700; color: #0F172A;">${escapeHTML(name)}</div>
-                <div style="font-size: 11px; color: #94A3B8;">ID: ${p.id.substring(0, 8)}...</div>
+                ? `<img src="${escapeHTML(avatar)}" alt="${escapeHTML(name)}" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1.5px solid #E2E8F0; flex-shrink: 0;">` 
+                : `<div class="admin-avatar-circle" style="width: 38px; height: 38px; font-size: 13px; flex-shrink: 0;">${escapeHTML(name.substring(0, 2).toUpperCase())}</div>`}
+              <div style="min-width: 0;">
+                <div style="font-weight: 700; color: #0F172A; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHTML(name)}</div>
+                <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+                  <span class="badge-status-pill neutral" style="font-size: 10.5px; padding: 2px 7px; font-weight: 600;">${escapeHTML(categoryName)}</span>
+                  <span style="font-size: 10.5px; color: #94A3B8;">#${p.id.substring(0, 6)}</span>
+                </div>
               </div>
             </div>
           </td>
+
+          <!-- 2. Localização: Cidade / Estado / Bairro -->
           <td data-label="Cidade / Estado">
-            <div style="font-weight: 700; color: #1E293B; display: flex; align-items: center; gap: 5px;">
+            <div style="font-weight: 700; color: #1E293B; display: flex; align-items: center; gap: 5px; white-space: nowrap;">
               <i class="fa-solid fa-location-dot" style="color: #6366F1; font-size: 12px;"></i>
               <span>${escapeHTML(city)}, ${escapeHTML(stateUf)}</span>
             </div>
-            ${neigh && !neigh.includes(city) ? `<div style="font-size: 11px; color: #64748B; margin-left: 17px;">${escapeHTML(neigh)}</div>` : ''}
+            ${neigh && !neigh.includes(city) ? `<div style="font-size: 11px; color: #64748B; margin-left: 17px; white-space: nowrap;">${escapeHTML(neigh)}</div>` : ''}
           </td>
-          <td data-label="E-mail">
-            ${email !== 'Não informado' 
-              ? `<a href="mailto:${escapeHTML(email)}" style="color: #4F46E5; text-decoration: none; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; word-break: break-all;">
-                   <i class="fa-regular fa-envelope" style="opacity: 0.7;"></i> ${escapeHTML(email)}
-                 </a>` 
-              : `<span style="color: #94A3B8;">Não informado</span>`}
-          </td>
-          <td data-label="WhatsApp">
-            ${cleanPhone 
-              ? `<a href="https://wa.me/55${cleanPhone}" target="_blank" style="color: #059669; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
-                   <i class="fa-brands fa-whatsapp"></i> ${escapeHTML(phone)}
-                 </a>` 
-              : `<span style="color: #94A3B8;">Não informado</span>`}
-          </td>
-          <td data-label="Especialidade">
-            <span class="badge-status-pill neutral">${escapeHTML(categoryName)}</span>
-          </td>
-          <td data-label="Avaliação">
-            <div style="display: flex; align-items: center; gap: 4px; font-weight: 700; color: #F59E0B;">
-              <i class="fa-solid fa-star"></i>
-              <span>${p.rating || '5.0'}</span>
-              <span style="font-size: 11px; color: #94A3B8; font-weight: normal;">(${p.total_reviews || 0})</span>
+
+          <!-- 3. Contato Unificado: WhatsApp + E-mail sem quebra por caractere -->
+          <td data-label="Contato">
+            <div class="admin-table-contact">
+              ${cleanPhone 
+                ? `<a href="https://wa.me/55${cleanPhone}" target="_blank" class="admin-contact-link-wa">
+                     <i class="fa-brands fa-whatsapp" style="font-size: 14px;"></i> ${escapeHTML(phone)}
+                   </a>` 
+                : `<span style="color: #94A3B8; font-size: 11.5px;">Sem telefone</span>`}
+              ${email !== 'Não informado' 
+                ? `<a href="mailto:${escapeHTML(email)}" class="admin-contact-link-email" title="${escapeHTML(email)}">
+                     <i class="fa-regular fa-envelope" style="opacity: 0.7;"></i> ${escapeHTML(email)}
+                   </a>` 
+                : `<span style="color: #94A3B8; font-size: 11.5px;">Sem e-mail</span>`}
             </div>
           </td>
-          <td data-label="Selo Verificado">
-            <label class="switch-toggle-label" title="Clique para ativar/desativar selo oficial verificado">
-              <input type="checkbox" ${p.verified ? 'checked' : ''} onchange="window.AdminApp.toggleProfessionalVerified('${p.id}', ${Boolean(p.verified)})">
-              <span>${p.verified ? '<strong style="color: #10B981;"><i class="fa-solid fa-circle-check"></i> Verificado</strong>' : '<span style="color: #94A3B8;">Não verificado</span>'}</span>
-            </label>
+
+          <!-- 4. Avaliação & Selo Verificado -->
+          <td data-label="Avaliação / Selo">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; align-items: center; gap: 4px; font-weight: 700; color: #F59E0B; font-size: 12px;">
+                <i class="fa-solid fa-star"></i>
+                <span>${p.rating || '5.0'}</span>
+                <span style="font-size: 10px; color: #94A3B8; font-weight: 500;">(${p.total_reviews || 0})</span>
+              </div>
+              <label class="switch-toggle-label" style="font-size: 11px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                <input type="checkbox" ${isVerified ? 'checked' : ''} onchange="window.AdminApp.toggleProfessionalVerified('${p.id}', ${isVerified})">
+                <span>${isVerified ? '<strong style="color: #10B981;"><i class="fa-solid fa-circle-check"></i> Verificado</strong>' : '<span style="color: #94A3B8;">Não verificado</span>'}</span>
+              </label>
+            </div>
           </td>
+
+          <!-- 5. Plano PRO -->
           <td data-label="Plano PRO">
             ${hasPro 
-              ? `<span class="badge-status-pill pro"><i class="fa-solid fa-crown"></i> PRO Ativo</span>` 
-              : `<span class="badge-status-pill neutral">Gratuito</span>`}
+              ? `<span class="badge-status-pill pro" style="font-weight: 800; font-size: 11px; white-space: nowrap;"><i class="fa-solid fa-crown"></i> PRO Ativo</span>` 
+              : `<span class="badge-status-pill neutral" style="font-size: 11px; white-space: nowrap;">Gratuito</span>`}
           </td>
-          <td data-label="Ações Rápidas" class="td-card-actions">
-            <div style="display: flex; gap: 6px; justify-content: flex-end; width: 100%;">
-              <button class="btn-action-primary" style="padding: 6px 10px; font-size: 11px;" onclick="window.AdminApp.openSubscriptionModal('${p.id}')">
-                <i class="fa-solid fa-crown"></i>
-                <span>Dar PRO</span>
-              </button>
-            </div>
+
+          <!-- 6. Ações Rápidas -->
+          <td data-label="Ações" class="td-card-actions" style="text-align: right;">
+            <button class="btn-action-primary" style="padding: 6px 12px; font-size: 11.5px; border-radius: 8px; font-weight: 700; white-space: nowrap;" onclick="window.AdminApp.openSubscriptionModal('${p.id}')">
+              <i class="fa-solid fa-crown"></i>
+              <span>Dar PRO</span>
+            </button>
           </td>
         </tr>
       `;
@@ -884,13 +894,13 @@
   // =========================================================
   // RENDERIZAÇÃO: USUÁRIOS
   // =========================================================
-  function renderUsers(list = state.users) {
+    function renderUsers(list = state.users) {
     const tbody = document.getElementById('users-table-body');
     if (!tbody) return;
     if (list === state.users) populateUserCityFilter();
 
     if (list.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 32px; color: #94A3B8;">Nenhum cliente cadastrado.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 36px; color: #94A3B8; font-weight: 500;">Nenhum cliente cadastrado.</td></tr>`;
       return;
     }
 
@@ -907,41 +917,63 @@
 
       return `
         <tr class="mobile-table-card">
-          <td data-label="Usuário" class="td-card-header">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <div class="admin-avatar-circle" style="width: 34px; height: 34px; font-size: 12px; background: #3B82F6;">
+          <!-- 1. Cliente: Avatar + Nome + ID -->
+          <td data-label="Cliente" class="td-card-header">
+            <div style="display: flex; align-items: center; gap: 11px;">
+              <div class="admin-avatar-circle" style="width: 36px; height: 36px; font-size: 12px; background: #3B82F6; flex-shrink: 0;">
                 ${escapeHTML(name.substring(0, 2).toUpperCase())}
               </div>
-              <div style="font-weight: 700; color: #0F172A;">${escapeHTML(name)}</div>
+              <div style="min-width: 0;">
+                <div style="font-weight: 700; color: #0F172A; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHTML(name)}</div>
+                <div style="font-size: 10.5px; color: #94A3B8;">#${u.id.substring(0, 6)}</div>
+              </div>
             </div>
           </td>
+
+          <!-- 2. Cidade / Estado -->
           <td data-label="Cidade / Estado">
-            <div style="font-weight: 700; color: #1E293B; display: flex; align-items: center; gap: 5px;">
+            <div style="font-weight: 700; color: #1E293B; display: flex; align-items: center; gap: 5px; white-space: nowrap;">
               <i class="fa-solid fa-location-dot" style="color: #6366F1; font-size: 12px;"></i>
               <span>${escapeHTML(city)}, ${escapeHTML(stateUf)}</span>
             </div>
-            ${neigh && !neigh.includes(city) ? `<div style="font-size: 11px; color: #64748B; margin-left: 17px;">${escapeHTML(neigh)}</div>` : ''}
+            ${neigh && !neigh.includes(city) ? `<div style="font-size: 11px; color: #64748B; margin-left: 17px; white-space: nowrap;">${escapeHTML(neigh)}</div>` : ''}
           </td>
-          <td data-label="E-mail">
-            ${email !== 'Não informado' 
-              ? `<a href="mailto:${escapeHTML(email)}" style="color: #4F46E5; text-decoration: none; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; word-break: break-all;">
-                   <i class="fa-regular fa-envelope" style="opacity: 0.7;"></i> ${escapeHTML(email)}
-                 </a>` 
-              : `<span style="color: #94A3B8;">Não informado</span>`}
+
+          <!-- 3. Contato Unificado -->
+          <td data-label="Contato">
+            <div class="admin-table-contact">
+              ${cleanPhone 
+                ? `<a href="https://wa.me/55${cleanPhone}" target="_blank" class="admin-contact-link-wa">
+                     <i class="fa-brands fa-whatsapp" style="font-size: 14px;"></i> ${escapeHTML(phone)}
+                   </a>` 
+                : `<span style="color: #94A3B8; font-size: 11.5px;">Sem telefone</span>`}
+              ${email !== 'Não informado' 
+                ? `<a href="mailto:${escapeHTML(email)}" class="admin-contact-link-email" title="${escapeHTML(email)}">
+                     <i class="fa-regular fa-envelope" style="opacity: 0.7;"></i> ${escapeHTML(email)}
+                   </a>` 
+                : `<span style="color: #94A3B8; font-size: 11.5px;">Sem e-mail</span>`}
+            </div>
           </td>
-          <td data-label="Telefone">${phone ? escapeHTML(phone) : '<span style="color: #94A3B8;">Não cadastrado</span>'}</td>
+
+          <!-- 4. Tipo / Perfil -->
           <td data-label="Tipo">
-            <span class="badge-status-pill ${role === 'professional' ? 'pro' : 'neutral'}">
-              ${role === 'professional' ? 'Profissional' : 'Cliente'}
+            <span class="badge-status-pill ${role === 'professional' ? 'pro' : 'neutral'}" style="font-size: 11px; white-space: nowrap;">
+              ${role === 'professional' ? '🛠️ Prestador' : '👤 Cliente'}
             </span>
           </td>
-          <td data-label="Cadastro">${created}</td>
-          <td data-label="Contato" class="td-card-actions">
+
+          <!-- 5. Cadastro -->
+          <td data-label="Cadastro" style="font-size: 12px; color: #64748B; white-space: nowrap;">
+            ${created}
+          </td>
+
+          <!-- 6. Ação Rápida -->
+          <td data-label="Ação" class="td-card-actions" style="text-align: right;">
             ${cleanPhone 
-              ? `<a href="https://wa.me/55${cleanPhone}" target="_blank" class="btn-action-primary" style="padding: 5px 10px; font-size: 11px; text-decoration: none; background: #059669; border-color: #059669;">
+              ? `<a href="https://wa.me/55${cleanPhone}" target="_blank" class="btn-action-primary" style="padding: 6px 12px; font-size: 11.5px; border-radius: 8px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; background: #059669; border: none; color: #FFF; white-space: nowrap;">
                    <i class="fa-brands fa-whatsapp"></i> Conversar
                  </a>` 
-              : `<span style="font-size: 11px; color: #94A3B8;">Sem WhatsApp</span>`}
+              : `<span style="color: #94A3B8; font-size: 11.5px;">-</span>`}
           </td>
         </tr>
       `;
