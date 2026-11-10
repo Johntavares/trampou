@@ -13732,3 +13732,28 @@ body {
 .chat-header-wa-btn:active {
   transform: scale(0.96);
 }
+
+
+/* =========================================================
+   TRAMPOU ADS: DESTAQUE PATROCINADO (POSIÇÃO ZERO)
+   ========================================================= */
+.badge-pro-sponsored {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+  color: #B45309;
+  border: 1px solid #FCD34D;
+  padding: 1.5px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 6px;
+  letter-spacing: 0.2px;
+}
+
+.pro-compact-card.has-sponsored-badge {
+  border: 1.5px solid #FCD34D;
+  background: linear-gradient(to right, #FFFDF5, #FFFFFF);
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.1);
+}

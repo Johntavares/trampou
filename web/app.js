@@ -1182,11 +1182,13 @@ function renderHomeFeedAdView(eligibleFeedBanners) {
   const geoBadge = document.getElementById('home-feed-ad-geo-badge');
   if (!section || !container) return;
 
-  if (!eligibleFeedBanners || eligibleFeedBanners.length === 0) {
+  const banners = (eligibleFeedBanners && eligibleFeedBanners.length > 0) ? eligibleFeedBanners : [defaultFeedBanner];
+  if (!banners || banners.length === 0) {
     section.style.display = 'none';
     TRAMPOU_ACTIVE_FEED_BANNER = null;
     return;
   }
+  eligibleFeedBanners = banners;
 
   // Seleciona o banner com menor número de visualizações
   const sorted = [...eligibleFeedBanners].sort((a, b) => (parseInt(a.views_count, 10) || 0) - (parseInt(b.views_count, 10) || 0));
@@ -1230,11 +1232,13 @@ function renderSearchSponsoredAdView(eligibleSearchBanners) {
   const wrap = document.getElementById('search-sponsored-ad-wrap');
   if (!wrap) return;
 
-  if (!eligibleSearchBanners || eligibleSearchBanners.length === 0) {
+  const banners = (eligibleSearchBanners && eligibleSearchBanners.length > 0) ? eligibleSearchBanners : [defaultSearchBanner];
+  if (!banners || banners.length === 0) {
     wrap.style.display = 'none';
     TRAMPOU_ACTIVE_SEARCH_BANNER = null;
     return;
   }
+  eligibleSearchBanners = banners;
 
   const sorted = [...eligibleSearchBanners].sort((a, b) => (parseInt(a.views_count, 10) || 0) - (parseInt(b.views_count, 10) || 0));
   const b = sorted[0];
@@ -1267,11 +1271,13 @@ function renderProfileFooterAdView(eligibleProfileBanners) {
   const wrap = document.getElementById('vitrine-sponsored-ad-wrap');
   if (!wrap) return;
 
-  if (!eligibleProfileBanners || eligibleProfileBanners.length === 0) {
+  const banners = (eligibleProfileBanners && eligibleProfileBanners.length > 0) ? eligibleProfileBanners : [defaultProfileBanner];
+  if (!banners || banners.length === 0) {
     wrap.style.display = 'none';
     TRAMPOU_ACTIVE_PROFILE_BANNER = null;
     return;
   }
+  eligibleProfileBanners = banners;
 
   const sorted = [...eligibleProfileBanners].sort((a, b) => (parseInt(a.views_count, 10) || 0) - (parseInt(b.views_count, 10) || 0));
   const b = sorted[0];
@@ -3595,6 +3601,12 @@ function renderVitrineView() {
 
   // 7. Grade 3 Colunas de Trabalhos
   renderVitrineWorks();
+
+  // 8. Trampou Ads: Rodapé patrocinado de empresas parceiras
+  if (typeof renderProfileFooterAdView === 'function') {
+    const profileBanners = (Array.isArray(TRAMPOU_ADS_CACHE) ? TRAMPOU_ADS_CACHE : []).filter(b => b.placement === 'profile_footer');
+    renderProfileFooterAdView(profileBanners);
+  }
 }
 
 function renderVitrineEmergencyCard() {
@@ -6604,8 +6616,12 @@ function switchTab(tabId) {
   window.scrollTo(0, 0);
 
   // 4. Executar callbacks específicos de cada aba
-  if (tabId === 'search' && typeof renderSearchResults === 'function') {
-    renderSearchResults();
+  if (tabId === 'search') {
+    if (typeof renderSearchResults === 'function') renderSearchResults();
+    if (typeof renderSearchSponsoredAdView === 'function') {
+      const searchBanners = (Array.isArray(TRAMPOU_ADS_CACHE) ? TRAMPOU_ADS_CACHE : []).filter(b => b.placement === 'search_sponsored');
+      renderSearchSponsoredAdView(searchBanners);
+    }
   } else if (tabId === 'chat') {
     if (typeof renderConversations === 'function') renderConversations();
     if (typeof syncGlobalChatNotifications === 'function') syncGlobalChatNotifications();
@@ -6788,7 +6804,7 @@ function renderCompactProCard(p) {
     : '';
 
   return `
-    <article class="pro-compact-card" role="button" tabindex="0" onclick="openProDetail('${p.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openProDetail('${p.id}');}" aria-label="Ver perfil de ${p.name}">
+    <article class="pro-compact-card ${p.isSponsored ? 'has-sponsored-badge' : ''}" role="button" tabindex="0" onclick="openProDetail('${p.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openProDetail('${p.id}');}" aria-label="Ver perfil de ${p.name}">
       <!-- Foto / Avatar (52–60 px) alinhada à esquerda -->
       <div class="pro-compact-avatar">
         ${avatarHtml}
@@ -6796,10 +6812,11 @@ function renderCompactProCard(p) {
 
       <!-- Informações agrupadas no centro -->
       <div class="pro-compact-info">
-        <!-- 1. Nome do profissional em destaque + Selo de verificação (se aplicável) -->
+        <!-- 1. Nome do profissional em destaque + Selo de verificação (se aplicável) + Selo Patrocinado -->
         <div class="pro-compact-name-row">
           <span class="pro-compact-name">${p.name}</span>
           ${p.verified ? '<i class="fa-solid fa-circle-check pro-compact-verified" title="Profissional Verificado" aria-label="Verificado"></i>' : ''}
+          ${p.isSponsored ? '<span class="badge-pro-sponsored" title="Anúncio Patrocinado"><i class="fa-solid fa-crown"></i> Patrocinado</span>' : ''}
         </div>
 
         <!-- 2. Categoria ou Especialidade em texto secundário -->
@@ -7271,7 +7288,12 @@ function renderSearchResults() {
       </div>
     `;
   } else {
-    container.innerHTML = filtered.map(p => renderCompactProCard(p)).join('');
+    // Na demonstração de anúncios, destaca o 1º profissional como modelo de "Posição Zero / Destaque Patrocinado"
+    container.innerHTML = filtered.map((p, idx) => {
+      const proCopy = { ...p };
+      if (idx === 0) proCopy.isSponsored = true;
+      return renderCompactProCard(proCopy);
+    }).join('');
   }
 }
 window.renderSearchResults = renderSearchResults;
