@@ -870,6 +870,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   initRealtimeDatabaseSync();
+  loadLatestBroadcastNotifications();
   renderRecommendedProfessionals();
   renderNewsFeed();
   renderConversations();
@@ -3035,17 +3036,61 @@ window.ensureWelcomeNotification = ensureWelcomeNotification;
 // ==============================================================================
 
 async function requestPushNotificationPermission() {
-  if (!('Notification' in window)) return false;
+  if (!('Notification' in window)) {
+    showToast('⚠️ Seu navegador não suporta notificações de sistema.');
+    return false;
+  }
   try {
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      showToast('🔔 Notificações push ativadas com sucesso!');
+    const perm = Notification.permission;
+    if (perm === 'granted') {
+      showToast('🔔 Notificações ativas! Enviando teste...');
+      triggerSamplePushNotification('Trampou • Notificações Ativas', 'Você receberá avisos importantes e orçamentos em tempo real.');
+      if (typeof loadLatestBroadcastNotifications === 'function') {
+        loadLatestBroadcastNotifications();
+      }
       return true;
     }
-  } catch (_) {}
+
+    const requested = await Notification.requestPermission();
+    if (requested === 'granted') {
+      showToast('🎉 Notificações push ativadas com sucesso!');
+      triggerSamplePushNotification('Bem-vindo às Notificações Trampou!', 'Seu aparelho está configurado para receber comunicados e orçamentos.');
+      if (typeof loadLatestBroadcastNotifications === 'function') {
+        loadLatestBroadcastNotifications();
+      }
+      return true;
+    } else {
+      showToast('Permissão de notificações não concedida no navegador.');
+    }
+  } catch (err) {
+    console.warn('Erro ao solicitar permissão de notificação:', err);
+  }
   return false;
 }
 window.requestPushNotificationPermission = requestPushNotificationPermission;
+
+function triggerSamplePushNotification(title, body) {
+  try {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const opts = {
+        body: body,
+        icon: './trampou_app_icon.png',
+        badge: './trampou_app_icon.png',
+        vibrate: [150, 70, 150]
+      };
+      if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+        navigator.serviceWorker.ready.then(reg => {
+          reg.showNotification(title, opts);
+        }).catch(() => {
+          try { new Notification(title, opts); } catch (_) {}
+        });
+      } else {
+        try { new Notification(title, opts); } catch (_) {}
+      }
+    }
+  } catch (_) {}
+}
+window.triggerSamplePushNotification = triggerSamplePushNotification;
 
 function isNotificationForCurrentClient(pushItem) {
   if (!pushItem) return false;
@@ -3935,6 +3980,9 @@ async function triggerRealtimeDbRefresh(force = false) {
   if (typeof renderAdBannerCarousel === 'function') {
     await renderAdBannerCarousel(true);
   }
+  if (typeof loadLatestBroadcastNotifications === 'function') {
+    await loadLatestBroadcastNotifications();
+  }
 }
 
 function initRealtimeDatabaseSync() {
@@ -3981,8 +4029,18 @@ function initRealtimeDatabaseSync() {
     realtimeSocket.addEventListener('message', (event) => {
       try {
         const msg = JSON.parse(event.data);
-        if (msg && (msg.event === 'postgres_changes' || msg.event === 'INSERT' || msg.event === 'UPDATE' || msg.event === 'DELETE')) {
-          triggerRealtimeDbRefresh(true);
+        if (msg) {
+          if (msg.payload && msg.payload.data) {
+            const d = msg.payload.data;
+            if (d.table === 'push_notifications' && (d.record || d.new)) {
+              if (typeof handleIncomingPushNotification === 'function') {
+                handleIncomingPushNotification(d.record || d.new);
+              }
+            }
+          }
+          if (msg.event === 'postgres_changes' || msg.event === 'INSERT' || msg.event === 'UPDATE' || msg.event === 'DELETE') {
+            triggerRealtimeDbRefresh(true);
+          }
         }
       } catch (_) {}
     });
