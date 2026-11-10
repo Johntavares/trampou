@@ -81,3 +81,4 @@ async function seedDemoAds() {
 }
 
 seedDemoAds().catch(console.error);
+

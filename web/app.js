@@ -1182,13 +1182,12 @@ function renderHomeFeedAdView(eligibleFeedBanners) {
   const geoBadge = document.getElementById('home-feed-ad-geo-badge');
   if (!section || !container) return;
 
-  const banners = (eligibleFeedBanners && eligibleFeedBanners.length > 0) ? eligibleFeedBanners : [defaultFeedBanner];
-  if (!banners || banners.length === 0) {
+  // Se não houver anunciantes ativos para este espaço, oculta completamente a seção
+  if (!eligibleFeedBanners || eligibleFeedBanners.length === 0) {
     section.style.display = 'none';
     TRAMPOU_ACTIVE_FEED_BANNER = null;
     return;
   }
-  eligibleFeedBanners = banners;
 
   // Seleciona o banner com menor número de visualizações
   const sorted = [...eligibleFeedBanners].sort((a, b) => (parseInt(a.views_count, 10) || 0) - (parseInt(b.views_count, 10) || 0));
@@ -1232,13 +1231,12 @@ function renderSearchSponsoredAdView(eligibleSearchBanners) {
   const wrap = document.getElementById('search-sponsored-ad-wrap');
   if (!wrap) return;
 
-  const banners = (eligibleSearchBanners && eligibleSearchBanners.length > 0) ? eligibleSearchBanners : [defaultSearchBanner];
-  if (!banners || banners.length === 0) {
+  // Se não houver anunciantes ativos para a busca, oculta completamente o container
+  if (!eligibleSearchBanners || eligibleSearchBanners.length === 0) {
     wrap.style.display = 'none';
     TRAMPOU_ACTIVE_SEARCH_BANNER = null;
     return;
   }
-  eligibleSearchBanners = banners;
 
   const sorted = [...eligibleSearchBanners].sort((a, b) => (parseInt(a.views_count, 10) || 0) - (parseInt(b.views_count, 10) || 0));
   const b = sorted[0];
@@ -1271,13 +1269,12 @@ function renderProfileFooterAdView(eligibleProfileBanners) {
   const wrap = document.getElementById('vitrine-sponsored-ad-wrap');
   if (!wrap) return;
 
-  const banners = (eligibleProfileBanners && eligibleProfileBanners.length > 0) ? eligibleProfileBanners : [defaultProfileBanner];
-  if (!banners || banners.length === 0) {
+  // Se não houver anunciantes ativos no rodapé do perfil, oculta completamente
+  if (!eligibleProfileBanners || eligibleProfileBanners.length === 0) {
     wrap.style.display = 'none';
     TRAMPOU_ACTIVE_PROFILE_BANNER = null;
     return;
   }
-  eligibleProfileBanners = banners;
 
   const sorted = [...eligibleProfileBanners].sort((a, b) => (parseInt(a.views_count, 10) || 0) - (parseInt(b.views_count, 10) || 0));
   const b = sorted[0];
@@ -7288,10 +7285,9 @@ function renderSearchResults() {
       </div>
     `;
   } else {
-    // Na demonstração de anúncios, destaca o 1º profissional como modelo de "Posição Zero / Destaque Patrocinado"
-    container.innerHTML = filtered.map((p, idx) => {
+    container.innerHTML = filtered.map(p => {
       const proCopy = { ...p };
-      if (idx === 0) proCopy.isSponsored = true;
+      proCopy.isSponsored = Boolean(p.is_sponsored || p.isSponsored);
       return renderCompactProCard(proCopy);
     }).join('');
   }
