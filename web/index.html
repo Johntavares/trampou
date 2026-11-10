@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=40">
+  <link rel="stylesheet" href="styles.css?v=41">
 </head>
 <body>
   <!-- Container Principal do Aplicativo Nativo / PWA -->
@@ -3636,14 +3636,26 @@
             </div>
           </div>
 
-          <!-- 3. PRÉVIA AO VIVO -->
+          <!-- 3. PRÉVIA AO VIVO ADAPTÁVEL -->
           <div class="ad-section ad-preview-section">
             <div class="ad-preview-header-bar">
               <i class="fa-solid fa-sparkles" style="color: #7C3AED;"></i>
-              <span>Prévia ao vivo do seu anúncio no app:</span>
+              <span id="ad-preview-header-label">Prévia ao vivo do seu anúncio no app:</span>
             </div>
 
-            <div class="ad-live-card-container">
+            <!-- MODO A: BANNER PURO (Para Carrossel Topo e Rodapé de Prestadores) -->
+            <div id="ad-preview-mode-banner" class="ad-preview-banner-box" style="display: none;">
+              <div class="ad-preview-banner-frame">
+                <img id="ad-preview-banner-img" src="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1200&auto=format&fit=crop&q=80" alt="Banner Preview">
+                <span class="ad-live-tag-pill" id="ad-preview-banner-badge"><i class="fa-solid fa-bolt"></i> Destaque Panorâmico</span>
+              </div>
+              <div class="ad-preview-banner-footer-hint">
+                <i class="fa-solid fa-hand-pointer"></i> O banner inteiro é clicável e direciona para o seu WhatsApp/link
+              </div>
+            </div>
+
+            <!-- MODO B: CARD NATIVO COM TEXTO (Para Feed da Home e Busca) -->
+            <div id="ad-preview-mode-card" class="ad-live-card-container">
               <div class="ad-live-media-wrap">
                 <img id="ad-live-preview-img" src="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&auto=format&fit=crop&q=80" alt="Banner Preview">
                 <span class="ad-live-tag-pill">Patrocinado</span>
@@ -3660,17 +3672,18 @@
             </div>
           </div>
 
-          <!-- 4. DADOS DO ANÚNCIO -->
+          <!-- 4. DADOS DO ANÚNCIO (CAMPOS ADAPTÁVEIS) -->
           <div class="ad-section">
             <div class="ad-section-title">
               <span class="ad-step-num">3</span>
               <div>
-                <strong>Preencha os dados do anúncio</strong>
-                <small>Informações que serão exibidas para seus clientes</small>
+                <strong id="ad-form-step-title">Preencha os dados do anúncio</strong>
+                <small id="ad-form-step-subtitle">Informações que serão exibidas para seus clientes</small>
               </div>
             </div>
 
             <div class="ad-inputs-container">
+              <!-- Nome da Empresa / Anunciante -->
               <div class="ad-field">
                 <label class="ad-field-label">Nome da Empresa / Negócio <span class="req">*</span></label>
                 <div class="ad-field-input-wrap">
@@ -3679,24 +3692,43 @@
                 </div>
               </div>
 
-              <div class="ad-field">
-                <label class="ad-field-label">Título da Oferta / Chamada <span class="req">*</span></label>
-                <div class="ad-field-input-wrap">
-                  <i class="fa-solid fa-heading ad-field-icon"></i>
-                  <input type="text" id="ad-input-title" placeholder="Ex: Aluguel de Caçambas 24h com 15% OFF" oninput="updateLiveAdPreview()" required>
+              <!-- CAMPOS EXCLUSIVOS DO CARD NATIVO (Ocultados no modo Banner Puro) -->
+              <div id="ad-fields-text-content">
+                <!-- Título da Oferta -->
+                <div class="ad-field" style="margin-bottom: 12px;">
+                  <label class="ad-field-label">Título da Oferta / Chamada <span class="req">*</span></label>
+                  <div class="ad-field-input-wrap">
+                    <i class="fa-solid fa-heading ad-field-icon"></i>
+                    <input type="text" id="ad-input-title" placeholder="Ex: Aluguel de Caçambas 24h com 15% OFF" oninput="updateLiveAdPreview()">
+                  </div>
+                </div>
+
+                <!-- Descrição da Oferta -->
+                <div class="ad-field" style="margin-bottom: 12px;">
+                  <label class="ad-field-label">Descrição ou Oferta Curta (Opcional)</label>
+                  <div class="ad-field-input-wrap">
+                    <textarea id="ad-input-desc" rows="2" placeholder="Ex: Entulho, reformas e poda com entrega imediata em qualquer bairro." oninput="updateLiveAdPreview()"></textarea>
+                  </div>
+                </div>
+
+                <!-- Botão de Ação -->
+                <div class="ad-field" style="margin-bottom: 12px;">
+                  <label class="ad-field-label">Texto do Botão de Ação</label>
+                  <div class="ad-field-input-wrap">
+                    <select id="ad-input-cta-text" onchange="updateLiveAdPreview()">
+                      <option value="Chamar no WhatsApp" selected>Chamar no WhatsApp</option>
+                      <option value="Falar Conosco">Falar Conosco</option>
+                      <option value="Ver Oferta Especial">Ver Oferta Especial</option>
+                      <option value="Pedir Orçamento">Pedir Orçamento</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
-              <div class="ad-field">
-                <label class="ad-field-label">Descrição ou Oferta Curta (Opcional)</label>
-                <div class="ad-field-input-wrap">
-                  <textarea id="ad-input-desc" rows="2" placeholder="Ex: Entulho, reformas e poda com entrega imediata em qualquer bairro." oninput="updateLiveAdPreview()"></textarea>
-                </div>
-              </div>
-
+              <!-- Contatos: WhatsApp e E-mail -->
               <div class="ad-two-cols">
                 <div class="ad-field">
-                  <label class="ad-field-label">WhatsApp de Atendimento <span class="req">*</span></label>
+                  <label class="ad-field-label" id="ad-label-phone">WhatsApp de Destino <span class="req">*</span></label>
                   <div class="ad-field-input-wrap">
                     <i class="fa-brands fa-whatsapp ad-field-icon" style="color: #10B981;"></i>
                     <input type="tel" id="ad-input-phone" placeholder="(94) 99123-4567" required>
@@ -3712,31 +3744,18 @@
                 </div>
               </div>
 
-              <div class="ad-two-cols">
-                <div class="ad-field">
-                  <label class="ad-field-label">Botão de Ação</label>
-                  <div class="ad-field-input-wrap">
-                    <select id="ad-input-cta-text" onchange="updateLiveAdPreview()">
-                      <option value="Chamar no WhatsApp" selected>Chamar no WhatsApp</option>
-                      <option value="Falar Conosco">Falar Conosco</option>
-                      <option value="Ver Oferta Especial">Ver Oferta Especial</option>
-                      <option value="Pedir Orçamento">Pedir Orçamento</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="ad-field">
-                  <label class="ad-field-label">Cidade</label>
-                  <div class="ad-field-input-wrap">
-                    <i class="fa-solid fa-location-dot ad-field-icon"></i>
-                    <input type="text" id="ad-input-city" value="Parauapebas, PA" readonly style="background: #F8FAFC; color: #475569;">
-                  </div>
+              <!-- Cidade -->
+              <div class="ad-field">
+                <label class="ad-field-label">Cidade de Veiculação</label>
+                <div class="ad-field-input-wrap">
+                  <i class="fa-solid fa-location-dot ad-field-icon"></i>
+                  <input type="text" id="ad-input-city" value="Parauapebas, PA" readonly style="background: #F8FAFC; color: #475569;">
                 </div>
               </div>
 
-              <!-- Upload de Imagem -->
+              <!-- Upload de Imagem / Arte do Banner -->
               <div class="ad-field">
-                <label class="ad-field-label">Foto, Flyer ou Logomarca (Opcional)</label>
+                <label class="ad-field-label" id="ad-label-upload-creative">Arte do Banner (Obrigatório para este formato) <span class="req">*</span></label>
                 
                 <!-- Card Guia Dinâmico de Proporções -->
                 <div class="ad-ratio-helper-card" id="ad-ratio-helper">
@@ -3745,11 +3764,11 @@
                   </div>
                   <div class="ad-ratio-text">
                     <div class="ad-ratio-target-header">
-                      <span id="ad-ratio-target-title">Formato recomendado: Feed da Página Inicial</span>
-                      <span class="ad-ratio-badge-pill" id="ad-ratio-badge">16:9</span>
+                      <span id="ad-ratio-target-title">Formato recomendado: Carrossel do Topo</span>
+                      <span class="ad-ratio-badge-pill" id="ad-ratio-badge">2:1 Panorâmico</span>
                     </div>
-                    <strong class="ad-ratio-spec" id="ad-ratio-target-dims">Resolução ideal: 1080 × 608 px (Horizontal)</strong>
-                    <p class="ad-ratio-tip" id="ad-ratio-target-tip">Evita cortes nas laterais e garante máxima nitidez no smartphone.</p>
+                    <strong class="ad-ratio-spec" id="ad-ratio-target-dims">Resolução ideal: 1200 × 500 px</strong>
+                    <p class="ad-ratio-tip" id="ad-ratio-target-tip">Banner horizontal largo no topo. Mantenha os textos na faixa central.</p>
                   </div>
                 </div>
 
@@ -3931,6 +3950,6 @@
     </div>
   </aside>
 
-  <script src="app.js?v=40"></script>
+  <script src="app.js?v=41"></script>
 </body>
 </html>

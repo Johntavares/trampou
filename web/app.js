@@ -10518,6 +10518,7 @@ window.closeAdvertiseModal = closeAdvertiseModal;
 
 function updateLiveAdPreview() {
   try {
+    const isBannerType = (selectedAdPlacement === 'home_carousel' || selectedAdPlacement === 'profile_footer');
     const advInput = document.getElementById('ad-input-advertiser');
     const titleInput = document.getElementById('ad-input-title');
     const descInput = document.getElementById('ad-input-desc');
@@ -10529,6 +10530,7 @@ function updateLiveAdPreview() {
     const cta = (ctaInput && ctaInput.value ? ctaInput.value : '') || 'Chamar no WhatsApp';
     const loc = (typeof currentActiveLocation !== 'undefined' && currentActiveLocation) ? currentActiveLocation : { city: 'Parauapebas', state: 'PA' };
 
+    // Atualiza Card Nativo
     const prevAdv = document.getElementById('ad-live-preview-advertiser');
     const prevTitle = document.getElementById('ad-live-preview-title');
     const prevDesc = document.getElementById('ad-live-preview-desc');
@@ -10542,12 +10544,22 @@ function updateLiveAdPreview() {
     if (prevCity) prevCity.innerText = `${loc.city || 'Parauapebas'}, ${loc.state || 'PA'}`;
     if (prevCta) prevCta.innerHTML = `${cta} <i class="fa-brands fa-whatsapp"></i>`;
 
-    if (prevImg) {
-      if (typeof currentAdUploadedImage !== 'undefined' && currentAdUploadedImage) {
-        prevImg.src = currentAdUploadedImage;
-      } else {
-        prevImg.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&auto=format&fit=crop&q=80';
-      }
+    const activeImgSrc = (typeof currentAdUploadedImage !== 'undefined' && currentAdUploadedImage)
+      ? currentAdUploadedImage
+      : (isBannerType 
+          ? 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1200&auto=format&fit=crop&q=80' 
+          : 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&auto=format&fit=crop&q=80');
+
+    if (prevImg) prevImg.src = activeImgSrc;
+
+    // Atualiza Banner Puro
+    const bannerImg = document.getElementById('ad-preview-banner-img');
+    const bannerBadge = document.getElementById('ad-preview-banner-badge');
+    if (bannerImg) bannerImg.src = activeImgSrc;
+    if (bannerBadge) {
+      bannerBadge.innerHTML = (selectedAdPlacement === 'home_carousel') 
+        ? '<i class="fa-solid fa-bolt"></i> Destaque Carrossel Topo'
+        : '<i class="fa-solid fa-handshake"></i> Rodapé dos Prestadores';
     }
   } catch (err) {
     console.warn('updateLiveAdPreview avisou:', err);
@@ -10612,8 +10624,10 @@ async function handleAdImageFile(event) {
   if (!file) return;
 
   try {
+    const isBannerType = (selectedAdPlacement === 'home_carousel' || selectedAdPlacement === 'profile_footer');
+    const targetWidth = isBannerType ? 1200 : 900;
     const compressed = (typeof compressImageFile === 'function') 
-      ? await compressImageFile(file, 800, 500, 0.78)
+      ? await compressImageFile(file, targetWidth, 0.85)
       : await new Promise((resolve) => {
           const r = new FileReader();
           r.onload = e => resolve(e.target.result);
@@ -10650,9 +10664,10 @@ function removeAdImagePreview() {
 window.removeAdImagePreview = removeAdImagePreview;
 
 async function submitAdAndGeneratePix() {
+  const isBannerType = (selectedAdPlacement === 'home_carousel' || selectedAdPlacement === 'profile_footer');
   const advertiser = (document.getElementById('ad-input-advertiser')?.value || '').trim();
-  const title = (document.getElementById('ad-input-title')?.value || '').trim();
-  const desc = (document.getElementById('ad-input-desc')?.value || '').trim();
+  let title = (document.getElementById('ad-input-title')?.value || '').trim();
+  let desc = (document.getElementById('ad-input-desc')?.value || '').trim();
   const phone = (document.getElementById('ad-input-phone')?.value || '').trim();
   const email = (document.getElementById('ad-input-email')?.value || '').trim();
   const ctaText = (document.getElementById('ad-input-cta-text')?.value || '').trim() || 'Chamar no WhatsApp';
@@ -10661,16 +10676,33 @@ async function submitAdAndGeneratePix() {
     showToast('Informe o nome da sua empresa ou negócio.');
     return;
   }
-  if (!title) {
-    showToast('Informe o título principal do seu anúncio.');
-    return;
+
+  // Validação específica para Banner Puro vs Card Nativo
+  if (isBannerType) {
+    if (!currentAdUploadedImage) {
+      showToast('Por favor, envie a arte do seu banner para o carrossel/rodapé.');
+      return;
+    }
+    if (!title) {
+      title = `${advertiser} (Banner Destaque)`;
+    }
+    if (!desc) {
+      desc = 'Banner Patrocinado';
+    }
+  } else {
+    // Card nativo do feed ou busca
+    if (!title) {
+      showToast('Informe o título principal da oferta para o card.');
+      return;
+    }
   }
+
   if (!phone) {
-    showToast('Informe o seu número de WhatsApp de atendimento.');
+    showToast('Informe o WhatsApp de contato para o anúncio.');
     return;
   }
   if (!email || !email.includes('@')) {
-    showToast('Informe um e-mail válido para o comprovante.');
+    showToast('Informe um e-mail válido para receber o comprovante.');
     return;
   }
 
@@ -10928,24 +10960,46 @@ const AD_PLACEMENT_SPECS = {
 
 function updateCreativeRatioGuide(placement) {
   const spec = AD_PLACEMENT_SPECS[placement] || AD_PLACEMENT_SPECS.home_feed;
+  const isBannerType = (placement === 'home_carousel' || placement === 'profile_footer');
+
+  // 1. Atualiza guia de proporções
   const targetTitle = document.getElementById('ad-ratio-target-title');
   const targetBadge = document.getElementById('ad-ratio-badge');
   const targetDims = document.getElementById('ad-ratio-target-dims');
   const targetTip = document.getElementById('ad-ratio-target-tip');
-  const previewMedia = document.querySelector('.ad-live-media-wrap');
 
   if (targetTitle) targetTitle.innerText = `Formato recomendado: ${spec.title}`;
   if (targetBadge) targetBadge.innerText = spec.badge;
   if (targetDims) targetDims.innerText = spec.dimensions;
   if (targetTip) targetTip.innerText = spec.tip;
 
-  if (previewMedia && spec.previewAspect) {
-    previewMedia.style.aspectRatio = spec.previewAspect;
-    if (placement === 'home_carousel') {
-      previewMedia.style.height = '100px';
-    } else {
-      previewMedia.style.height = '130px';
-    }
+  // 2. Alterna entre modo Banner Puro vs Card Nativo
+  const bannerPreviewBox = document.getElementById('ad-preview-mode-banner');
+  const cardPreviewBox = document.getElementById('ad-preview-mode-card');
+  const textFieldsBox = document.getElementById('ad-fields-text-content');
+  const uploadLabel = document.getElementById('ad-label-upload-creative');
+  const stepTitle = document.getElementById('ad-form-step-title');
+  const stepSubtitle = document.getElementById('ad-form-step-subtitle');
+
+  if (isBannerType) {
+    // MODO BANNER PURO (Carrossel e Rodapé)
+    if (bannerPreviewBox) bannerPreviewBox.style.display = 'block';
+    if (cardPreviewBox) cardPreviewBox.style.display = 'none';
+    if (textFieldsBox) textFieldsBox.style.display = 'none';
+    if (uploadLabel) uploadLabel.innerHTML = 'Arte do Banner (Obrigatório para este formato) <span class="req">*</span>';
+    if (stepTitle) stepTitle.innerText = 'Envie a arte do seu banner';
+    if (stepSubtitle) stepSubtitle.innerText = 'Sua imagem é o próprio banner e direciona diretamente ao tocar';
+  } else {
+    // MODO CARD NATIVO COM TEXTOS (Feed e Busca)
+    if (bannerPreviewBox) bannerPreviewBox.style.display = 'none';
+    if (cardPreviewBox) cardPreviewBox.style.display = 'block';
+    if (textFieldsBox) textFieldsBox.style.display = 'block';
+    if (uploadLabel) uploadLabel.innerHTML = 'Foto ou Flyer da Oferta (Opcional)';
+    if (stepTitle) stepTitle.innerText = 'Preencha os dados do anúncio';
+    if (stepSubtitle) stepSubtitle.innerText = 'Título, descrição e botão exibidos no card do feed/busca';
   }
+
+  updateLiveAdPreview();
 }
 window.updateCreativeRatioGuide = updateCreativeRatioGuide;
+

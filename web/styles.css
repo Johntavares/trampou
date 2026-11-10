@@ -14926,3 +14926,82 @@ body {
   color: #64748B;
   line-height: 1.35;
 }
+
+
+/* =========================================================
+   TRAMPOU ADS: PRÉVIA DUAL (BANNER PURO VS CARD NATIVO)
+   ========================================================= */
+.ad-preview-banner-box {
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.ad-preview-banner-frame {
+  position: relative;
+  width: 100%;
+  background: #0F172A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 14px 14px 0 0;
+}
+
+.ad-preview-banner-frame img {
+  width: 100%;
+  height: auto;
+  max-height: 180px;
+  object-fit: contain;
+  display: block;
+  background: #0F172A;
+}
+
+.ad-preview-banner-footer-hint {
+  padding: 8px 12px;
+  background: #F8FAFC;
+  border-top: 1px solid #F1F5F9;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ad-preview-banner-footer-hint i {
+  color: #7C3AED;
+}
+
+/* Card nativo ajustado para não cortar a imagem */
+.ad-live-media-wrap {
+  position: relative;
+  width: 100%;
+  background: #0F172A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ad-live-media-wrap img {
+  width: 100%;
+  height: auto;
+  max-height: 180px;
+  object-fit: contain;
+  display: block;
+}
+
+/* Upload tile image sem corte */
+.ad-uploaded-image {
+  width: 100%;
+  height: auto;
+  max-height: 180px;
+  object-fit: contain;
+  background: #0F172A;
+  border-radius: 10px;
+  display: block;
+}
