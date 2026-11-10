@@ -2096,1508 +2096,407 @@
         </div>
 
         <!-- ==============================================================================
-             MODAL: ALERTA DE NOVO CHAMADO DE EMERGÊNCIA 24h PARA O PROFISSIONAL ACEITAR
-             ============================================================================== -->
-        <div id="pro-sos-incoming-modal" class="modal-overlay pro-sos-incoming-overlay" style="z-index: 1400;">
-          <div class="modal-content pro-sos-incoming-card">
-            <!-- Header de Alerta com Sirene Pulsante -->
-            <div class="pro-sos-header">
-              <div class="pro-sos-siren-box">
-                <span class="pro-sos-pulse-ring"></span>
-                <i class="fa-solid fa-triangle-exclamation"></i>
-              </div>
-              <div class="pro-sos-title-group">
-                <div class="pro-sos-badge-urgent">
-                  <span class="pro-sos-blip-dot"></span> Plantão 24h • Urgência Imediata
-                </div>
-                <h3>Novo Chamado de Emergência!</h3>
-              </div>
-            </div>
-
-            <!-- Barra de Contagem Regressiva para Resposta -->
-            <div class="pro-sos-timer-wrap">
-              <div class="pro-sos-timer-info">
-                <span>Tempo para responder:</span>
-                <strong id="pro-sos-timer-text">30s</strong>
-              </div>
-              <div class="pro-sos-progress-bar">
-                <div id="pro-sos-progress-fill" class="pro-sos-progress-fill"></div>
-              </div>
-            </div>
-
-            <!-- Detalhes do Chamado -->
-            <div class="pro-sos-body">
-              <div class="pro-sos-info-row">
-                <div class="pro-sos-info-item">
-                  <span class="pro-sos-label">Especialidade</span>
-                  <div class="pro-sos-val-highlight" id="pro-sos-category-val">
-                    <i class="fa-solid fa-bolt"></i> <span>Eletricista</span>
-                  </div>
-                </div>
-                <div class="pro-sos-info-item">
-                  <span class="pro-sos-label">Localização</span>
-                  <div class="pro-sos-val" id="pro-sos-bairro-val">
-                    <i class="fa-solid fa-location-dot"></i> <span>Cidade Nova (~1,5 km)</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Card com Perrengue / Problema Relatado -->
-              <div class="pro-sos-problem-card">
-                <div class="pro-sos-problem-label">
-                  <i class="fa-solid fa-circle-exclamation"></i> Relato do Cliente:
-                </div>
-                <p id="pro-sos-desc-val" class="pro-sos-problem-text">
-                  "Chamado urgente enviado pelo cliente."
-                </p>
-                <div class="pro-sos-client-meta">
-                  <span><i class="fa-solid fa-user"></i> <strong id="pro-sos-client-name">Cliente</strong></span>
-                  <span><i class="fa-brands fa-whatsapp"></i> <strong id="pro-sos-client-phone">—</strong></span>
-                </div>
-              </div>
-
-              <!-- Sugestão de Taxa de Socorro Noturno / Emergencial -->
-              <div class="pro-sos-fee-hint">
-                <div class="pro-fee-left">
-                  <i class="fa-solid fa-coins"></i>
-                  <div>
-                    <span class="fee-title">Taxa de deslocamento sugerida</span>
-                    <span class="fee-sub">Combine o valor final diretamente com o cliente</span>
-                  </div>
-                </div>
-                <strong class="fee-amount" id="pro-sos-fee-val">R$ 80 a R$ 130</strong>
-              </div>
-            </div>
-
-            <!-- Botões de Ação do Profissional -->
-            <div class="pro-sos-footer-actions">
-              <button type="button" class="btn-pro-reject-sos" onclick="rejectIncomingSOS()">
-                <i class="fa-solid fa-xmark"></i>
-                <span>Recusar</span>
-              </button>
-              <button type="button" class="btn-pro-accept-sos" onclick="acceptIncomingSOS()">
-                <i class="fa-solid fa-circle-check"></i>
-                <span>Aceitar Chamado Agora</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- ==============================================================================
-             TELA DO CHAT INTERNO COM CONTROLE LEVE DE ATENDIMENTO
-             ============================================================================== -->
-        <div id="chat-overlay" class="modal-overlay" style="z-index: 1050;">
-          <div class="modal-content chat-content" style="height: 100%; max-height: 100%; border-radius: 0; display: flex; flex-direction: column;">
-            <!-- Header do Chat -->
-            <div class="chat-header">
-              <button type="button" class="chat-back-btn" onclick="closeChat()" title="Voltar para conversas">
-                <i class="fa-solid fa-arrow-left"></i>
-              </button>
-              
-              <!-- Perfil clicável do profissional no header do chat -->
-              <div class="chat-user-target" id="chat-user-profile-btn" onclick="openProProfileFromChat()" title="Toque para ver o perfil e os trabalhos do profissional" role="button" tabindex="0">
-                <div class="chat-avatar-header" id="chat-contact-avatar">
-                  <i class="fa-solid fa-user"></i>
-                </div>
-
-                <div class="chat-contact-info">
-                  <div class="chat-contact-title-row">
-                    <h4 id="chat-contact-name">Profissional</h4>
-                    <i class="fa-solid fa-chevron-right chat-view-profile-arrow"></i>
-                  </div>
-                  <span id="chat-contact-service">Negociação de Serviço</span>
-                </div>
-              </div>
-
-              <div class="chat-role-indicator" style="display: none;">
-                <span id="chat-active-role-label"></span>
-              </div>
-            </div>
-
-            <!-- Faixa de Segurança e Transparência -->
-            <div class="chat-safety-banner">
-              <i class="fa-solid fa-shield-halved"></i>
-              <span>Negocie livremente. Registre o serviço combinado para avaliar ao término.</span>
-            </div>
-
-            <!-- CONTAINER CONTEXTUAL DO ATENDIMENTO (Barra ou Cartão de Status) -->
-            <div id="chat-attendance-card-wrapper">
-              <!-- Renderizado dinamicamente via JS (renderAttendanceCard) -->
-            </div>
-
-            <!-- Mensagens do Chat -->
-            <div class="chat-messages" id="chat-messages-container">
-              <!-- Mensagens renderizadas dinamicamente -->
-            </div>
-
-            <!-- Barra de Envio de Mensagem -->
-            <div class="chat-input-bar">
-              <button type="button" class="attach-btn" title="Registrar serviço combinado" onclick="openRegisterAttendanceModal()">
-                <i class="fa-solid fa-handshake" style="color: var(--primary-purple);"></i>
-              </button>
-              <input type="text" id="chat-input" placeholder="Digite uma mensagem..." autocomplete="off">
-              <button type="button" class="send-btn" id="chat-send-btn" title="Enviar mensagem">
-                <i class="fa-solid fa-paper-plane"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- MODAL: REGISTRAR SERVIÇO COMBINADO -->
-        <div id="modal-register-attendance" class="modal-overlay" style="z-index: 1100;">
-          <div class="modal-content quote-modal-box">
-            <div class="modal-header">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-handshake" style="color: #4F46E5; font-size: 18px;"></i>
-                <h4 style="margin: 0; font-size: 15px;">Registrar Serviço Combinado</h4>
-              </div>
-              <button type="button" class="close-x-btn" onclick="closeRegisterAttendanceModal()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="modal-body" style="padding: 16px;">
-              <p style="font-size: 12px; color: #64748B; margin-bottom: 14px; line-height: 1.45;">
-                O registro permite que o cliente avalie com selo verificado após a conclusão. Não exigimos pagamento pelo app nem cadastro de orçamento complexo.
-              </p>
-              
-              <label style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Descrição resumida do serviço (opcional):</label>
-              <input type="text" id="reg-att-title-input" placeholder="Ex: Instalação de Ar Split ou Manutenção Elétrica" style="width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 13px; margin-bottom: 14px;">
-              
-              <div style="background: #F1F5F9; border-radius: 8px; padding: 10px 12px; font-size: 11px; color: #475569;">
-                <i class="fa-solid fa-circle-info" style="color: #4F46E5;"></i> O outro participante receberá a solicitação para confirmar antes de registrar como combinado.
-              </div>
-            </div>
-            <div class="modal-footer" style="padding: 12px 16px; display: flex; justify-content: flex-end; gap: 8px;">
-              <button type="button" class="btn-cancel" onclick="closeRegisterAttendanceModal()">Cancelar</button>
-              <button type="button" class="btn-submit" onclick="submitRegisterAttendanceRequest()" style="background: #4F46E5;">Solicitar Registro</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- MODAL: CONTESTAR CONCLUSÃO DO SERVIÇO -->
-        <div id="modal-dispute-attendance" class="modal-overlay" style="z-index: 1100;">
-          <div class="modal-content quote-modal-box">
-            <div class="modal-header">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-triangle-exclamation" style="color: #DC2626; font-size: 18px;"></i>
-                <h4 style="margin: 0; font-size: 15px;">Contestar Conclusão do Serviço</h4>
-              </div>
-              <button type="button" class="close-x-btn" onclick="closeDisputeModal()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="modal-body" style="padding: 16px;">
-              <p style="font-size: 12px; color: #64748B; margin-bottom: 14px; line-height: 1.45;">
-                Explique o que ficou pendente ou divergente para que o profissional possa resolver antes de concluir.
-              </p>
-              
-              <label style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Motivo da contestação:</label>
-              <textarea id="dispute-reason-input" rows="3" placeholder="Ex: O acabamento da tomada ainda não foi fechado..." style="width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 13px; margin-bottom: 10px;"></textarea>
-            </div>
-            <div class="modal-footer" style="padding: 12px 16px; display: flex; justify-content: flex-end; gap: 8px;">
-              <button type="button" class="btn-cancel" onclick="closeDisputeModal()">Voltar</button>
-              <button type="button" class="btn-att-danger" onclick="submitDisputeAttendance()" style="padding: 8px 14px; border-radius: 8px; font-weight: 700;">Confirmar Contestação</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- MODAL: AVALIAÇÃO VERIFICADA -->
-        <div id="modal-verified-review" class="modal-overlay" style="z-index: 1100;">
-          <div class="modal-content quote-modal-box">
-            <div class="modal-header">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-star" style="color: #F59E0B; font-size: 18px;"></i>
-                <h4 style="margin: 0; font-size: 15px;">Avaliar Atendimento</h4>
-              </div>
-              <button type="button" class="close-x-btn" onclick="closeVerifiedReviewModal()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="modal-body" style="padding: 16px;">
-              <div class="verified-tag-badge">
-                <i class="fa-solid fa-certificate"></i> Avaliação Verificada por Atendimento Confirmado
-              </div>
-
-              <p style="font-size: 12px; color: #475569; margin-bottom: 12px;">
-                Como foi a realização do serviço com <strong id="review-modal-pro-name">o profissional</strong>?
-              </p>
-
-              <!-- Seletor de Estrelas -->
-              <div style="text-align: center;">
-                <label style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748B; display: block; margin-bottom: 4px;">Sua Nota</label>
-                <div class="rating-stars-picker" id="stars-picker-container" style="justify-content: center;">
-                  <i class="fa-solid fa-star selected" data-value="1" onclick="setReviewRating(1)"></i>
-                  <i class="fa-solid fa-star selected" data-value="2" onclick="setReviewRating(2)"></i>
-                  <i class="fa-solid fa-star selected" data-value="3" onclick="setReviewRating(3)"></i>
-                  <i class="fa-solid fa-star selected" data-value="4" onclick="setReviewRating(4)"></i>
-                  <i class="fa-solid fa-star selected" data-value="5" onclick="setReviewRating(5)"></i>
-                </div>
-              </div>
-
-              <label style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Comentário sobre o serviço:</label>
-              <textarea id="review-comment-input" rows="3" placeholder="Pontualidade, qualidade, limpeza do local, postura profissional..." style="width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 13px;"></textarea>
-            </div>
-            <div class="modal-footer" style="padding: 12px 16px; display: flex; justify-content: flex-end; gap: 8px;">
-              <button type="button" class="btn-cancel" onclick="closeVerifiedReviewModal()">Depois</button>
-              <button type="button" class="btn-submit" onclick="submitVerifiedReview()" style="background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none; font-weight: 700;">Publicar Avaliação</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- =========================================================
-             MODAL: COMPARTILHAMENTO VIRAL / CARTÃO DIGITAL / RECOMENDAÇÃO
-             ========================================================= -->
-        
-        <!-- =========================================================
-             TRAMPOU VIRAL LOOP: MODAL PEDIR AVALIAÇÃO AO CLIENTE
-             ========================================================= -->
-        <div id="modal-ask-review-overlay" class="modal-overlay" style="z-index: 1360;" onclick="if(event.target === this) closeAskReviewModal()">
-          <div class="modal-content" style="max-width: 440px; border-radius: 20px; overflow: hidden; background: #FFFFFF;">
-            <div class="modal-header" style="background: linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%); border-bottom: 1px solid #E9D5FF; padding: 18px 20px;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <div style="width: 38px; height: 38px; border-radius: 10px; background: #7C3AED; color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 17px; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);">
-                  <i class="fa-solid fa-star"></i>
-                </div>
-                <div>
-                  <h4 style="margin: 0; font-size: 16px; font-weight: 800; color: #1E1B4B;">Pedir Avaliação 5★</h4>
-                  <span style="font-size: 11.5px; color: #6B7280;">Fortaleça sua reputação pós-serviço</span>
-                </div>
-              </div>
-              <button type="button" class="close-x-btn" onclick="closeAskReviewModal()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-
-            <div class="modal-body" style="padding: 20px;">
-              <p style="font-size: 13px; color: #475569; line-height: 1.45; margin-bottom: 16px;">
-                Clientes satisfeitos trazem novos clientes! Envie uma mensagem rápida no WhatsApp do cliente para ele avaliar seu serviço no Trampou com 1 toque.
-              </p>
-
-              <!-- Campo Opcional: Nome do Cliente -->
-              <div style="margin-bottom: 14px;">
-                <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 6px;">
-                  Nome do Cliente (opcional)
-                </label>
-                <div style="position: relative;">
-                  <i class="fa-solid fa-user" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94A3B8; font-size: 13px;"></i>
-                  <input 
-                    type="text" 
-                    id="ask-review-client-name" 
-                    placeholder="Ex: Dona Maria, Carlos..." 
-                    style="width: 100%; padding: 10px 14px 10px 38px; border: 1.5px solid #CBD5E1; border-radius: 10px; font-size: 13px; outline: none; box-sizing: border-box;"
-                    oninput="updateAskReviewMessagePreview()"
-                  >
-                </div>
-              </div>
-
-              <!-- Pré-visualização da Mensagem do WhatsApp -->
-              <div style="margin-bottom: 18px;">
-                <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 6px;">
-                  Mensagem que será enviada:
-                </label>
-                <div id="ask-review-preview-box" style="background: #F0FDF4; border: 1.5px solid #BBF7D0; border-radius: 12px; padding: 14px; font-size: 12.5px; color: #166534; line-height: 1.45; position: relative;">
-                  <i class="fa-brands fa-whatsapp" style="position: absolute; right: 12px; top: 12px; font-size: 18px; color: #22C55E; opacity: 0.8;"></i>
-                  <div id="ask-review-preview-text">
-                    Carregando mensagem...
-                  </div>
-                </div>
-              </div>
-
-              <!-- Botões de Ação Rápida -->
-              <div style="display: flex; flex-direction: column; gap: 10px;">
-                <button type="button" class="btn-action-primary" id="btn-send-ask-review-wa" onclick="sendAskReviewViaWhatsApp()" style="width: 100%; padding: 13px; font-size: 13.5px; font-weight: 800; border-radius: 12px; background: #16A34A; border: none; color: #FFF; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(22, 163, 74, 0.3); cursor: pointer;">
-                  <i class="fa-brands fa-whatsapp" style="font-size: 17px;"></i>
-                  <span>Enviar no WhatsApp do Cliente</span>
-                </button>
-
-                <button type="button" class="btn-action-secondary" onclick="copyAskReviewMessage()" style="width: 100%; padding: 11px; font-size: 12.5px; font-weight: 700; border-radius: 10px; border: 1px solid #CBD5E1; background: #F8FAFC; color: #334155; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;">
-                  <i class="fa-regular fa-copy"></i>
-                  <span id="btn-copy-ask-review-text">Copiar Mensagem Pronta</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-<div id="share-pro-modal-overlay" class="modal-overlay" style="z-index: 1350;" onclick="if(event.target === this) closeShareProModal()">
-          <div class="modal-content share-modal-box">
-            <div class="modal-header">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <div class="share-header-icon-box">
-                  <i class="fa-solid fa-share-nodes"></i>
-                </div>
-                <h4 id="share-modal-title" style="margin: 0; font-size: 15px; font-weight: 800;">Compartilhar</h4>
-              </div>
-              <button type="button" class="close-x-btn" onclick="closeShareProModal()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            
-            <div class="modal-body" style="padding: 16px;">
-              <!-- Banner explicativo contextual (dono vs recomendador vs app) -->
-              <div class="share-context-banner" id="share-context-banner">
-                <i class="fa-solid fa-bullhorn" id="share-banner-icon"></i>
-                <span id="share-banner-text">Envie este perfil para clientes e contatos no WhatsApp.</span>
-              </div>
-
-              <!-- Cartão Digital de Apresentação (Visual Card) -->
-              <div class="digital-pro-card-preview" id="share-card-preview">
-                <div class="digital-card-top">
-                  <div class="digital-card-avatar-wrap" id="share-avatar-wrap">
-                    <img id="share-avatar-img" src="" alt="Profissional" style="display: none; width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                    <div id="share-avatar-fallback" class="digital-card-avatar-fallback">P</div>
-                  </div>
-                  <div class="digital-card-pro-info">
-                    <div class="digital-pro-name-row">
-                      <strong id="share-pro-name">Profissional</strong>
-                      <span class="digital-verified-check" title="Profissional Verificado"><i class="fa-solid fa-circle-check"></i></span>
-                    </div>
-                    <div class="digital-badges-row">
-                      <span class="digital-chip-specialty" id="share-pro-specialty">Especialidade</span>
-                      <span class="digital-chip-24h" id="share-pro-24h-badge" style="display: none;"><i class="fa-solid fa-bolt"></i> 24h</span>
-                    </div>
-                    <div class="digital-meta-line">
-                      <span class="digital-rating-stars"><i class="fa-solid fa-star"></i> <strong id="share-rating-val">5.0</strong> (<span id="share-reviews-cnt">28</span>)</span>
-                      <span class="digital-dot">•</span>
-                      <span class="digital-loc"><i class="fa-solid fa-location-dot"></i> <span id="share-pro-loc">Parauapebas, PA</span></span>
-                    </div>
-                  </div>
-                </div>
-                <div class="digital-card-badge-parauapebas">
-                  <i class="fa-solid fa-award"></i> Perfil Verificado no Trampou
-                </div>
-              </div>
-
-              <!-- Botão Principal: WhatsApp (Alta conversão viral) -->
-              <button type="button" class="btn-share-whatsapp" onclick="shareProViaWhatsApp()">
-                <i class="fa-brands fa-whatsapp"></i>
-                <div class="btn-share-texts">
-                  <span class="btn-share-title" id="share-whatsapp-title">Compartilhar no WhatsApp</span>
-                  <span class="btn-share-sub" id="share-whatsapp-sub">Com mensagem pronta para grupos e vizinhos</span>
-                </div>
-              </button>
-
-              <!-- Botão Viral: Pedir Avaliação 5 Estrelas ao Cliente -->
-              <button type="button" class="btn-share-whatsapp" onclick="closeShareProModal(); openAskReviewModal();" style="background: linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%); border: 1.5px solid #D8B4FE; color: #6B21A8; margin-top: 8px;">
-                <i class="fa-solid fa-star" style="color: #F59E0B; font-size: 20px;"></i>
-                <div class="btn-share-texts">
-                  <span class="btn-share-title" style="color: #581C87;">Pedir Avaliação 5★ no WhatsApp</span>
-                  <span class="btn-share-sub" style="color: #7E22CE;">Mensagem pós-serviço para o cliente te avaliar</span>
-                </div>
-              </button>
-
-              <!-- Caixa de Link com Botão Copiar -->
-              <div class="share-link-group">
-                <label class="share-link-label">Link direto do perfil:</label>
-                <div class="share-link-input-wrap">
-                  <input type="text" id="share-link-input" readonly value="https://trampou.jw.tec.br/">
-                  <button type="button" class="btn-copy-link" id="btn-copy-pro-link" onclick="copyProShareLink()">
-                    <i class="fa-regular fa-copy" id="icon-copy-link"></i>
-                    <span id="label-copy-link">Copiar</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Seção do QR Code (para cartões de visita e impressos) -->
-              <div class="share-qrcode-section">
-                <button type="button" class="btn-toggle-qrcode" onclick="toggleShareQrCode()">
-                  <div style="display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-qrcode"></i>
-                    <span>QR Code para Impressão e Cartão</span>
-                  </div>
-                  <i class="fa-solid fa-chevron-down" id="icon-toggle-qrcode"></i>
-                </button>
-                
-                <div class="share-qrcode-body" id="share-qrcode-body" style="display: none;">
-                  <div class="qrcode-wrapper">
-                    <img id="share-qrcode-image" src="" alt="QR Code do Perfil" loading="lazy">
-                  </div>
-                  <p class="qrcode-tip">
-                    <i class="fa-regular fa-lightbulb"></i>
-                    <span>Imprima este QR Code em seus <strong>cartões de visita, panfletos, camisa</strong> ou no <strong>adesivo do carro</strong>. Os clientes apontam a câmera e abrem sua vitrine instantaneamente!</span>
-                  </p>
-                  <button type="button" class="btn-download-qrcode" onclick="downloadProQrCode()">
-                    <i class="fa-solid fa-arrow-down"></i> Salvar Imagem do QR Code
-                  </button>
-                </div>
-              </div>
-
-              <!-- Outras Opções (Nativo navigator.share) -->
-              <div id="share-native-wrap" style="margin-top: 12px; text-align: center;">
-                <button type="button" class="btn-share-more-options" onclick="shareProViaNative()">
-                  <i class="fa-solid fa-arrow-up-from-bracket"></i> Mais opções de compartilhamento
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- =========================================================
-             MODAL: CELEBRAÇÃO PÓS-AVALIAÇÃO & RECOMENDAÇÃO VIRAL
-             ========================================================= -->
-        <div id="post-review-celebration-modal" class="modal-overlay" style="z-index: 1400;" onclick="if(event.target === this) closePostReviewCelebration()">
-          <div class="modal-content celebration-modal-box">
-            <div class="celebration-hero-art">
-              <div class="celeb-sparkle-circle">
-                <i class="fa-solid fa-star"></i>
-              </div>
-              <div class="celeb-badge-pill">
-                <i class="fa-solid fa-certificate"></i> Avaliação Verificada Publicada!
-              </div>
-            </div>
-
-            <div class="modal-body" style="padding: 0 18px 20px; text-align: center;">
-              <h3 class="celebration-title">Obrigado por apoiar profissionais locais!</h3>
-              <p class="celebration-sub">
-                Em Parauapebas, os melhores profissionais crescem com a indicação de vizinhos satisfeitos. Que tal indicar o trabalho de <strong id="celeb-pro-name">o profissional</strong> no WhatsApp da sua família e condomínio?
-              </p>
-
-              <!-- Mini Card de Citação da Avaliação -->
-              <div class="celeb-review-card-snippet">
-                <div class="celeb-stars-row">
-                  <i class="fa-solid fa-star"></i>
-                  <i class="fa-solid fa-star"></i>
-                  <i class="fa-solid fa-star"></i>
-                  <i class="fa-solid fa-star"></i>
-                  <i class="fa-solid fa-star"></i>
-                </div>
-                <p class="celeb-quote-text" id="celeb-quote-text">"Excelente trabalho realizado em Parauapebas. Super recomendo!"</p>
-                <span class="celeb-quote-author">Sua recomendação verificada</span>
-              </div>
-
-              <!-- Ações de Recomendação -->
-              <div class="celebration-actions-wrap">
-                <button type="button" class="btn-celebration-whatsapp" onclick="recommendPostReviewViaWhatsApp()">
-                  <i class="fa-brands fa-whatsapp"></i>
-                  <span>Recomendar no WhatsApp dos Vizinhos</span>
-                </button>
-
-                <button type="button" class="btn-celebration-copy" onclick="copyPostReviewShareLink()">
-                  <i class="fa-regular fa-copy"></i>
-                  <span id="label-celeb-copy">Copiar Link de Recomendação</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- =========================================================
-             MODAL: PUBLICAR ANTES & DEPOIS (COM MONETIZAÇÃO TRAMPOU PRO)
-             ========================================================= -->
-        <div id="modal-publish-showcase" class="modal-overlay" style="z-index: 2500;" onclick="if(event.target === this) closePublishShowcaseModal()">
-          <div class="modal-content publish-showcase-content">
-            <div class="auth-modal-header">
-              <button type="button" class="v-nav-icon-btn" onclick="closePublishShowcaseModal()" title="Fechar">
-                <i class="fa-solid fa-arrow-left"></i>
-              </button>
-              <h4>Publicar Antes & Depois</h4>
-              <div style="width: 32px;"></div>
-            </div>
-
-            <div class="publish-showcase-body">
-              <form id="form-publish-showcase" onsubmit="handlePublishShowcaseSubmit(event)">
-                <!-- Banner Promocional de Lançamento / Futuro Trampou PRO -->
-                <div class="launch-promo-card">
-                  <div class="launch-promo-badge-row">
-                    <span class="launch-promo-tag"><i class="fa-solid fa-rocket"></i> FASE DE LANÇAMENTO</span>
-                    <span class="launch-promo-tag-free">100% GRÁTIS</span>
-                  </div>
-                  <h4 class="launch-promo-title">Destaque no Carrossel da Home</h4>
-                  <p class="launch-promo-text">Suas fotos de transformações em destaque para toda Parauapebas. <strong>Em breve exclusivo no plano Trampou PRO.</strong></p>
-                </div>
-
-                <div class="auth-input-group">
-                  <label for="showcase-title">Título do Serviço Realizado</label>
-                  <div class="input-icon-wrap">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    <input type="text" id="showcase-title" placeholder="Ex: Banheiro em Porcelanato 84x84 com Nicho LED" required minlength="5">
-                  </div>
-                </div>
-
-                <div class="auth-input-group">
-                  <label for="showcase-category">Categoria do Serviço</label>
-                  <div class="input-icon-wrap select-wrap">
-                    <i class="fa-solid fa-briefcase"></i>
-                    <select id="showcase-category" required>
-                      <option value="Pedreiro & Porcelanato">Pedreiro & Porcelanato</option>
-                      <option value="Eletricista Residencial">Eletricista Residencial</option>
-                      <option value="Refrigeração & Ar">Refrigeração & Ar</option>
-                      <option value="Pintor & Grafiato">Pintor & Grafiato</option>
-                      <option value="Diarista & Pós-Obra">Diarista & Pós-Obra</option>
-                      <option value="Mecânica & Auto Socorro">Mecânica & Auto Socorro</option>
-                      <option value="Marcenaria & Móveis">Marcenaria & Móveis</option>
-                    </select>
-                  </div>
-                </div>
-
-                <!-- Bloco Duplo: ANTES e DEPOIS -->
-                <div class="before-after-upload-grid">
-                  <!-- ANTES -->
-                  <div class="upload-side-box before-box">
-                    <div class="upload-side-header">
-                      <span class="badge-side-tag before">1. ANTES</span>
-                    </div>
-                    <label class="upload-dropzone" for="showcase-file-before" id="dropzone-before">
-                      <div class="dropzone-empty" id="dropzone-before-empty">
-                        <i class="fa-solid fa-camera"></i>
-                        <span>Foto do ANTES</span>
-                        <small>Toque para escolher</small>
-                      </div>
-                      <img id="preview-img-before" class="upload-preview-img" style="display: none;" alt="Antes">
-                      <input type="file" id="showcase-file-before" accept="image/*" onchange="handleShowcaseImageSelect(this, 'before')" style="display: none;">
-                    </label>
-                    <input type="text" id="showcase-desc-before" class="input-side-desc" placeholder="Ex: Piso antigo com trinca e umidade" required>
-                  </div>
-
-                  <!-- DEPOIS -->
-                  <div class="upload-side-box after-box">
-                    <div class="upload-side-header">
-                      <span class="badge-side-tag after">2. DEPOIS</span>
-                    </div>
-                    <label class="upload-dropzone" for="showcase-file-after" id="dropzone-after">
-                      <div class="dropzone-empty" id="dropzone-after-empty">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
-                        <span>Foto do DEPOIS</span>
-                        <small>Toque para escolher</small>
-                      </div>
-                      <img id="preview-img-after" class="upload-preview-img" style="display: none;" alt="Depois">
-                      <input type="file" id="showcase-file-after" accept="image/*" onchange="handleShowcaseImageSelect(this, 'after')" style="display: none;">
-                    </label>
-                    <input type="text" id="showcase-desc-after" class="input-side-desc" placeholder="Ex: Porcelanato polido nivelado perfeito" required>
-                  </div>
-                </div>
-
-                <!-- Box de Monetização / Destaque PRO -->
-                <div class="pro-boost-monetization-box">
-                  <div class="boost-header-row">
-                    <div class="boost-icon-badge">
-                      <i class="fa-solid fa-crown"></i>
-                    </div>
-                    <div class="boost-title-wrap">
-                      <h6>Impulsionar no Carrossel da Home de Parauapebas</h6>
-                      <span>Apareça no topo da página inicial para toda a cidade</span>
-                    </div>
-                    <div class="boost-toggle-wrap">
-                      <label class="custom-switch">
-                        <input type="checkbox" id="check-boost-showcase" checked>
-                        <span class="switch-slider"></span>
-                      </label>
-                    </div>
-                  </div>
-                  <div class="boost-price-pill-row">
-                    <span class="price-strikethrough">R$ 39,90/mês</span>
-                    <span class="price-free-launch">GRÁTIS NO LANÇAMENTO</span>
-                  </div>
-                  <div class="boost-notice-box">
-                    <i class="fa-solid fa-circle-info"></i>
-                    <span><strong>Aviso de Monetização Futura:</strong> Esta publicação ficará em destaque no carrossel da Home gratuitamente durante o lançamento do Trampou. Em breve, novos destaques serão exclusivos do plano <strong>Trampou PRO</strong>.</span>
-                  </div>
-                </div>
-              </form>
-            </div>
-
-            <!-- Footer Fixo e Visível do Modal -->
-            <div class="publish-actions-footer">
-              <button type="button" class="btn-auth-secondary" onclick="closePublishShowcaseModal()">Cancelar</button>
-              <button type="submit" form="form-publish-showcase" id="btn-submit-publish-showcase" class="btn-auth-primary success-gradient">
-                <i class="fa-solid fa-paper-plane"></i>
-                <span id="btn-publish-label">Publicar e Destacar na Home</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- =========================================================
-             MODAL: VISUALIZADOR INTERATIVO ANTES & DEPOIS
-             ========================================================= -->
-        <div id="modal-showcase-viewer" class="modal-overlay" style="z-index: 2500;" onclick="if(event.target === this) closeShowcaseViewer()">
-          <div class="modal-content showcase-viewer-content">
-            <div class="auth-modal-header">
-              <button class="v-nav-icon-btn" onclick="closeShowcaseViewer()" title="Fechar">
-                <i class="fa-solid fa-arrow-left"></i>
-              </button>
-              <h4>Transformação Real</h4>
-              <button class="v-nav-icon-btn" onclick="shareCurrentShowcase()" title="Compartilhar">
-                <i class="fa-solid fa-share-nodes"></i>
-              </button>
-            </div>
-
-            <div class="showcase-viewer-body">
-              <div class="viewer-badge-top">
-                <span class="viewer-bairro-pill" id="viewer-bairro"><i class="fa-solid fa-location-dot"></i> Cidade Nova</span>
-                <span class="viewer-pro-pill" id="viewer-pro-badge"><i class="fa-solid fa-certificate"></i> Transformação Verificada</span>
-              </div>
-
-              <h3 class="viewer-title" id="viewer-title">Banheiro em Porcelanato Polido 84x84</h3>
-
-              <!-- Comparador Visual de Antes & Depois Interativo -->
-              <div class="interactive-compare-box" id="viewer-compare-box">
-                <div class="compare-side-card before-card" id="viewer-card-before">
-                  <span class="compare-chip before">ANTES</span>
-                  <div class="compare-img-wrap" id="viewer-img-before-wrap">
-                    <div class="compare-art-gradient" id="viewer-gradient-before"></div>
-                  </div>
-                  <p class="compare-caption" id="viewer-desc-before">Piso antigo solto e infiltração no ralo</p>
-                </div>
-
-                <div class="compare-divider-arrow">
-                  <i class="fa-solid fa-arrow-right"></i>
-                </div>
-
-                <div class="compare-side-card after-card" id="viewer-card-after">
-                  <span class="compare-chip after">DEPOIS</span>
-                  <div class="compare-img-wrap" id="viewer-img-after-wrap">
-                    <div class="compare-art-gradient" id="viewer-gradient-after"></div>
-                  </div>
-                  <p class="compare-caption" id="viewer-desc-after">Porcelanato marmorizado polido com nicho LED</p>
-                </div>
-              </div>
-
-              <!-- Cartão do Profissional que executou -->
-              <div class="viewer-pro-credit-card">
-                <div class="credit-avatar" id="viewer-pro-avatar">
-                  <i class="fa-solid fa-user-tie"></i>
-                </div>
-                <div class="credit-info">
-                  <span class="credit-role">Profissional Responsável</span>
-                  <h5 id="viewer-pro-name">Profissional</h5>
-                  <span class="credit-spec" id="viewer-pro-spec">Serviços em Parauapebas</span>
-                </div>
-                <button type="button" class="btn-credit-profile" onclick="viewProFromShowcase()" title="Ver vitrine completa">
-                  Ver Perfil
-                </button>
-              </div>
-
-              <!-- CTA de Alta Conversão -->
-              <button type="button" class="btn-viewer-hire" id="btn-viewer-hire" onclick="requestQuoteFromViewer()">
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
-                <span>Quero um resultado assim (Solicitar Orçamento)</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-      
-        <!-- =========================================================
-             MODAL: SELETOR DE LOCALIZAÇÃO / CIDADE & GPS (EXPANSÃO NACIONAL)
-             ========================================================= -->
-        <div id="modal-location-picker" class="modal-overlay">
-          <div class="modal-content auth-form-content location-picker-content">
-            <div class="auth-modal-header">
-              <button class="v-nav-icon-btn" onclick="closeLocationPickerModal()" title="Fechar">
-                <i class="fa-solid fa-xmark"></i>
-              </button>
-              <h4>Onde você procura serviço?</h4>
-              <div style="width: 32px;"></div>
-            </div>
-
-            <div class="location-picker-body">
-              <!-- Botão GPS em destaque -->
-              <div class="location-gps-card" onclick="detectUserLocationGPS()" role="button" tabindex="0">
-                <div class="location-gps-icon">
-                  <i class="fa-solid fa-location-crosshairs" id="picker-gps-icon"></i>
-                </div>
-                <div class="location-gps-text">
-                  <strong>Usar minha localização atual (GPS)</strong>
-                  <span id="picker-gps-status">Detectar cidade e ordenar profissionais por proximidade</span>
-                </div>
-                <i class="fa-solid fa-chevron-right loc-arrow"></i>
-              </div>
-
-              <!-- Seleção por CEP ou UF + Nome da Cidade -->
-              <div class="location-picker-section">
-                <h6><i class="fa-solid fa-envelopes-bulk icon-purple"></i> Buscar por CEP ou Nome da Cidade</h6>
-                <div class="input-icon-wrap" style="margin-bottom: 8px;">
-                  <i class="fa-solid fa-magnifying-glass-location"></i>
-                  <input type="text" id="picker-cep-input" placeholder="Digite o CEP (ex: 68515-000 ou 66000-000)..." maxlength="9" inputmode="numeric" oninput="handleCepLookup(this.value, 'picker')">
-                </div>
-                <div id="picker-cep-status" class="cep-status-pill" style="display: none; margin-bottom: 8px;"></div>
-                <div class="location-manual-row">
-                  <div class="select-wrap uf-picker-wrap">
-                    <select id="picker-manual-uf" onchange="handleStateSelectChange(this.value)">
-                      <option value="PA">PA</option>
-                      <option value="SP">SP</option>
-                      <option value="RJ">RJ</option>
-                      <option value="MG">MG</option>
-                      <option value="BA">BA</option>
-                      <option value="CE">CE</option>
-                      <option value="DF">DF</option>
-                      <option value="ES">ES</option>
-                      <option value="GO">GO</option>
-                      <option value="MA">MA</option>
-                      <option value="MT">MT</option>
-                      <option value="MS">MS</option>
-                      <option value="AM">AM</option>
-                      <option value="PR">PR</option>
-                      <option value="PE">PE</option>
-                      <option value="PI">PI</option>
-                      <option value="RN">RN</option>
-                      <option value="RS">RS</option>
-                      <option value="RO">RO</option>
-                      <option value="RR">RR</option>
-                      <option value="SC">SC</option>
-                      <option value="SE">SE</option>
-                      <option value="TO">TO</option>
-                      <option value="AC">AC</option>
-                      <option value="AL">AL</option>
-                      <option value="AP">AP</option>
-                      <option value="PB">PB</option>
-                    </select>
-                  </div>
-                  <div class="input-icon-wrap city-picker-input-wrap">
-                    <i class="fa-solid fa-city"></i>
-                    <input type="text" id="picker-manual-city" placeholder="Ou digite o nome da cidade..." list="city-picker-datalist" onkeydown="if(event.key==='Enter'){event.preventDefault();applyManualCityChoice();}">
-                    <datalist id="city-picker-datalist"></datalist>
-                  </div>
-                  <button type="button" class="btn-apply-city" onclick="applyManualCityChoice()">
-                    Aplicar
-                  </button>
-                </div>
-              </div>
-
-              <!-- Cidades Populares / Recentes -->
-              <div class="location-popular-section">
-                <h6><i class="fa-solid fa-fire icon-amber"></i> Cidades Populares</h6>
-                <div class="location-chips-grid" id="popular-cities-chips">
-                  <button type="button" class="loc-chip active" onclick="selectCityOption('Parauapebas', 'PA')">Parauapebas, PA</button>
-                  <button type="button" class="loc-chip" onclick="selectCityOption('Belém', 'PA')">Belém, PA</button>
-                  <button type="button" class="loc-chip" onclick="selectCityOption('Marabá', 'PA')">Marabá, PA</button>
-                  <button type="button" class="loc-chip" onclick="selectCityOption('São Paulo', 'SP')">São Paulo, SP</button>
-                  <button type="button" class="loc-chip" onclick="selectCityOption('Rio de Janeiro', 'RJ')">Rio de Janeiro, RJ</button>
-                  <button type="button" class="loc-chip" onclick="selectCityOption('Belo Horizonte', 'MG')">Belo Horizonte, MG</button>
-                  <button type="button" class="loc-chip" onclick="selectCityOption('Brasília', 'DF')">Brasília, DF</button>
-                  <button type="button" class="loc-chip" onclick="selectCityOption('Goiânia', 'GO')">Goiânia, GO</button>
-                  <button type="button" class="loc-chip" onclick="selectCityOption('Curitiba', 'PR')">Curitiba, PR</button>
-                  <button type="button" class="loc-chip" onclick="selectCityOption('Fortaleza', 'CE')">Fortaleza, CE</button>
-                  <button type="button" class="loc-chip" onclick="selectCityOption('Salvador', 'BA')">Salvador, BA</button>
-                  <button type="button" class="loc-chip" onclick="selectCityOption('Manaus', 'AM')">Manaus, AM</button>
-                  <button type="button" class="loc-chip" onclick="selectCityOption('Campinas', 'SP')">Campinas, SP</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- =========================================================
-             MODAL: ENVIAR SUGESTÕES & FEEDBACK SOBRE O APP
-             ========================================================= -->
-        <div id="modal-app-feedback" class="modal-overlay">
-          <div class="modal-content auth-form-content feedback-modal-content" style="margin: 0 auto !important; max-width: 480px !important;">
-            <div class="auth-modal-header">
-              <button class="v-nav-icon-btn" onclick="closeAppFeedbackModal()" title="Fechar">
-                <i class="fa-solid fa-xmark"></i>
-              </button>
-              <h4>Sugestões & Feedback</h4>
-              <div style="width: 32px;"></div>
-            </div>
-
-            <div class="feedback-modal-body">
-              <div class="feedback-header-card">
-                <div class="feedback-header-icon">
-                  <i class="fa-solid fa-lightbulb"></i>
-                </div>
-                <div class="feedback-header-info">
-                  <strong>Sua opinião molda o Trampou!</strong>
-                  <p>Envie ideias de melhorias, elogios ou relate problemas para nossa equipe de desenvolvimento.</p>
-                </div>
-              </div>
-
-              <form id="form-app-feedback" onsubmit="handleFeedbackSubmit(event)">
-                <!-- 1. Tipo de Feedback -->
-                <div class="feedback-group">
-                  <label class="feedback-field-label">Tipo de Mensagem</label>
-                  <div class="feedback-type-chips">
-                    <button type="button" class="fb-type-chip active" data-type="sugestao" onclick="setFeedbackType('sugestao')">
-                      <i class="fa-solid fa-lightbulb"></i> Sugestão
-                    </button>
-                    <button type="button" class="fb-type-chip" data-type="elogio" onclick="setFeedbackType('elogio')">
-                      <i class="fa-solid fa-star"></i> Elogio
-                    </button>
-                    <button type="button" class="fb-type-chip" data-type="problema" onclick="setFeedbackType('problema')">
-                      <i class="fa-solid fa-triangle-exclamation"></i> Problema
-                    </button>
-                    <button type="button" class="fb-type-chip" data-type="outro" onclick="setFeedbackType('outro')">
-                      <i class="fa-solid fa-comment-dots"></i> Outro
-                    </button>
-                  </div>
-                  <input type="hidden" id="feedback-type-val" value="sugestao">
-                </div>
-
-                <!-- 2. Avaliação de Experiência com Estrelas -->
-                <div class="feedback-group">
-                  <label class="feedback-field-label">Como avalia sua experiência com o app?</label>
-                  <div class="feedback-rating-box">
-                    <div class="feedback-stars-row" id="fb-stars-container">
-                      <button type="button" class="fb-star active" data-star="1" onclick="setFeedbackRating(1)"><i class="fa-solid fa-star"></i></button>
-                      <button type="button" class="fb-star active" data-star="2" onclick="setFeedbackRating(2)"><i class="fa-solid fa-star"></i></button>
-                      <button type="button" class="fb-star active" data-star="3" onclick="setFeedbackRating(3)"><i class="fa-solid fa-star"></i></button>
-                      <button type="button" class="fb-star active" data-star="4" onclick="setFeedbackRating(4)"><i class="fa-solid fa-star"></i></button>
-                      <button type="button" class="fb-star active" data-star="5" onclick="setFeedbackRating(5)"><i class="fa-solid fa-star"></i></button>
-                    </div>
-                    <span class="fb-rating-text" id="fb-rating-text">Excelente (5/5) ⭐</span>
-                    <input type="hidden" id="feedback-rating-val" value="5">
-                  </div>
-                </div>
-
-                <!-- 3. Título / Assunto -->
-                <div class="feedback-group">
-                  <label class="feedback-field-label" for="feedback-title-input">Título da Sugestão ou Assunto</label>
-                  <div class="input-icon-wrap">
-                    <i class="fa-solid fa-heading"></i>
-                    <input type="text" id="feedback-title-input" placeholder="Ex: Adicionar pagamento Pix direto no app">
-                  </div>
-                </div>
-
-                <!-- 4. Mensagem detalhada -->
-                <div class="feedback-group">
-                  <label class="feedback-field-label" for="feedback-message-input">Mensagem / Ideia *</label>
-                  <textarea id="feedback-message-input" class="feedback-textarea" rows="4" required placeholder="Conte-nos em detalhes o que você gostaria de ver no Trampou ou o que podemos aprimorar..."></textarea>
-                </div>
-
-                <!-- 5. Dados do Usuário (Vinculados automaticamente à Conta Verificada) -->
-                <div class="feedback-row-inputs">
-                  <div class="feedback-group" style="flex: 1;">
-                    <label class="feedback-field-label" for="feedback-user-name">Conta Identificada <i class="fa-solid fa-lock" style="font-size: 10px; color: #6825B3;" title="Vinculado automaticamente à sua conta"></i></label>
-                    <div class="input-icon-wrap">
-                      <i class="fa-solid fa-user-check"></i>
-                      <input type="text" id="feedback-user-name" readonly style="background: #F1F5F9; color: #475569; cursor: not-allowed;" required placeholder="Nome da sua conta">
-                    </div>
-                  </div>
-                  <div class="feedback-group" style="flex: 1;">
-                    <label class="feedback-field-label" for="feedback-user-contact">E-mail / WhatsApp da Conta <i class="fa-solid fa-lock" style="font-size: 10px; color: #6825B3;" title="Vinculado automaticamente à sua conta"></i></label>
-                    <div class="input-icon-wrap">
-                      <i class="fa-solid fa-envelope-circle-check"></i>
-                      <input type="text" id="feedback-user-contact" readonly style="background: #F1F5F9; color: #475569; cursor: not-allowed;" placeholder="E-mail da conta">
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Feedback Alert Status -->
-                <div id="feedback-submit-alert" class="auth-error-alert" style="display: none; margin-bottom: 12px;">
-                  <i class="fa-solid fa-circle-info"></i>
-                  <span id="feedback-submit-alert-text"></span>
-                </div>
-
-                <!-- Botão Enviar -->
-                <button type="submit" class="btn-auth-submit" id="btn-submit-feedback">
-                  <span id="btn-feedback-text"><i class="fa-solid fa-paper-plane" style="margin-right: 6px;"></i> Enviar para a Equipe</span>
-                  <i class="fa-solid fa-circle-notch fa-spin" id="btn-feedback-spinner" style="display: none;"></i>
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-
-        <!-- ================================================
-             MODAL: PASSO A PASSO DE COMO INSTALAR O APP (PWA)
-             ================================================ -->
-        <div id="modal-pwa-install-guide" class="modal-overlay" style="background: transparent !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;" onclick="if(event.target === this) closePwaInstallModal()">
-          <div class="modal-content auth-form-content pwa-install-modal-content" style="margin: auto !important; max-width: 480px !important; border-radius: 20px !important; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 40px rgba(0,0,0,0.25);">
-            
-            <!-- Modal Header -->
-            <div class="auth-modal-header" style="padding: 14px 18px; border-bottom: 1px solid var(--border-grey); display: flex; align-items: center; justify-content: space-between; background: #FFFFFF;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <div style="width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, #7C3AED, #4F46E5); color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 17px; box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);">
-                  <i class="fa-solid fa-mobile-screen-button"></i>
-                </div>
-                <div>
-                  <h5 style="margin: 0; font-size: 15px; font-weight: 800; color: #0F172A;">Como Instalar o Aplicativo</h5>
-                  <span style="font-size: 11.5px; color: #64748B;">Direto pelo navegador, sem ocupar memória</span>
-                </div>
-              </div>
-              <button class="v-nav-icon-btn" onclick="closePwaInstallModal()" title="Fechar" style="background: #F1F5F9; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #475569;">
-                <i class="fa-solid fa-xmark"></i>
-              </button>
-            </div>
-
-            <!-- Modal Body (Scrollable) -->
-            <div class="pwa-guide-modal-body" style="padding: 18px; overflow-y: auto; flex: 1; background: #FFFFFF;">
-              
-              <!-- Direct Install Banner (se o navegador tiver o prompt disponível) -->
-              <div id="pwa-direct-install-box" style="display: none; margin-bottom: 16px; background: linear-gradient(135deg, #EDE9FE, #FAF5FF); border: 1.5px solid #C4B5FD; border-radius: 14px; padding: 14px;">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                  <i class="fa-solid fa-circle-check" style="color: #7C3AED; font-size: 18px;"></i>
-                  <span style="font-size: 13px; font-weight: 700; color: #5B21B6;">Instalação direta disponível no seu navegador!</span>
-                </div>
-                <button type="button" onclick="triggerPWAInstall()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #7C3AED, #6D28D9); color: #FFF; border: none; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(109, 40, 217, 0.35);">
-                  <i class="fa-solid fa-download"></i> Instalar Trampou Agora
-                </button>
-              </div>
-
-              <!-- Selector Android vs iPhone -->
-              <div class="pwa-guide-os-tabs" style="display: flex; background: #F1F5F9; border-radius: 12px; padding: 4px; gap: 4px; margin-bottom: 18px;">
-                <button type="button" id="tab-btn-android" class="pwa-os-tab active" onclick="switchPwaGuideTab('android')" style="flex: 1; border: none; background: #FFF; padding: 10px 8px; border-radius: 9px; font-weight: 700; font-size: 13px; color: #0F172A; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: all 0.2s;">
-                  <i class="fa-brands fa-android" style="color: #10B981; font-size: 16px;"></i> Android (Chrome)
-                </button>
-                <button type="button" id="tab-btn-ios" class="pwa-os-tab" onclick="switchPwaGuideTab('ios')" style="flex: 1; border: none; background: transparent; padding: 10px 8px; border-radius: 9px; font-weight: 600; font-size: 13px; color: #64748B; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
-                  <i class="fa-brands fa-apple" style="font-size: 16px;"></i> iPhone (Safari)
-                </button>
-              </div>
-
-              <!-- Content: Android -->
-              <div id="pwa-guide-content-android" class="pwa-guide-tab-pane">
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                  
-                  <div class="pwa-step-card" style="display: flex; gap: 12px; align-items: flex-start; background: #FFFFFF; border: 1.5px solid #F1F5F9; box-shadow: 0 1px 3px rgba(0,0,0,0.03); border-radius: 12px; padding: 12px 14px;">
-                    <div class="pwa-step-number" style="width: 26px; height: 26px; border-radius: 50%; background: #10B981; color: #FFF; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">1</div>
-                    <div>
-                      <strong style="font-size: 13.5px; color: #0F172A; display: block; margin-bottom: 2px;">Abra o menu do Chrome</strong>
-                      <span style="font-size: 12.5px; color: #475569; line-height: 1.4;">Toque no ícone de <strong>3 pontinhos (⋮)</strong> no canto superior direito do navegador.</span>
-                    </div>
-                  </div>
-
-                  <div class="pwa-step-card" style="display: flex; gap: 12px; align-items: flex-start; background: #FFFFFF; border: 1.5px solid #F1F5F9; box-shadow: 0 1px 3px rgba(0,0,0,0.03); border-radius: 12px; padding: 12px 14px;">
-                    <div class="pwa-step-number" style="width: 26px; height: 26px; border-radius: 50%; background: #10B981; color: #FFF; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">2</div>
-                    <div>
-                      <strong style="font-size: 13.5px; color: #0F172A; display: block; margin-bottom: 2px;">Toque em Instalar</strong>
-                      <span style="font-size: 12.5px; color: #475569; line-height: 1.4;">Selecione a opção <strong>"Instalar aplicativo"</strong> ou <strong>"Adicionar à tela inicial"</strong>.</span>
-                    </div>
-                  </div>
-
-                  <div class="pwa-step-card" style="display: flex; gap: 12px; align-items: flex-start; background: #FFFFFF; border: 1.5px solid #F1F5F9; box-shadow: 0 1px 3px rgba(0,0,0,0.03); border-radius: 12px; padding: 12px 14px;">
-                    <div class="pwa-step-number" style="width: 26px; height: 26px; border-radius: 50%; background: #10B981; color: #FFF; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">3</div>
-                    <div>
-                      <strong style="font-size: 13.5px; color: #0F172A; display: block; margin-bottom: 2px;">Confirme a instalação</strong>
-                      <span style="font-size: 12.5px; color: #475569; line-height: 1.4;">Toque em <strong>"Instalar"</strong>. Em segundos o ícone do Trampou estará na sua tela inicial!</span>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
-              <!-- Content: iOS (iPhone/iPad) -->
-              <div id="pwa-guide-content-ios" class="pwa-guide-tab-pane" style="display: none;">
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                  
-                  <div class="pwa-step-card" style="display: flex; gap: 12px; align-items: flex-start; background: #FFFFFF; border: 1.5px solid #F1F5F9; box-shadow: 0 1px 3px rgba(0,0,0,0.03); border-radius: 12px; padding: 12px 14px;">
-                    <div class="pwa-step-number" style="width: 26px; height: 26px; border-radius: 50%; background: #2563EB; color: #FFF; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">1</div>
-                    <div>
-                      <strong style="font-size: 13.5px; color: #0F172A; display: block; margin-bottom: 2px;">Abra no Safari</strong>
-                      <span style="font-size: 12.5px; color: #475569; line-height: 1.4;">No iPhone, abra este site diretamente pelo navegador nativo <strong>Safari</strong>.</span>
-                    </div>
-                  </div>
-
-                  <div class="pwa-step-card" style="display: flex; gap: 12px; align-items: flex-start; background: #FFFFFF; border: 1.5px solid #F1F5F9; box-shadow: 0 1px 3px rgba(0,0,0,0.03); border-radius: 12px; padding: 12px 14px;">
-                    <div class="pwa-step-number" style="width: 26px; height: 26px; border-radius: 50%; background: #2563EB; color: #FFF; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">2</div>
-                    <div>
-                      <strong style="font-size: 13.5px; color: #0F172A; display: block; margin-bottom: 2px;">Toque em Compartilhar</strong>
-                      <span style="font-size: 12.5px; color: #475569; line-height: 1.4;">Na barra inferior do Safari, toque no ícone de <strong>Compartilhar</strong> <i class="fa-solid fa-arrow-up-from-bracket" style="color: #2563EB;"></i> (quadrado com seta para cima).</span>
-                    </div>
-                  </div>
-
-                  <div class="pwa-step-card" style="display: flex; gap: 12px; align-items: flex-start; background: #FFFFFF; border: 1.5px solid #F1F5F9; box-shadow: 0 1px 3px rgba(0,0,0,0.03); border-radius: 12px; padding: 12px 14px;">
-                    <div class="pwa-step-number" style="width: 26px; height: 26px; border-radius: 50%; background: #2563EB; color: #FFF; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">3</div>
-                    <div>
-                      <strong style="font-size: 13.5px; color: #0F172A; display: block; margin-bottom: 2px;">Adicionar à Tela de Início</strong>
-                      <span style="font-size: 12.5px; color: #475569; line-height: 1.4;">Role a lista para baixo e toque em <strong>"Adicionar à Tela de Início"</strong> <i class="fa-regular fa-square-plus" style="color: #2563EB;"></i>.</span>
-                    </div>
-                  </div>
-
-                  <div class="pwa-step-card" style="display: flex; gap: 12px; align-items: flex-start; background: #FFFFFF; border: 1.5px solid #F1F5F9; box-shadow: 0 1px 3px rgba(0,0,0,0.03); border-radius: 12px; padding: 12px 14px;">
-                    <div class="pwa-step-number" style="width: 26px; height: 26px; border-radius: 50%; background: #2563EB; color: #FFF; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">4</div>
-                    <div>
-                      <strong style="font-size: 13.5px; color: #0F172A; display: block; margin-bottom: 2px;">Toque em Adicionar</strong>
-                      <span style="font-size: 12.5px; color: #475569; line-height: 1.4;">No canto superior direito, toque em <strong>"Adicionar"</strong>. Pronto! O Trampou aparecerá como app no seu iPhone.</span>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
-              <!-- Benefícios Rápidos -->
-              <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid #E2E8F0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center;">
-                <div style="background: #FAF5FF; border: 1px solid #F3E8FF; border-radius: 10px; padding: 8px 4px;">
-                  <i class="fa-solid fa-feather" style="color: #7C3AED; font-size: 14px; margin-bottom: 3px; display: block;"></i>
-                  <span style="font-size: 11px; font-weight: 700; color: #581C87; display: block;">Super Leve</span>
-                  <span style="font-size: 10px; color: #7E22CE;">Não ocupa espaço</span>
-                </div>
-                <div style="background: #F0FDF4; border: 1px solid #DCFCE7; border-radius: 10px; padding: 8px 4px;">
-                  <i class="fa-solid fa-bolt" style="color: #16A34A; font-size: 14px; margin-bottom: 3px; display: block;"></i>
-                  <span style="font-size: 11px; font-weight: 700; color: #14532D; display: block;">Mais Rápido</span>
-                  <span style="font-size: 10px; color: #15803D;">Abre com 1 toque</span>
-                </div>
-                <div style="background: #EFF6FF; border: 1px solid #DBEAFE; border-radius: 10px; padding: 8px 4px;">
-                  <i class="fa-solid fa-bell" style="color: #2563EB; font-size: 14px; margin-bottom: 3px; display: block;"></i>
-                  <span style="font-size: 11px; font-weight: 700; color: #1E3A8A; display: block;">Avisos Push</span>
-                  <span style="font-size: 10px; color: #1D4ED8;">Novidades na hora</span>
-                </div>
-              </div>
-
-            </div>
-
-            <!-- Modal Footer -->
-            <div style="padding: 12px 18px; border-top: 1px solid var(--border-grey); background: #FFFFFF;">
-              <button type="button" onclick="closePwaInstallModal()" style="width: 100%; border: none; background: #F1F5F9; color: #334155; font-size: 13.5px; font-weight: 700; padding: 12px; border-radius: 10px; cursor: pointer; transition: background 0.15s ease;">
-                Entendi, vou instalar!
-              </button>
-            </div>
-
-          </div>
-        </div>
-
-
-        <!-- =========================================================
-             1. CENTRAL DE PRIVACIDADE, LGPD E MEUS DADOS
-             ========================================================= -->
-        <div id="privacy-hub-modal" class="modal-overlay">
-    <div class="modal-content auth-form-content privacy-hub-content">
-      <div class="auth-modal-header">
-        <button class="v-nav-icon-btn" onclick="closeAuthModal('privacy-hub-modal')" title="Voltar">
-          <i class="fa-solid fa-arrow-left"></i>
-        </button>
-        <h4>Privacidade & Meus Dados</h4>
-        <div style="width: 32px;"></div>
-      </div>
-
-      <div class="privacy-hub-body">
-        <!-- Card de Direitos do Titular -->
-        <div class="privacy-badge-card">
-          <div class="privacy-badge-icon">
-            <i class="fa-solid fa-scale-balanced"></i>
-          </div>
-          <div>
-            <h5>Seus Direitos Garantidos por Lei</h5>
-            <p>Em conformidade com a <strong>LGPD (Lei nº 13.709/2018)</strong>, você tem total controle sobre seus dados pessoais armazenados na plataforma Trampou.</p>
-          </div>
-        </div>
-
-        <!-- Seção: Documentos Legais -->
-        <div class="privacy-section-group">
-          <h6 class="privacy-group-title"><i class="fa-solid fa-file-contract"></i> Documentos Oficiais</h6>
-          <div class="privacy-card-list">
-            <div class="privacy-action-row" onclick="openPrivacyPolicyModal()">
-              <div class="privacy-row-left">
-                <i class="fa-solid fa-shield-check icon-green"></i>
-                <div>
-                  <strong>Política de Privacidade</strong>
-                  <small>Como tratamos, protegemos e armazenamos seus dados</small>
-                </div>
-              </div>
-              <i class="fa-solid fa-chevron-right arrow-icon"></i>
-            </div>
-
-            <div class="privacy-action-row" onclick="openTermsOfUseModal()">
-              <div class="privacy-row-left">
-                <i class="fa-solid fa-file-lines icon-blue"></i>
-                <div>
-                  <strong>Termos de Uso do Trampou</strong>
-                  <small>Regras para clientes e profissionais em Parauapebas</small>
-                </div>
-              </div>
-              <i class="fa-solid fa-chevron-right arrow-icon"></i>
-            </div>
-          </div>
-        </div>
-
-        <!-- Seção: Proteção da Localização GPS -->
-        <div class="privacy-section-group">
-          <h6 class="privacy-group-title"><i class="fa-solid fa-location-dot"></i> Proteção de Localização</h6>
-          <div class="privacy-card-box">
-            <div class="privacy-toggle-row">
-              <div>
-                <strong>Localização Precisa via GPS</strong>
-                <p>Usada exclusivamente para ordenar profissionais mais próximos no mapa do seu bairro. Sua localização exata <strong>nunca é pública nem compartilhada com terceiros</strong>.</p>
-              </div>
-              <label class="switch-toggle-label">
-                <input type="checkbox" id="pref-gps-toggle" onchange="toggleGpsPreference(this.checked)">
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-            <div class="privacy-note-badge">
-              <i class="fa-solid fa-circle-info"></i>
-              <span>Se desativado, o app utilizará apenas a seleção manual do seu bairro em Parauapebas.</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Seção: Portabilidade & Gerenciamento de Dados -->
-        <div class="privacy-section-group">
-          <h6 class="privacy-group-title"><i class="fa-solid fa-download"></i> Gerenciamento e Portabilidade (Art. 18, LGPD)</h6>
-          <div class="privacy-card-list">
-            <div class="privacy-action-row" onclick="exportMyUserData()">
-              <div class="privacy-row-left">
-                <i class="fa-solid fa-file-export icon-purple"></i>
-                <div>
-                  <strong>Exportar Meus Dados (Portabilidade)</strong>
-                  <small>Baixe uma cópia dos seus dados cadastrais em formato JSON</small>
-                </div>
-              </div>
-              <i class="fa-solid fa-download arrow-icon"></i>
-            </div>
-
-            <div class="privacy-action-row" onclick="clearLocalAppStorage()">
-              <div class="privacy-row-left">
-                <i class="fa-solid fa-broom icon-amber"></i>
-                <div>
-                  <strong>Limpar Histórico Local do Aparelho</strong>
-                  <small>Apaga histórico de buscas e cache mantidos neste celular</small>
-                </div>
-              </div>
-              <i class="fa-solid fa-rotate-left arrow-icon"></i>
-            </div>
-          </div>
-        </div>
-
-        <!-- Seção: Canal do Encarregado (DPO) & Incidentes -->
-        <div class="privacy-section-group">
-          <h6 class="privacy-group-title"><i class="fa-solid fa-user-shield"></i> Encarregado de Dados (DPO) & Incidentes</h6>
-          <div class="privacy-card-list">
-            <div class="privacy-action-row" onclick="openDpoChannelModal()">
-              <div class="privacy-row-left">
-                <i class="fa-solid fa-envelope-open-text icon-blue"></i>
-                <div>
-                  <strong>Canal de Solicitações LGPD (DPO)</strong>
-                  <small>Fale diretamente com nosso Encarregado de Proteção de Dados</small>
-                </div>
-              </div>
-              <i class="fa-solid fa-chevron-right arrow-icon"></i>
-            </div>
-          </div>
-        </div>
-
-        <!-- Seção: Exclusão Definitiva de Conta (Direito ao Esquecimento) -->
-        <div class="privacy-section-group danger-zone">
-          <h6 class="privacy-group-title danger"><i class="fa-solid fa-triangle-exclamation"></i> Zona de Exclusão de Conta</h6>
-          <div class="privacy-card-box danger-box">
-            <strong>Exclusão de Conta e Dados Pessoais (Art. 18, VI)</strong>
-            <p>Você pode solicitar a exclusão permanente da sua conta e de todos os dados vinculados a ela em nossa base de dados.</p>
-            <button type="button" class="btn-delete-account" onclick="openDeleteAccountModal()">
-              <i class="fa-solid fa-trash-can"></i>
-              <span>Excluir Minha Conta e Meus Dados</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- =========================================================
-       2. MODAL DE CONFIRMAÇÃO DE EXCLUSÃO DE CONTA (LGPD)
-       ========================================================= -->
-  <div id="delete-account-confirm-modal" class="modal-overlay">
-    <div class="modal-content auth-form-content delete-account-dialog">
-      <div class="delete-icon-glow">
-        <i class="fa-solid fa-triangle-exclamation"></i>
-      </div>
-      <h4>Excluir Conta Definitivamente?</h4>
-      <p class="delete-warning-text">
-        Esta ação é <strong>irreversível</strong> conforme a LGPD. Todos os seus dados pessoais, telefone, fotos, vitrine e histórico serão <strong>permanentemente eliminados</strong> dos nossos servidores.
-      </p>
-
-      <div class="delete-confirmation-prompt">
-        <label for="delete-confirm-input">Digite <strong>EXCLUIR</strong> para confirmar:</label>
-        <input type="text" id="delete-confirm-input" placeholder="Digite EXCLUIR" autocomplete="off">
-      </div>
-
-      <div class="delete-dialog-actions">
-        <button type="button" class="btn-cancel-delete" onclick="closeAuthModal('delete-account-confirm-modal')">Cancelar</button>
-        <button type="button" id="btn-confirm-delete-action" class="btn-danger-delete" onclick="executeAccountDeletion()">
-          <i class="fa-solid fa-trash-can"></i>
-          <span>Excluir Definitivamente</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- =========================================================
-       3. MODAL DE POLÍTICA DE PRIVACIDADE COMPLETA
-       ========================================================= -->
-  <div id="privacy-policy-modal" class="modal-overlay">
-    <div class="modal-content auth-form-content legal-text-content">
-      <div class="auth-modal-header sticky">
-        <button class="v-nav-icon-btn" onclick="closeAuthModal('privacy-policy-modal')" title="Voltar">
-          <i class="fa-solid fa-arrow-left"></i>
-        </button>
-        <h4>Política de Privacidade</h4>
-        <div style="width: 32px;"></div>
-      </div>
-
-      <div class="legal-text-body">
-        <div class="legal-meta-badge">
-          <span>Última atualização: Outubro de 2026 • Em conformidade com a Lei Federal nº 13.709/2018 (LGPD)</span>
-        </div>
-
-        <section class="legal-section">
-          <h5>1. Identificação do Controlador</h5>
-          <p>O aplicativo <strong>Trampou</strong> ("Plataforma"), operado no município de Parauapebas, Estado do Pará, atua como <strong>Controlador de Dados Pessoais</strong> nos termos do art. 5º, VI da LGPD, sendo responsável pelas decisões referentes ao tratamento de dados pessoais de seus Usuários (Clientes e Profissionais Autônomos).</p>
-        </section>
-
-        <section class="legal-section">
-          <h5>2. Dados Pessoais Coletados e Finalidade</h5>
-          <p>Coletamos exclusivamente os dados necessários para viabilizar a conexão entre clientes e profissionais em Parauapebas:</p>
-          <ul>
-            <li><strong>Clientes:</strong> Nome completo, endereço de e-mail e número de telefone/WhatsApp (para permitir o contato direto com o prestador escolhido).</li>
-            <li><strong>Profissionais:</strong> Nome comercial ou individual, telefone/WhatsApp de atendimento, categoria profissional, especialidades, fotos da vitrine e bairros de atuação em Parauapebas.</li>
-            <li><strong>Localização e GPS:</strong> Utilizada sob consentimento exclusivamente para ordenar prestadores por proximidade geográfica na cidade. A localização exata nunca é disponibilizada publicamente.</li>
-          </ul>
-        </section>
-
-        <section class="legal-section">
-          <h5>3. Bases Legais para o Tratamento (Art. 7º da LGPD)</h5>
-          <p>O tratamento de dados pessoais no Trampou apoia-se nas seguintes bases legais:</p>
-          <ul>
-            <li><strong>Execução de Contrato e Diligências Pré-contratuais (Art. 7º, V):</strong> Necessário para possibilitar o anúncio de serviços e o contato entre contratante e prestador.</li>
-            <li><strong>Consentimento do Titular (Art. 7º, I):</strong> Coleta de localização via GPS e envio de notificações locais.</li>
-            <li><strong>Legítimo Interesse (Art. 7º, IX):</strong> Melhorias na segurança, prevenção a fraudes e garantia da estabilidade do sistema.</li>
-          </ul>
-        </section>
-
-        <section class="legal-section">
-          <h5>4. Não Comercialização e Compartilhamento de Dados</h5>
-          <p>O Trampou <strong>NUNCA comercializa, aluga ou cede dados pessoais de seus usuários</strong> a terceiros para fins de marketing. O compartilhamento ocorre estritamente:</p>
-          <ul>
-            <li>Entre Cliente e Profissional, no momento em que o usuário decide deliberadamente iniciar contato via WhatsApp ou mensagem na plataforma.</li>
-            <li>Com provedores de infraestrutura técnica de alta segurança (ex: banco de dados em nuvem Supabase e hospedagem Vercel) que atuam como operadores e atendem a padrões internacionais de segurança (ISO 27001, SOC 2).</li>
-            <li>Por ordem judicial ou determinação legal de autoridade competente.</li>
-          </ul>
-        </section>
-
-        <section class="legal-section">
-          <h5>5. Armazenamento Local, Cookies e PWA</h5>
-          <p>Como Progressive Web App (PWA), o Trampou armazena informações locais no seu dispositivo (Service Worker e <code>localStorage</code>) para permitir funcionamento rápido mesmo em conexões lentas ou instáveis de Parauapebas. Você pode limpar estes dados a qualquer momento na Central de Privacidade do aplicativo.</p>
-        </section>
-
-        <section class="legal-section">
-          <h5>6. Direitos do Titular de Dados (Art. 18 da LGPD)</h5>
-          <p>Você pode exercer a qualquer momento, de forma gratuita e simplificada:</p>
-          <ul>
-            <li><strong>Confirmação e Acesso:</strong> Saber quais dados temos sobre você.</li>
-            <li><strong>Correção:</strong> Atualizar dados incompletos ou inexatos.</li>
-            <li><strong>Portabilidade:</strong> Exportar seus dados em formato legível por máquina (JSON) direto no app.</li>
-            <li><strong>Eliminação e Direito ao Esquecimento:</strong> Excluir sua conta e apagar seus dados permanentemente.</li>
-            <li><strong>Revogação do Consentimento:</strong> Desativar o uso de localização GPS ou notificações a qualquer momento.</li>
-          </ul>
-        </section>
-
-        <section class="legal-section">
-          <h5>7. Retenção e Ciclo de Vida dos Dados</h5>
-          <p>Os dados pessoais são retidos enquanto a conta do usuário permanecer ativa. Mediante solicitação de exclusão, todos os registros são imediatamente apagados de nossos bancos de dados ativos, ressalvadas hipóteses legais de guarda obrigatória (como registros de acesso a aplicações de internet pelo prazo de 6 meses, conforme o art. 15 do Marco Civil da Internet - Lei nº 12.965/2014).</p>
-        </section>
-
-        <section class="legal-section">
-          <h5>8. Procedimento para Incidentes e Vazamentos de Segurança (Art. 48)</h5>
-          <p>Em conformidade com as diretrizes da Autoridade Nacional de Proteção de Dados (ANPD), mantemos um Plano de Resposta a Incidentes de Segurança:</p>
-          <ul>
-            <li>Monitoramento contínuo e uso de criptografia de ponta a ponta nas conexões (HTTPS/TLS).</li>
-            <li>Em caso de incidente relevante de segurança que possa acarretar risco ou dano aos titulares, o Trampou comunicará a ANPD e os usuários afetados em prazo razoável, informando a natureza dos dados, as medidas de mitigação adotadas e as recomendações de segurança.</li>
-          </ul>
-        </section>
-
-        <section class="legal-section">
-          <h5>9. Canal do Encarregado de Dados (DPO)</h5>
-          <p>Para exercer qualquer direito previsto na LGPD ou esclarecer dúvidas sobre esta Política, entre em contato com nosso Encarregado de Proteção de Dados:</p>
-          <div class="legal-contact-box">
-            <div><i class="fa-solid fa-envelope"></i> <strong>E-mail Oficial (DPO / Contato):</strong> vertextecnologia001@gmail.com</div>
-            <div><i class="fa-brands fa-whatsapp"></i> <strong>WhatsApp / Telefone:</strong> (94) 8449-0987</div>
-            <div><i class="fa-solid fa-location-dot"></i> <strong>Jurisdição:</strong> Parauapebas — Pará, Brasil</div>
-          </div>
-        </section>
-      </div>
-
-      <div class="legal-footer-bar">
-        <button type="button" class="btn-auth-primary" onclick="closeAuthModal('privacy-policy-modal')">
-          Entendido
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- =========================================================
-       4. MODAL DE TERMOS DE USO COMPLETOS
-       ========================================================= -->
-  <div id="terms-of-use-modal" class="modal-overlay">
-    <div class="modal-content auth-form-content legal-text-content">
-      <div class="auth-modal-header sticky">
-        <button class="v-nav-icon-btn" onclick="closeAuthModal('terms-of-use-modal')" title="Voltar">
-          <i class="fa-solid fa-arrow-left"></i>
-        </button>
-        <h4>Termos de Uso</h4>
-        <div style="width: 32px;"></div>
-      </div>
-
-      <div class="legal-text-body">
-        <div class="legal-meta-badge">
-          <span>Termos e Condições Gerais de Uso da Plataforma Trampou — Parauapebas/PA</span>
-        </div>
-
-        <section class="legal-section">
-          <h5>1. Natureza da Plataforma</h5>
-          <p>O <strong>Trampou</strong> é uma plataforma digital que funciona como um catálogo inteligente de busca e visibilidade para conectar clientes a profissionais autônomos e prestadores de serviços no município de Parauapebas e região.</p>
-        </section>
-
-        <section class="legal-section">
-          <h5>2. Relação entre Clientes e Profissionais</h5>
-          <p>O Trampou <strong>NÃO é empregador, intermediador financeiro nem prestador dos serviços contratados</strong>. Toda a negociação, orçamento, execução, garantia e pagamento é acordada livre e diretamente entre o Cliente e o Profissional.</p>
-        </section>
-
-        <section class="legal-section">
-          <h5>3. Cadastro e Veracidade das Informações</h5>
-          <p>O usuário se compromete a fornecer informações verdadeiras e atualizadas. É estritamente proibido criar perfis falsos, utilizar fotos de terceiros sem autorização ou simular qualificações que não possua. Perfis fraudulentos serão suspensos sem aviso prévio.</p>
-        </section>
-
-        <section class="legal-section">
-          <h5>4. Selo de Verificação</h5>
-          <p>O selo "Verificado" indica que o profissional confirmou dados de contato e atuação em Parauapebas perante os critérios da plataforma, buscando aumentar a segurança da comunidade, não constituindo garantia técnica irrestrita.</p>
-        </section>
-
-        <section class="legal-section">
-          <h5>5. Conduta e Proibições</h5>
-          <p>É expressamente proibido veicular conteúdos discriminatórios, ilegais, difamatórios, pornografia, anúncios enganosos ou utilizar os canais do Trampou para assédio. A violação resultará na exclusão definitiva da conta.</p>
-        </section>
-
-        <section class="legal-section">
-          <h5>6. Foro e Legislação Aplicável</h5>
-          <p>Estes Termos são regidos pelas leis da República Federativa do Brasil, em especial o Marco Civil da Internet (Lei 12.965/2014) e a LGPD (Lei 13.709/2018). Fica eleito o Foro da Comarca de Parauapebas, Estado do Pará, para dirimir eventuais controvérsias.</p>
-        </section>
-      </div>
-
-      <div class="legal-footer-bar">
-        <button type="button" class="btn-auth-primary" onclick="closeAuthModal('terms-of-use-modal')">
-          Concordar e Fechar
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- =========================================================
-       5. MODAL DE CANAL DE SOLICITAÇÃO AO ENCARREGADO (DPO)
-       ========================================================= -->
-  <div id="dpo-channel-modal" class="modal-overlay">
-    <div class="modal-content auth-form-content">
-      <div class="auth-modal-header">
-        <button class="v-nav-icon-btn" onclick="closeAuthModal('dpo-channel-modal')" title="Voltar">
-          <i class="fa-solid fa-arrow-left"></i>
-        </button>
-        <h4>Canal do Encarregado (DPO)</h4>
-        <div style="width: 32px;"></div>
-      </div>
-
-      <div class="privacy-hub-body">
-        <div class="privacy-badge-card">
-          <div class="privacy-badge-icon">
-            <i class="fa-solid fa-user-shield"></i>
-          </div>
-          <div>
-            <h5>Atendimento Oficial LGPD</h5>
-            <p>Envie sua solicitação formal de direitos (acesso, retificação, revogação) ou reporte uma suspeita de incidente.</p>
-          </div>
-        </div>
-
-        <div class="dpo-options-list">
-          <button type="button" class="btn-dpo-channel-option" onclick="sendDpoEmail('solicitacao_geral')">
-            <i class="fa-solid fa-envelope icon-blue"></i>
-            <div class="channel-text">
-              <strong>Enviar E-mail Oficial (DPO / Suporte)</strong>
-              <span>vertextecnologia001@gmail.com</span>
-            </div>
-          </button>
-
-          <button type="button" class="btn-dpo-channel-option" onclick="sendDpoWhatsapp('solicitacao_lgpd')">
-            <i class="fa-brands fa-whatsapp icon-green"></i>
-            <div class="channel-text">
-              <strong>Atendimento via WhatsApp</strong>
-              <span>(94) 8449-0987 • Atendimento direto em Parauapebas</span>
-            </div>
-          </button>
-
-          <button type="button" class="btn-dpo-channel-option" onclick="sendDpoEmail('incidente_seguranca')">
-            <i class="fa-solid fa-bug icon-amber"></i>
-            <div class="channel-text">
-              <strong>Reportar Incidente ou Falha de Segurança</strong>
-              <span>Canal prioritário para vulnerabilidades e vazamentos</span>
-            </div>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-      </div>
-
-      <!-- BARRA DE NAVEGAÇÃO INFERIOR ÚNICA (Início, Buscar, Pedidos, Conversas, Perfil) -->
-      
-  <!-- ==============================================================================
-       MODAL DE CONTRATAÇÃO DE ANÚNCIOS TRAMPOU ADS (PAGAMENTO PIX MERCADO PAGO)
+       MODAL DE CONTRATAÇÃO DE ANÚNCIOS TRAMPOU ADS (NOVA UI MOBILE-FIRST)
        ============================================================================== -->
-  <div id="modal-advertise-checkout" class="modal-overlay" style="z-index: 1060; display: none;">
-    <div class="modal-content ad-checkout-content" style="max-width: 480px; width: 95%; max-height: 90vh; border-radius: 18px; padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+  <div id="modal-advertise-checkout" class="ad-modal-backdrop" style="display: none;">
+    <div class="ad-modal-card">
       
-      <!-- Cabeçalho do Modal -->
-      <div class="ad-checkout-header">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <div class="ad-checkout-icon-badge">
+      <!-- Pull Bar para Mobile -->
+      <div class="ad-modal-drag-handle"></div>
+
+      <!-- Header Fixo -->
+      <div class="ad-modal-header">
+        <div class="ad-modal-title-group">
+          <div class="ad-modal-icon-badge">
             <i class="fa-solid fa-bullhorn"></i>
           </div>
           <div>
-            <h4 style="margin: 0; font-size: 16px; font-weight: 800; color: #1E1B4B;">Anunciar no Trampou</h4>
-            <span style="font-size: 11.5px; color: #64748B;">Divulgue seu negócio para milhares de clientes</span>
+            <div class="ad-modal-badge-row">
+              <span class="ad-badge-instant"><i class="fa-solid fa-bolt"></i> Ativação Instantânea</span>
+              <span class="ad-badge-pix"><i class="fa-brands fa-pix"></i> Pix Oficial</span>
+            </div>
+            <h3 class="ad-modal-title">Anunciar no Trampou</h3>
+            <p class="ad-modal-subtitle">Destaque sua empresa para clientes da sua cidade</p>
           </div>
         </div>
-        <button type="button" class="ad-checkout-close" onclick="closeAdvertiseModal()" title="Fechar">
+        <button type="button" class="ad-modal-close-btn" onclick="closeAdvertiseModal()" title="Fechar">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <!-- Corpo do Modal com Scroll -->
-      <div class="ad-checkout-body" id="ad-checkout-body-content" style="overflow-y: auto; padding: 16px; flex: 1;">
+      <!-- Corpo com Scroll Suave -->
+      <div class="ad-modal-body" id="ad-checkout-body-content">
         
-        <!-- ETAPA 1: FORMULÁRIO DO ANÚNCIO & SELEÇÃO DE PACOTE -->
+        <!-- ================= ETAPA 1: FORMULÁRIO E SELEÇÃO ================= -->
         <div id="ad-step-form">
-          
-          <!-- Escolha do Posicionamento -->
-          <div class="ad-form-section">
-            <label class="ad-form-label"><i class="fa-solid fa-layer-group"></i> 1. Onde você quer anunciar?</label>
-            <div class="ad-placements-grid">
-              <label class="ad-placement-option active" data-placement="home_feed" onclick="selectAdPlacementOption('home_feed')">
-                <input type="radio" name="ad_placement_input" value="home_feed" checked style="display: none;">
-                <div class="ad-placement-top">
-                  <i class="fa-solid fa-newspaper" style="color: #7C3AED;"></i>
-                  <span class="ad-placement-badge">Popular</span>
-                </div>
-                <strong>Feed da Home</strong>
-                <small>Card integrado entre os destaques</small>
-              </label>
 
-              <label class="ad-placement-option" data-placement="search_sponsored" onclick="selectAdPlacementOption('search_sponsored')">
-                <input type="radio" name="ad_placement_input" value="search_sponsored" style="display: none;">
-                <div class="ad-placement-top">
-                  <i class="fa-solid fa-magnifying-glass" style="color: #2563EB;"></i>
-                  <span class="ad-placement-badge" style="background: #EFF6FF; color: #1D4ED8;">Alta Conversão</span>
-                </div>
-                <strong>Busca & Categorias</strong>
-                <small>Topo da lista de pesquisa</small>
-              </label>
+          <!-- 1. SELEÇÃO DE ESPAÇO / POSICIONAMENTO -->
+          <div class="ad-section">
+            <div class="ad-section-title">
+              <span class="ad-step-num">1</span>
+              <div>
+                <strong>Onde você quer anunciar?</strong>
+                <small>Escolha o espaço que melhor se adapta à sua campanha</small>
+              </div>
+            </div>
 
-              <label class="ad-placement-option" data-placement="profile_footer" onclick="selectAdPlacementOption('profile_footer')">
-                <input type="radio" name="ad_placement_input" value="profile_footer" style="display: none;">
-                <div class="ad-placement-top">
-                  <i class="fa-solid fa-handshake" style="color: #059669;"></i>
-                  <span class="ad-placement-badge" style="background: #ECFDF5; color: #047857;">Parceiro</span>
+            <div class="ad-placements-list">
+              <!-- Feed Principal -->
+              <div class="ad-place-card active" data-placement="home_feed" onclick="selectAdPlacementOption('home_feed')">
+                <div class="ad-place-icon feed">
+                  <i class="fa-solid fa-newspaper"></i>
                 </div>
-                <strong>Rodapé do Perfil</strong>
-                <small>Aparece em todos os prestadores</small>
-              </label>
+                <div class="ad-place-info">
+                  <div class="ad-place-header">
+                    <strong>Feed da Página Inicial</strong>
+                    <span class="ad-tag-pop">Mais Popular</span>
+                  </div>
+                  <p>Card patrocinado integrado no feed principal de serviços</p>
+                </div>
+                <div class="ad-place-radio">
+                  <div class="ad-radio-dot"></div>
+                </div>
+              </div>
 
-              <label class="ad-placement-option" data-placement="home_carousel" onclick="selectAdPlacementOption('home_carousel')">
-                <input type="radio" name="ad_placement_input" value="home_carousel" style="display: none;">
-                <div class="ad-placement-top">
-                  <i class="fa-solid fa-images" style="color: #D97706;"></i>
-                  <span class="ad-placement-badge" style="background: #FFFBEB; color: #B45309;">Nobre</span>
+              <!-- Carrossel do Topo -->
+              <div class="ad-place-card" data-placement="home_carousel" onclick="selectAdPlacementOption('home_carousel')">
+                <div class="ad-place-icon carousel">
+                  <i class="fa-solid fa-images"></i>
                 </div>
-                <strong>Carrossel Topo</strong>
-                <small>Banner deslizante no topo</small>
-              </label>
+                <div class="ad-place-info">
+                  <div class="ad-place-header">
+                    <strong>Carrossel de Destaques Topo</strong>
+                    <span class="ad-tag-gold">Destaque Nobre</span>
+                  </div>
+                  <p>Banner horizontal deslizante logo no topo do aplicativo</p>
+                </div>
+                <div class="ad-place-radio">
+                  <div class="ad-radio-dot"></div>
+                </div>
+              </div>
+
+              <!-- Busca e Categorias -->
+              <div class="ad-place-card" data-placement="search_sponsored" onclick="selectAdPlacementOption('search_sponsored')">
+                <div class="ad-place-icon search">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
+                <div class="ad-place-info">
+                  <div class="ad-place-header">
+                    <strong>Busca & Categorias</strong>
+                    <span class="ad-tag-blue">Alta Conversão</span>
+                  </div>
+                  <p>Aparece fixo no topo quando o cliente pesquisa profissionais</p>
+                </div>
+                <div class="ad-place-radio">
+                  <div class="ad-radio-dot"></div>
+                </div>
+              </div>
+
+              <!-- Rodapé do Perfil -->
+              <div class="ad-place-card" data-placement="profile_footer" onclick="selectAdPlacementOption('profile_footer')">
+                <div class="ad-place-icon profile">
+                  <i class="fa-solid fa-store"></i>
+                </div>
+                <div class="ad-place-info">
+                  <div class="ad-place-header">
+                    <strong>Rodapé dos Prestadores</strong>
+                    <span class="ad-tag-green">Parceiro Oficial</span>
+                  </div>
+                  <p>Exibição no final de todos os perfis públicos de profissionais</p>
+                </div>
+                <div class="ad-place-radio">
+                  <div class="ad-radio-dot"></div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- Escolha do Período Avulso -->
-          <div class="ad-form-section" style="margin-top: 16px;">
-            <label class="ad-form-label"><i class="fa-solid fa-calendar-days"></i> 2. Escolha o período (Sem mensalidade):</label>
-            <div class="ad-durations-row">
-              <div class="ad-duration-pill" data-days="7" data-price="29.90" onclick="selectAdDurationOption(7, 29.90)">
-                <span>7 dias</span>
-                <strong>R$ 29,90</strong>
+          <!-- 2. SELEÇÃO DE PERÍODO & PACOTE -->
+          <div class="ad-section">
+            <div class="ad-section-title">
+              <span class="ad-step-num">2</span>
+              <div>
+                <strong>Escolha a duração</strong>
+                <small>Pagamento avulso único • Sem mensalidade ou fidelidade</small>
               </div>
-              <div class="ad-duration-pill active" data-days="15" data-price="49.90" onclick="selectAdDurationOption(15, 49.90)">
-                <span class="ad-duration-tag">Recomendado</span>
-                <span>15 dias</span>
-                <strong>R$ 49,90</strong>
+            </div>
+
+            <div class="ad-plans-grid">
+              <!-- 7 Dias -->
+              <div class="ad-plan-card" data-days="7" data-price="29.90" onclick="selectAdDurationOption(7, 29.90)">
+                <div class="ad-plan-days">7 Dias</div>
+                <div class="ad-plan-price">R$ 29,90</div>
+                <div class="ad-plan-daily">R$ 4,27 / dia</div>
               </div>
-              <div class="ad-duration-pill" data-days="30" data-price="89.90" onclick="selectAdDurationOption(30, 89.90)">
-                <span>30 dias</span>
-                <strong>R$ 89,90</strong>
+
+              <!-- 15 Dias (Recomendado) -->
+              <div class="ad-plan-card active" data-days="15" data-price="49.90" onclick="selectAdDurationOption(15, 49.90)">
+                <span class="ad-plan-badge-top">⭐ Mais Escolhido</span>
+                <div class="ad-plan-days">15 Dias</div>
+                <div class="ad-plan-price">R$ 49,90</div>
+                <div class="ad-plan-daily">R$ 3,32 / dia</div>
+              </div>
+
+              <!-- 30 Dias -->
+              <div class="ad-plan-card" data-days="30" data-price="89.90" onclick="selectAdDurationOption(30, 89.90)">
+                <span class="ad-plan-badge-save">Economize 30%</span>
+                <div class="ad-plan-days">30 Dias</div>
+                <div class="ad-plan-price">R$ 89,90</div>
+                <div class="ad-plan-daily">R$ 2,99 / dia</div>
+              </div>
+            </div>
+
+            <div class="ad-security-guarantee">
+              <i class="fa-solid fa-shield-halved"></i>
+              <span>Cobrança única via PIX. Não renova automaticamente.</span>
+            </div>
+          </div>
+
+          <!-- 3. PRÉVIA AO VIVO DO ANÚNCIO -->
+          <div class="ad-section ad-preview-section">
+            <div class="ad-preview-header-bar">
+              <i class="fa-solid fa-sparkles" style="color: #7C3AED;"></i>
+              <span>Prévia ao vivo de como seu anúncio aparecerá:</span>
+            </div>
+
+            <div class="ad-live-card-container">
+              <div class="ad-live-media-wrap">
+                <img id="ad-live-preview-img" src="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&auto=format&fit=crop&q=80" alt="Banner Preview">
+                <span class="ad-live-tag-pill">Patrocinado</span>
+              </div>
+              <div class="ad-live-content-wrap">
+                <div class="ad-live-company" id="ad-live-preview-advertiser">Sua Empresa ou Negócio</div>
+                <h4 class="ad-live-title" id="ad-live-preview-title">Título do seu anúncio em destaque no app</h4>
+                <p class="ad-live-desc" id="ad-live-preview-desc">Apresente sua oferta, diferencial ou serviços para clientes locais.</p>
+                <div class="ad-live-footer-row">
+                  <span class="ad-live-city"><i class="fa-solid fa-location-dot"></i> <span id="ad-live-preview-city">Parauapebas, PA</span></span>
+                  <span class="ad-live-btn" id="ad-live-preview-cta">Chamar no WhatsApp <i class="fa-brands fa-whatsapp"></i></span>
+                </div>
               </div>
             </div>
           </div>
+
+          <!-- 4. DADOS DO ANUNCIANTE & CRIATIVO -->
+          <div class="ad-section">
+            <div class="ad-section-title">
+              <span class="ad-step-num">3</span>
+              <div>
+                <strong>Preencha os dados do anúncio</strong>
+                <small>Tudo o que seus clientes verão ao tocar no seu card</small>
+              </div>
+            </div>
+
+            <div class="ad-inputs-container">
+              <!-- Nome da Empresa -->
+              <div class="ad-field">
+                <label class="ad-field-label">Nome da Empresa / Anunciante <span class="req">*</span></label>
+                <div class="ad-field-input-wrap">
+                  <i class="fa-solid fa-store ad-field-icon"></i>
+                  <input type="text" id="ad-input-advertiser" placeholder="Ex: Disk Caçambas Carajás, Studio Prime" oninput="updateLiveAdPreview()" required>
+                </div>
+              </div>
+
+              <!-- Título do Anúncio -->
+              <div class="ad-field">
+                <label class="ad-field-label">Título Chamativo da Oferta <span class="req">*</span></label>
+                <div class="ad-field-input-wrap">
+                  <i class="fa-solid fa-heading ad-field-icon"></i>
+                  <input type="text" id="ad-input-title" placeholder="Ex: Locação de Caçambas 24h com 15% de Desconto" oninput="updateLiveAdPreview()" required>
+                </div>
+              </div>
+
+              <!-- Descrição Curta -->
+              <div class="ad-field">
+                <label class="ad-field-label">Descrição / Detalhes Rápidos (Opcional)</label>
+                <div class="ad-field-input-wrap">
+                  <textarea id="ad-input-desc" rows="2" placeholder="Ex: Atendimento rápido em toda a cidade, descarte legalizado e nota fiscal." oninput="updateLiveAdPreview()"></textarea>
+                </div>
+              </div>
+
+              <!-- Contatos: WhatsApp e E-mail em 2 colunas -->
+              <div class="ad-two-cols">
+                <div class="ad-field">
+                  <label class="ad-field-label">WhatsApp de Atendimento <span class="req">*</span></label>
+                  <div class="ad-field-input-wrap">
+                    <i class="fa-brands fa-whatsapp ad-field-icon" style="color: #10B981;"></i>
+                    <input type="tel" id="ad-input-phone" placeholder="(94) 99123-4567" required>
+                  </div>
+                </div>
+
+                <div class="ad-field">
+                  <label class="ad-field-label">E-mail para Comprovante <span class="req">*</span></label>
+                  <div class="ad-field-input-wrap">
+                    <i class="fa-solid fa-envelope ad-field-icon"></i>
+                    <input type="email" id="ad-input-email" placeholder="financeiro@empresa.com" required>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Texto do Botão e Cidade -->
+              <div class="ad-two-cols">
+                <div class="ad-field">
+                  <label class="ad-field-label">Texto do Botão de Ação</label>
+                  <div class="ad-field-input-wrap">
+                    <select id="ad-input-cta-text" onchange="updateLiveAdPreview()">
+                      <option value="Chamar no WhatsApp" selected>Chamar no WhatsApp</option>
+                      <option value="Falar Conosco">Falar Conosco</option>
+                      <option value="Ver Oferta Especial">Ver Oferta Especial</option>
+                      <option value="Pedir Orçamento">Pedir Orçamento</option>
+                      <option value="Conhecer Agora">Conhecer Agora</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="ad-field">
+                  <label class="ad-field-label">Cidade de Veiculação</label>
+                  <div class="ad-field-input-wrap">
+                    <i class="fa-solid fa-location-dot ad-field-icon"></i>
+                    <input type="text" id="ad-input-city" value="Parauapebas, PA" readonly style="background: #F8FAFC; color: #475569;">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Upload de Imagem ou Flyer -->
+              <div class="ad-field">
+                <label class="ad-field-label">Foto, Flyer ou Logo da Campanha (Opcional)</label>
+                <div class="ad-upload-tile" onclick="document.getElementById('ad-file-input').click()">
+                  <input type="file" id="ad-file-input" accept="image/*" style="display: none;" onchange="handleAdImageFile(event)">
+                  <div id="ad-upload-placeholder" class="ad-upload-inner">
+                    <div class="ad-upload-icon-circle">
+                      <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <strong>Toque para escolher foto da sua galeria</strong>
+                    <span>Formato JPG, PNG ou WEBP (Otimizado para o app)</span>
+                  </div>
+                  <div id="ad-upload-preview-wrap" style="display: none; position: relative;">
+                    <img id="ad-upload-preview" src="" alt="Prévia" class="ad-uploaded-image">
+                    <button type="button" class="ad-btn-remove-photo" onclick="event.stopPropagation(); removeAdImagePreview();" title="Trocar foto">
+                      <i class="fa-solid fa-trash"></i> Trocar foto
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ================= ETAPA 2: PAGAMENTO PIX MERCADO PAGO ================= -->
+        <div id="ad-step-pix" style="display: none;">
+          <div class="ad-pix-screen-card">
+            
+            <div class="ad-pix-header">
+              <span class="ad-pix-secure-badge">
+                <i class="fa-brands fa-pix"></i> PIX Dinâmico • Mercado Pago
+              </span>
+              <h3 class="ad-pix-headline">Pague com PIX para ativar na hora</h3>
+              <p class="ad-pix-summary-sub" id="pix-summary-text">Feed da Home • 15 dias • R$ 49,90</p>
+            </div>
+
+            <!-- Card com o QR Code oficial -->
+            <div class="ad-pix-qr-box">
+              <div class="ad-pix-qr-frame">
+                <img id="pix-qr-img" src="" alt="QR Code PIX">
+              </div>
+              <span class="ad-pix-timer-hint"><i class="fa-regular fa-clock"></i> Código válido por 30 minutos</span>
+            </div>
+
+            <!-- Status do Polling -->
+            <div class="ad-pix-status-pill" id="pix-status-box">
+              <span class="ad-pix-pulse-indicator"></span>
+              <span id="pix-status-label">Aguardando confirmação do banco...</span>
+            </div>
+
+            <!-- Copia e Cola -->
+            <div class="ad-pix-copy-section">
+              <label class="ad-pix-copy-label">PIX Copia e Cola:</label>
+              <div class="ad-pix-input-group">
+                <input type="text" id="pix-copia-cola-input" readonly>
+                <button type="button" class="ad-btn-copy-action" id="btn-copy-pix-code" onclick="copyPixCodeToClipboard()">
+                  <i class="fa-solid fa-copy"></i>
+                  <span>Copiar</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Passos para Pagar -->
+            <div class="ad-pix-how-to-card">
+              <strong><i class="fa-solid fa-mobile-screen-button"></i> Como concluir:</strong>
+              <ol>
+                <li>Abra o app do seu banco (Nubank, Inter, Caixa, Itaú, etc.).</li>
+                <li>Selecione <strong>Área PIX</strong> ➔ <strong>PIX Copia e Cola</strong> (ou aponte a câmera pro QR Code).</li>
+                <li>Cole o código e confirme o valor.</li>
+                <li>Assim que concluir, o sistema ativa seu anúncio imediatamente!</li>
+              </ol>
+            </div>
+
+            <!-- Botões de Ação na Tela PIX -->
+            <div class="ad-pix-actions-row">
+              <button type="button" class="ad-btn-check-status" onclick="checkCurrentPixPaymentStatus(true)">
+                <i class="fa-solid fa-arrows-rotate"></i> Verificar Agora
+              </button>
+              <button type="button" class="ad-btn-back-form" onclick="backToAdForm()">
+                Editar Dados
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ================= ETAPA 3: SUCESSO E ATIVAÇÃO ================= -->
+        <div id="ad-step-success" style="display: none;">
+          <div class="ad-success-screen">
+            <div class="ad-success-icon-wrap">
+              <i class="fa-solid fa-check"></i>
+            </div>
+            <h2>Pagamento Confirmado!</h2>
+            <p class="ad-success-desc">
+              Parabéns! Seu anúncio já está ativo e sendo exibido para os clientes em Parauapebas.
+            </p>
+
+            <div class="ad-success-receipt-card">
+              <div class="ad-receipt-row">
+                <span>Anunciante:</span>
+                <strong id="success-advertiser-name">-</strong>
+              </div>
+              <div class="ad-receipt-row">
+                <span>Espaço de Exibição:</span>
+                <strong id="success-placement-name">-</strong>
+              </div>
+              <div class="ad-receipt-row">
+                <span>Período Ativo:</span>
+                <strong id="success-duration-days" style="color: #059669;">-</strong>
+              </div>
+              <div class="ad-receipt-row">
+                <span>Status da Campanha:</span>
+                <span class="ad-badge-active-green">● Em Veiculação</span>
+              </div>
+            </div>
+
+            <button type="button" class="ad-btn-finish-view" onclick="closeAdvertiseModalAndShowAd()">
+              <i class="fa-solid fa-eye"></i>
+              <span>Ver Meu Anúncio no App</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Rodapé Fixo (Sticky Footer com Resumo do Valor & Botão de Ação) -->
+      <div class="ad-modal-footer" id="ad-checkout-sticky-footer">
+        <div class="ad-footer-summary">
+          <span class="ad-footer-plan-tag" id="footer-plan-label">15 dias • Feed da Home</span>
+          <div class="ad-footer-price" id="footer-price-display">R$ 49,90</div>
+        </div>
+        <button type="button" class="ad-btn-primary-cta" id="btn-submit-ad-pix" onclick="submitAdAndGeneratePix()">
+          <i class="fa-brands fa-pix"></i>
+          <span id="btn-submit-pix-label">Gerar PIX</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
 
           <!-- Dados do Anúncio -->
           <div class="ad-form-section" style="margin-top: 16px;">

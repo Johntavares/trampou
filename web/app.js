@@ -10475,6 +10475,10 @@ function openAdvertiseModal(preselectedPlacement = null) {
   document.getElementById('ad-step-form').style.display = 'block';
   document.getElementById('ad-step-pix').style.display = 'none';
   document.getElementById('ad-step-success').style.display = 'none';
+  const stickyFooter = document.getElementById('ad-checkout-sticky-footer');
+  if (stickyFooter) stickyFooter.style.display = 'flex';
+  updateLiveAdPreview();
+  updateFooterSummary();
 
   const modal = document.getElementById('modal-advertise-checkout');
   if (modal) modal.style.display = 'flex';
@@ -10493,12 +10497,11 @@ window.closeAdvertiseModal = closeAdvertiseModal;
 
 function selectAdPlacementOption(placement) {
   selectedAdPlacement = placement;
-  document.querySelectorAll('.ad-placement-option').forEach(el => {
+  document.querySelectorAll('.ad-place-card, .ad-placement-option').forEach(el => {
     const isMatch = el.getAttribute('data-placement') === placement;
     el.classList.toggle('active', isMatch);
-    const radio = el.querySelector('input[type="radio"]');
-    if (radio) radio.checked = isMatch;
   });
+  updateFooterSummary();
 }
 window.selectAdPlacementOption = selectAdPlacementOption;
 
@@ -10506,14 +10509,34 @@ function selectAdDurationOption(days, price) {
   selectedAdDurationDays = days;
   selectedAdPrice = price;
 
-  document.querySelectorAll('.ad-duration-pill').forEach(el => {
+  document.querySelectorAll('.ad-plan-card, .ad-duration-pill').forEach(el => {
     const elDays = parseInt(el.getAttribute('data-days'), 10);
     el.classList.toggle('active', elDays === days);
   });
 
-  const label = document.getElementById('btn-submit-pix-label');
-  if (label) {
-    label.innerText = `Gerar Pagamento PIX (R$ ${price.toFixed(2).replace('.', ',')})`;
+  updateFooterSummary();
+}
+
+function updateFooterSummary() {
+  const placementLabels = {
+    home_feed: 'Feed da Home',
+    home_carousel: 'Carrossel Topo',
+    search_sponsored: 'Busca & Categorias',
+    profile_footer: 'Rodapé Perfil'
+  };
+
+  const footerPlan = document.getElementById('footer-plan-label');
+  const footerPrice = document.getElementById('footer-price-display');
+  const btnLabel = document.getElementById('btn-submit-pix-label');
+
+  if (footerPlan) {
+    footerPlan.innerText = `${selectedAdDurationDays} dias • ${placementLabels[selectedAdPlacement] || 'Feed'}`;
+  }
+  if (footerPrice) {
+    footerPrice.innerText = `R$ ${selectedAdPrice.toFixed(2).replace('.', ',')}`;
+  }
+  if (btnLabel) {
+    btnLabel.innerText = `Gerar PIX`;
   }
 }
 window.selectAdDurationOption = selectAdDurationOption;
@@ -10541,6 +10564,7 @@ async function handleAdImageFile(event) {
       previewWrap.style.display = 'block';
       placeholder.style.display = 'none';
     }
+    updateLiveAdPreview();
   } catch (err) {
     showToast('Não foi possível processar a imagem.');
   }
@@ -10555,6 +10579,7 @@ function removeAdImagePreview() {
   const placeholder = document.getElementById('ad-upload-placeholder');
   if (previewWrap) previewWrap.style.display = 'none';
   if (placeholder) placeholder.style.display = 'block';
+  updateLiveAdPreview();
 }
 window.removeAdImagePreview = removeAdImagePreview;
 
@@ -10650,6 +10675,8 @@ async function submitAdAndGeneratePix() {
 
     document.getElementById('ad-step-form').style.display = 'none';
     document.getElementById('ad-step-pix').style.display = 'block';
+    const stickyFooter = document.getElementById('ad-checkout-sticky-footer');
+    if (stickyFooter) stickyFooter.style.display = 'none';
 
     // Inicia polling a cada 3.5 segundos para detectar o pagamento do banco
     if (activePixPollingTimer) clearInterval(activePixPollingTimer);
@@ -10746,6 +10773,8 @@ function backToAdForm() {
   }
   document.getElementById('ad-step-pix').style.display = 'none';
   document.getElementById('ad-step-form').style.display = 'block';
+  const stickyFooter = document.getElementById('ad-checkout-sticky-footer');
+  if (stickyFooter) stickyFooter.style.display = 'flex';
 }
 window.backToAdForm = backToAdForm;
 
@@ -10764,3 +10793,37 @@ function closeAdvertiseModalAndShowAd() {
   }
 }
 window.closeAdvertiseModalAndShowAd = closeAdvertiseModalAndShowAd;
+
+
+// ==============================================================================
+// TRAMPOU ADS: ATUALIZAÇÕES VISUAIS E PRÉVIA EM TEMPO REAL
+// ==============================================================================
+function updateLiveAdPreview() {
+  const adv = document.getElementById('ad-input-advertiser')?.value.trim() || 'Sua Empresa ou Negócio';
+  const title = document.getElementById('ad-input-title')?.value.trim() || 'Título do seu anúncio em destaque no app';
+  const desc = document.getElementById('ad-input-desc')?.value.trim() || 'Apresente sua oferta, diferencial ou serviços para clientes locais.';
+  const cta = document.getElementById('ad-input-cta-text')?.value || 'Chamar no WhatsApp';
+  const loc = currentActiveLocation || { city: 'Parauapebas', state: 'PA' };
+
+  const prevAdv = document.getElementById('ad-live-preview-advertiser');
+  const prevTitle = document.getElementById('ad-live-preview-title');
+  const prevDesc = document.getElementById('ad-live-preview-desc');
+  const prevCta = document.getElementById('ad-live-preview-cta');
+  const prevCity = document.getElementById('ad-live-preview-city');
+  const prevImg = document.getElementById('ad-live-preview-img');
+
+  if (prevAdv) prevAdv.innerText = adv;
+  if (prevTitle) prevTitle.innerText = title;
+  if (prevDesc) prevDesc.innerText = desc;
+  if (prevCity) prevCity.innerText = `${loc.city}, ${loc.state}`;
+  if (prevCta) prevCta.innerHTML = `${cta} <i class="fa-brands fa-whatsapp"></i>`;
+
+  if (prevImg) {
+    if (currentAdUploadedImage) {
+      prevImg.src = currentAdUploadedImage;
+    } else {
+      prevImg.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&auto=format&fit=crop&q=80';
+    }
+  }
+}
+window.updateLiveAdPreview = updateLiveAdPreview;

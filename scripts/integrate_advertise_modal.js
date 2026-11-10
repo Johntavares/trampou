@@ -957,3 +957,4 @@ if (!js.includes('function openAdvertiseModal')) {
 
 fs.writeFileSync(appJsPath, js, 'utf8');
 console.log('💾 Todos os arquivos foram sincronizados e salvos com sucesso!');
+
