@@ -2388,14 +2388,18 @@ function launchSOSRadar() {
 
   closeSOSRequestModal();
 
+  window.isSOSCallActive = true;
+
   const radarModal = document.getElementById('sos-radar-modal');
   if (radarModal) radarModal.classList.add('active');
 
   // Inicializa o Estado 1 do Radar (Buscando)
   const searchingBox = document.getElementById('radar-searching-box');
   const acceptedBox = document.getElementById('radar-accepted-box');
+  const noProsBox = document.getElementById('radar-no-pros-box');
   if (searchingBox) searchingBox.style.display = 'flex';
   if (acceptedBox) acceptedBox.style.display = 'none';
+  if (noProsBox) noProsBox.style.display = 'none';
 
   // Atualiza textos
   const catLabel = document.getElementById('radar-cat-label');
@@ -2490,9 +2494,9 @@ function startSOSRadarSimulation(proType, bairro) {
   if (sosRadarTimerId) clearTimeout(sosRadarTimerId);
   if (sosCountdownInterval) clearInterval(sosCountdownInterval);
 
-  let secondsLeft = 10;
+  let secondsLeft = 15;
   const timerElem = document.getElementById('radar-countdown-timer');
-  if (timerElem) timerElem.innerText = `00:10`;
+  if (timerElem) timerElem.innerText = `00:15`;
 
   sosCountdownInterval = setInterval(() => {
     secondsLeft--;
@@ -2521,25 +2525,27 @@ function startSOSRadarSimulation(proType, bairro) {
     avatar: 'trampou_app_icon.png'
   };
 
-  // Após 1.4s, dispara o alerta interativo para o profissional aceitar na tela
+  // Após 1.5s, dispara o alerta interativo para o profissional aceitar na tela
   setTimeout(() => {
     const radarModal = document.getElementById('sos-radar-modal');
-    if (radarModal && radarModal.classList.contains('active')) {
+    if (radarModal && radarModal.classList.contains('active') && window.isSOSCallActive) {
       openIncomingSOSModal({
         ...currentSOSRequestData,
         candidatePro: candidate
       });
     }
-  }, 1400);
+  }, 1500);
 
-  // Fallback automático após 10 segundos caso ninguém clique
+  // Se o tempo limite (15 segundos) esgotar e ninguém tiver aceito o chamado:
   sosRadarTimerId = setTimeout(() => {
     clearInterval(sosCountdownInterval);
     closeIncomingSOSModal();
 
-    // Transiciona para o Estado 2: Aceito!
-    triggerSOSAcceptedState(candidate);
-  }, 10000);
+    // Se a chamada ainda estiver ativa (ninguém aceitou), transiciona para o Estado 3 (Sem profissionais online)
+    if (window.isSOSCallActive) {
+      triggerSOSNoProsState();
+    }
+  }, 15000);
 }
 
 // ==============================================================================
@@ -2552,6 +2558,9 @@ let currentIncomingSOSData = null;
 
 // Abre o modal de alerta de emergência na tela do profissional
 function openIncomingSOSModal(sosData) {
+  // Se o chamado já foi atendido ou cancelado, não exibe alerta
+  if (window.isSOSCallActive === false) return;
+
   currentIncomingSOSData = sosData || {
     type: 'Atendimento Emergencial',
     bairro: 'Centro',
@@ -2598,7 +2607,7 @@ function openIncomingSOSModal(sosData) {
     feeVal.textContent = meta.fee || 'R$ 80 a R$ 140';
   }
 
-  // Inicia contagem regressiva de 30 segundos
+  // Inicia contagem regressiva de 30 segundos para resposta do profissional
   startIncomingSOSTimer(30);
 
   overlay.classList.add('show');
@@ -2611,7 +2620,7 @@ function openIncomingSOSModal(sosData) {
 }
 window.openIncomingSOSModal = openIncomingSOSModal;
 
-// Fecha o modal de alerta do profissional
+// Fecha o modal de alerta do profissional e cessa vibrações/timers
 function closeIncomingSOSModal() {
   if (incomingSOSTimerId) clearTimeout(incomingSOSTimerId);
   if (incomingSOSIntervalId) clearInterval(incomingSOSIntervalId);
@@ -2623,7 +2632,7 @@ function closeIncomingSOSModal() {
 }
 window.closeIncomingSOSModal = closeIncomingSOSModal;
 
-// Contagem regressiva com barra de progresso visual
+// Contagem regressiva com barra de progresso visual no card do profissional
 function startIncomingSOSTimer(totalSeconds = 30) {
   if (incomingSOSTimerId) clearTimeout(incomingSOSTimerId);
   if (incomingSOSIntervalId) clearInterval(incomingSOSIntervalId);
@@ -2646,13 +2655,35 @@ function startIncomingSOSTimer(totalSeconds = 30) {
     if (seconds <= 0) {
       clearInterval(incomingSOSIntervalId);
       closeIncomingSOSModal();
-      showToast('Tempo limite para resposta expirado. Chamado repassado.');
+      showToast('Tempo limite para resposta expirado.');
+      if (window.isSOSCallActive) {
+        triggerSOSNoProsState();
+      }
     }
   }, 1000);
 }
 
 // Profissional clica em ACEITAR CHAMADO
 function acceptIncomingSOS() {
+  // Encerra imediatamente o ciclo do chamado SOS para que outros prestadores não continuem recebendo
+  window.isSOSCallActive = false;
+  closeIncomingSOSModal();
+
+  // Cancela timers do radar e do alerta imediatamente
+  if (sosRadarTimerId) clearTimeout(sosRadarTimerId);
+  if (sosCountdownInterval) clearInterval(sosCountdownInterval);
+  if (incomingSOSTimerId) clearTimeout(incomingSOSTimerId);
+  if (incomingSOSIntervalId) clearInterval(incomingSOSIntervalId);
+
+  // Registra status de encerramento em localStorage para sincronizar outras abas/dispositivos
+  try {
+    localStorage.setItem('trampou_sos_last_event', JSON.stringify({
+      action: 'accepted',
+      callId: currentSOSRequestData?.callId || ('sos_' + Date.now()),
+      timestamp: Date.now()
+    }));
+  } catch (e) {}
+
   const req = currentIncomingSOSData || {
     type: 'Eletricista',
     bairro: 'Cidade Nova',
@@ -2660,12 +2691,6 @@ function acceptIncomingSOS() {
     phone: '(94) 99123-4567',
     clientName: 'Mariana Silva'
   };
-
-  closeIncomingSOSModal();
-
-  // Cancela o timer do radar no lado cliente se estiver rodando
-  if (sosRadarTimerId) clearTimeout(sosRadarTimerId);
-  if (sosCountdownInterval) clearInterval(sosCountdownInterval);
 
   // Identifica o profissional aceitante
   const user = getCurrentUser();
@@ -2741,18 +2766,21 @@ window.acceptIncomingSOS = acceptIncomingSOS;
 // Profissional clica em RECUSAR CHAMADO
 function rejectIncomingSOS() {
   closeIncomingSOSModal();
-  showToast('Chamado de emergência recusado. Encaminhando para outro prestador...');
+  showToast('Chamado de emergência recusado.');
+
+  // Transiciona o radar do cliente para o estado de sem profissionais disponíveis
+  triggerSOSNoProsState();
 }
 window.rejectIncomingSOS = rejectIncomingSOS;
 
-
-
-
-// Dispara o estado de Chamado Aceito na interface
+// Dispara o estado de Chamado Aceito na interface do cliente
 function triggerSOSAcceptedState(pro) {
   const searchingBox = document.getElementById('radar-searching-box');
   const acceptedBox = document.getElementById('radar-accepted-box');
+  const noProsBox = document.getElementById('radar-no-pros-box');
+
   if (searchingBox) searchingBox.style.display = 'none';
+  if (noProsBox) noProsBox.style.display = 'none';
   if (acceptedBox) acceptedBox.style.display = 'flex';
 
   // Atualiza a barra superior do radar
@@ -2785,10 +2813,111 @@ function triggerSOSAcceptedState(pro) {
   showToast(`🚨 ${pro.name} aceitou sua emergência!`);
 }
 
-// Cancela o radar SOS
-function cancelSOSRadar() {
+// Dispara o estado: NENHUM PROFISSIONAL ONLINE / NINGUÉM ACEITOU
+function triggerSOSNoProsState() {
+  window.isSOSCallActive = false;
+  closeIncomingSOSModal();
+
   if (sosRadarTimerId) clearTimeout(sosRadarTimerId);
   if (sosCountdownInterval) clearInterval(sosCountdownInterval);
+
+  const searchingBox = document.getElementById('radar-searching-box');
+  const acceptedBox = document.getElementById('radar-accepted-box');
+  const noProsBox = document.getElementById('radar-no-pros-box');
+
+  if (searchingBox) searchingBox.style.display = 'none';
+  if (acceptedBox) acceptedBox.style.display = 'none';
+  if (noProsBox) noProsBox.style.display = 'flex';
+
+  const captionText = document.getElementById('radar-status-caption');
+  if (captionText) {
+    captionText.innerText = 'Nenhum profissional online no momento';
+  }
+
+  const req = currentSOSRequestData || { type: 'Serviço', bairro: 'Parauapebas' };
+  const subText = document.getElementById('radar-no-pros-subtext');
+  if (subText) {
+    subText.innerText = `No momento todos os prestadores para "${req.type}" no bairro ${req.bairro} estão ocupados ou offline.`;
+  }
+
+  // Renderiza a lista de favoritos do cliente para contato direto
+  renderSOSRadarFavorites();
+
+  // Feedback tátil
+  if (navigator && navigator.vibrate) {
+    try { navigator.vibrate([100, 50, 100]); } catch(e) {}
+  }
+}
+window.triggerSOSNoProsState = triggerSOSNoProsState;
+
+// Renderiza os profissionais favoritados pelo cliente no card de sem plantonistas
+function renderSOSRadarFavorites() {
+  const container = document.getElementById('radar-favs-list-container');
+  if (!container) return;
+
+  const favIds = typeof getFavorites === 'function' ? getFavorites() : [];
+  const favPros = (typeof PROFESSIONALS !== 'undefined' ? PROFESSIONALS : []).filter(p => favIds.includes(p.id));
+
+  const req = currentSOSRequestData || { type: 'Emergência', bairro: 'Parauapebas', desc: 'Atendimento urgente' };
+
+  if (favPros.length === 0) {
+    container.innerHTML = `
+      <div class="sos-empty-fav-card">
+        <i class="fa-regular fa-heart sos-empty-fav-icon"></i>
+        <div>
+          <p class="sos-empty-fav-title">Você ainda não tem profissionais salvos nos favoritos</p>
+          <span class="sos-empty-fav-hint">Salve seus profissionais de confiança para chamá-los rapidamente em qualquer emergência.</span>
+        </div>
+        <button type="button" class="sos-empty-fav-btn" onclick="cancelSOSRadar(); switchTab('search');">
+          <i class="fa-solid fa-magnifying-glass"></i> Ver prestadores na busca
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = favPros.map(p => {
+    const waText = encodeURIComponent(`Olá ${p.name}, vi seu perfil nos meus favoritos do Trampou e preciso de socorro urgente (${req.type || 'Emergência'}) aqui no bairro ${req.bairro || 'Parauapebas'}. Meu problema: ${req.desc || 'Atendimento urgente'}`);
+    const cleanPhone = (p.phone || '').replace(/\D/g, '');
+    const waUrl = cleanPhone ? `https://wa.me/55${cleanPhone}?text=${waText}` : `https://wa.me/?text=${waText}`;
+
+    return `
+      <div class="sos-fav-pro-item">
+        <div class="sos-fav-avatar" onclick="cancelSOSRadar(); openProDetail('${p.id}')" title="Ver perfil de ${p.name}">
+          ${p.avatar 
+            ? `<img src="${p.avatar}" alt="${p.name}">` 
+            : `<div class="sos-fav-fallback">${(p.name || 'P')[0]}</div>`
+          }
+        </div>
+        <div class="sos-fav-info" onclick="cancelSOSRadar(); openProDetail('${p.id}')" title="Ver perfil de ${p.name}">
+          <div class="sos-fav-name-row">
+            <h6>${p.name}</h6>
+            ${p.verified ? '<i class="fa-solid fa-circle-check sos-fav-verified"></i>' : ''}
+          </div>
+          <span class="sos-fav-spec">${p.specialty || 'Profissional'}</span>
+          <div class="sos-fav-sub">
+            <span class="sos-fav-star"><i class="fa-solid fa-star"></i> ${p.rating ? p.rating.toFixed(1).replace('.', ',') : '5,0'}</span>
+            <span class="sos-fav-bairro"><i class="fa-solid fa-location-dot"></i> ${p.neighborhood || 'Parauapebas'}</span>
+          </div>
+        </div>
+        <div class="sos-fav-actions">
+          <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="sos-fav-btn-wa" title="Chamar no WhatsApp">
+            <i class="fa-brands fa-whatsapp"></i>
+            <span>WhatsApp</span>
+          </a>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+window.renderSOSRadarFavorites = renderSOSRadarFavorites;
+
+// Cancela o radar SOS
+function cancelSOSRadar() {
+  window.isSOSCallActive = false;
+  if (sosRadarTimerId) clearTimeout(sosRadarTimerId);
+  if (sosCountdownInterval) clearInterval(sosCountdownInterval);
+  closeIncomingSOSModal();
 
   const radarModal = document.getElementById('sos-radar-modal');
   if (radarModal) radarModal.classList.remove('active');

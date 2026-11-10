@@ -47,7 +47,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=43">
+  <link rel="stylesheet" href="styles.css?v=42">
 </head>
 <body>
   <!-- Container Principal do Aplicativo Nativo / PWA -->
@@ -2109,6 +2109,39 @@
                   </button>
                 </div>
               </div>
+
+              <!-- ESTADO 3: NENHUM PROFISSIONAL ONLINE / NÃO HOUVE RESPOSTA -->
+              <div id="radar-no-pros-box" class="radar-box-state" style="display: none;">
+                <div class="radar-no-pros-header">
+                  <div class="radar-no-pros-icon">
+                    <i class="fa-solid fa-user-clock"></i>
+                  </div>
+                  <div>
+                    <h4 class="radar-no-pros-title">Nenhum profissional online agora</h4>
+                    <span class="radar-no-pros-sub" id="radar-no-pros-subtext">No momento não encontramos prestadores disponíveis nesta área.</span>
+                  </div>
+                </div>
+
+                <!-- Lista de Favoritos do Cliente -->
+                <div class="radar-favs-section">
+                  <div class="radar-favs-section-title">
+                    <i class="fa-solid fa-heart" style="color: #EF4444;"></i>
+                    <span>Seus profissionais favoritados</span>
+                  </div>
+                  <div id="radar-favs-list-container" class="radar-favs-list-scroll">
+                    <!-- Renderizado dinamicamente via renderSOSRadarFavorites() -->
+                  </div>
+                </div>
+
+                <div class="radar-no-pros-actions">
+                  <button type="button" class="btn-retry-radar" onclick="launchSOSRadar()">
+                    <i class="fa-solid fa-rotate-right"></i> Tentar Novamente
+                  </button>
+                  <button type="button" class="btn-close-radar-alt" onclick="cancelSOSRadar()">
+                    Fechar
+                  </button>
+                </div>
+              </div>
             </div>
 
           </div>
@@ -3975,6 +4008,6 @@
     </div>
   </aside>
 
-  <script src="app.js?v=46"></script>
+  <script src="app.js?v=45"></script>
 </body>
 </html>
