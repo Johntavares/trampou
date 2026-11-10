@@ -1,8 +1,8 @@
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
-const MP_ACCESS_TOKEN = process.env.MERCADO_PAGO_ACCESS_TOKEN || 'APP_USR-2365226061846646-111007-1d2a3b4e8edb8b1d6db770721ac5eed4-3832646532';
-const MP_PUBLIC_KEY = process.env.MERCADO_PAGO_PUBLIC_KEY || 'APP_USR-14c39827-b5f9-4b2f-9669-c39a6c814aa3';
+const MP_ACCESS_TOKEN = process.env.MERCADO_PAGO_ACCESS_TOKEN || 'APP_USR-6642156034321863-111007-4d628ecb0ab61599307361b1e89b0771-1261556524';
+const MP_PUBLIC_KEY = process.env.MERCADO_PAGO_PUBLIC_KEY || 'APP_USR-df68f35d-489d-42d7-a42d-ed9d30232984';
 
 /**
  * Cria um pedido com pagamento PIX via API de Orders do Mercado Pago
