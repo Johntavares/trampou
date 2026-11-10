@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=39">
+  <link rel="stylesheet" href="styles.css?v=40">
 </head>
 <body>
   <!-- Container Principal do Aplicativo Nativo / PWA -->
@@ -3555,7 +3555,7 @@
                     <strong>Feed da Página Inicial</strong>
                     <span class="ad-tag-pop">Mais Popular</span>
                   </div>
-                  <p>Card patrocinado integrado entre as postagens e destaques</p>
+                  <p>Card patrocinado no feed principal • <span class="ad-dim-tag"><i class="fa-solid fa-vector-square"></i> 16:9 (1080×608px)</span></p>
                 </div>
                 <div class="ad-place-radio"><div class="ad-radio-dot"></div></div>
               </div>
@@ -3567,7 +3567,7 @@
                     <strong>Carrossel de Destaques Topo</strong>
                     <span class="ad-tag-gold">Destaque Nobre</span>
                   </div>
-                  <p>Banner horizontal deslizante logo no topo do aplicativo</p>
+                  <p>Banner panorâmico no topo • <span class="ad-dim-tag"><i class="fa-solid fa-vector-square"></i> 2:1 Panorâmico (1200×500px)</span></p>
                 </div>
                 <div class="ad-place-radio"><div class="ad-radio-dot"></div></div>
               </div>
@@ -3579,7 +3579,7 @@
                     <strong>Busca & Categorias</strong>
                     <span class="ad-tag-blue">Alta Conversão</span>
                   </div>
-                  <p>Aparece fixo no topo quando o cliente pesquisa profissionais</p>
+                  <p>Topo ao pesquisar serviços • <span class="ad-dim-tag"><i class="fa-solid fa-vector-square"></i> 16:9 ou 1:1 (800×450px)</span></p>
                 </div>
                 <div class="ad-place-radio"><div class="ad-radio-dot"></div></div>
               </div>
@@ -3591,7 +3591,7 @@
                     <strong>Rodapé dos Prestadores</strong>
                     <span class="ad-tag-green">Parceiro</span>
                   </div>
-                  <p>Exibição no final de todos os perfis públicos</p>
+                  <p>Final dos perfis de profissionais • <span class="ad-dim-tag"><i class="fa-solid fa-vector-square"></i> 16:9 (1080×450px)</span></p>
                 </div>
                 <div class="ad-place-radio"><div class="ad-radio-dot"></div></div>
               </div>
@@ -3736,7 +3736,23 @@
 
               <!-- Upload de Imagem -->
               <div class="ad-field">
-                <label class="ad-field-label">Foto, Flyer ou Logo (Opcional)</label>
+                <label class="ad-field-label">Foto, Flyer ou Logomarca (Opcional)</label>
+                
+                <!-- Card Guia Dinâmico de Proporções -->
+                <div class="ad-ratio-helper-card" id="ad-ratio-helper">
+                  <div class="ad-ratio-icon-box">
+                    <i class="fa-solid fa-crop-simple"></i>
+                  </div>
+                  <div class="ad-ratio-text">
+                    <div class="ad-ratio-target-header">
+                      <span id="ad-ratio-target-title">Formato recomendado: Feed da Página Inicial</span>
+                      <span class="ad-ratio-badge-pill" id="ad-ratio-badge">16:9</span>
+                    </div>
+                    <strong class="ad-ratio-spec" id="ad-ratio-target-dims">Resolução ideal: 1080 × 608 px (Horizontal)</strong>
+                    <p class="ad-ratio-tip" id="ad-ratio-target-tip">Evita cortes nas laterais e garante máxima nitidez no smartphone.</p>
+                  </div>
+                </div>
+
                 <div class="ad-upload-tile" onclick="document.getElementById('ad-file-input').click()">
                   <input type="file" id="ad-file-input" accept="image/*" style="display: none;" onchange="handleAdImageFile(event)">
                   <div id="ad-upload-placeholder" class="ad-upload-inner">
@@ -3915,6 +3931,6 @@
     </div>
   </aside>
 
-  <script src="app.js?v=39"></script>
+  <script src="app.js?v=40"></script>
 </body>
 </html>

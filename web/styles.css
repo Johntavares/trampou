@@ -14837,3 +14837,92 @@ body {
 .ad-modal-backdrop[style*="display: flex"] {
   display: flex !important;
 }
+
+
+/* =========================================================
+   TRAMPOU ADS: GUIA VISUAL DE PROPORÇÕES E DIMENSÕES
+   ========================================================= */
+.ad-dim-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #F1F5F9;
+  color: #475569;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 5px;
+  margin-top: 2px;
+}
+
+.ad-place-card.active .ad-dim-tag {
+  background: #EDE9FE;
+  color: #6D28D9;
+}
+
+.ad-ratio-helper-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #FAF5FF;
+  border: 1.5px solid #DDD6FE;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  transition: all 0.25s ease;
+}
+
+.ad-ratio-icon-box {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+  box-shadow: 0 3px 8px rgba(124, 58, 237, 0.25);
+}
+
+.ad-ratio-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.ad-ratio-target-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #6D28D9;
+  margin-bottom: 2px;
+}
+
+.ad-ratio-badge-pill {
+  background: #7C3AED;
+  color: #FFFFFF;
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 1px 7px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.ad-ratio-spec {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #0F172A;
+  margin-bottom: 2px;
+}
+
+.ad-ratio-tip {
+  margin: 0;
+  font-size: 11px;
+  color: #64748B;
+  line-height: 1.35;
+}

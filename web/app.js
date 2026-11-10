@@ -10564,6 +10564,9 @@ function selectAdPlacementOption(placement) {
     const isMatch = el.getAttribute('data-placement') === placement;
     el.classList.toggle('active', isMatch);
   });
+  if (typeof updateCreativeRatioGuide === 'function') {
+    updateCreativeRatioGuide(placement);
+  }
   updateFooterSummary();
 }
 window.selectAdPlacementOption = selectAdPlacementOption;
@@ -10890,3 +10893,59 @@ function updateLiveAdPreview() {
   }
 }
 window.updateLiveAdPreview = updateLiveAdPreview;
+
+
+const AD_PLACEMENT_SPECS = {
+  home_feed: {
+    title: 'Feed da Página Inicial',
+    badge: '16:9',
+    dimensions: 'Resolução ideal: 1080 × 608 px (Horizontal)',
+    tip: 'Formato padrão de post/card. Textos e logos ficam perfeitamente centralizados sem cortes.',
+    previewAspect: '16 / 9'
+  },
+  home_carousel: {
+    title: 'Carrossel de Destaques Topo',
+    badge: '2:1 Panorâmico',
+    dimensions: 'Resolução ideal: 1200 × 500 px (Widescreen)',
+    tip: 'Banner horizontal largo no topo. Mantenha os textos na faixa central para visualização em todos os celulares.',
+    previewAspect: '21 / 9'
+  },
+  search_sponsored: {
+    title: 'Busca & Categorias',
+    badge: '16:9 ou 1:1',
+    dimensions: 'Resolução ideal: 800 × 450 px (ou 600 × 600 px)',
+    tip: 'Aparece no topo dos resultados de pesquisa de profissionais. Imagens com chamada curta convertem melhor.',
+    previewAspect: '16 / 9'
+  },
+  profile_footer: {
+    title: 'Rodapé dos Prestadores',
+    badge: '16:9',
+    dimensions: 'Resolução ideal: 1080 × 450 px (Faixa Horizontal)',
+    tip: 'Banner rodapé que acompanha o perfil dos prestadores. Ideal para ofertas de fornecedores e serviços complementares.',
+    previewAspect: '16 / 9'
+  }
+};
+
+function updateCreativeRatioGuide(placement) {
+  const spec = AD_PLACEMENT_SPECS[placement] || AD_PLACEMENT_SPECS.home_feed;
+  const targetTitle = document.getElementById('ad-ratio-target-title');
+  const targetBadge = document.getElementById('ad-ratio-badge');
+  const targetDims = document.getElementById('ad-ratio-target-dims');
+  const targetTip = document.getElementById('ad-ratio-target-tip');
+  const previewMedia = document.querySelector('.ad-live-media-wrap');
+
+  if (targetTitle) targetTitle.innerText = `Formato recomendado: ${spec.title}`;
+  if (targetBadge) targetBadge.innerText = spec.badge;
+  if (targetDims) targetDims.innerText = spec.dimensions;
+  if (targetTip) targetTip.innerText = spec.tip;
+
+  if (previewMedia && spec.previewAspect) {
+    previewMedia.style.aspectRatio = spec.previewAspect;
+    if (placement === 'home_carousel') {
+      previewMedia.style.height = '100px';
+    } else {
+      previewMedia.style.height = '130px';
+    }
+  }
+}
+window.updateCreativeRatioGuide = updateCreativeRatioGuide;
