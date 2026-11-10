@@ -136,3 +136,4 @@ function renderHtml({ title, description, image, redirectUrl }) {
 </body>
 </html>`;
 }
+

@@ -47,3 +47,4 @@ CREATE POLICY "Permitir atualização de status lido"
 
 -- Notificar PostgREST para recarregar o schema
 NOTIFY pgrst, 'reload schema';
+
