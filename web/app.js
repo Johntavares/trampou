@@ -10508,7 +10508,7 @@ function closeAdvertiseModal() {
     const modal = document.getElementById('modal-advertise-checkout');
     if (modal) {
       modal.classList.remove('active');
-      modal.style.display = 'none';
+      modal.style.setProperty('display', 'none', 'important');
     }
   } catch (err) {
     console.warn('Erro ao fechar modal:', err);
@@ -10556,15 +10556,7 @@ function updateLiveAdPreview() {
 window.updateLiveAdPreview = updateLiveAdPreview;
 
 
-function closeAdvertiseModal() {
-  if (activePixPollingTimer) {
-    clearInterval(activePixPollingTimer);
-    activePixPollingTimer = null;
-  }
-  const modal = document.getElementById('modal-advertise-checkout');
-  if (modal) modal.style.display = 'none';
-}
-window.closeAdvertiseModal = closeAdvertiseModal;
+
 
 function selectAdPlacementOption(placement) {
   selectedAdPlacement = placement;
