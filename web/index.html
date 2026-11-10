@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=41">
+  <link rel="stylesheet" href="styles.css?v=42">
 </head>
 <body>
   <!-- Container Principal do Aplicativo Nativo / PWA -->
@@ -3596,6 +3596,12 @@
                 <div class="ad-place-radio"><div class="ad-radio-dot"></div></div>
               </div>
             </div>
+
+            <!-- Alerta Informativo Dinâmico sobre o Formato Escolhido -->
+            <div id="ad-format-explanation-alert" class="ad-format-info-box">
+              <div class="ad-format-pill card"><i class="fa-solid fa-newspaper"></i> Formato: Card Patrocinado Nativo</div>
+              <p><strong>Neste espaço o anúncio é exibido como um card completo.</strong> Preencha o título em destaque, a descrição do seu serviço e adicione uma foto ou logomarca para chamar a atenção dos clientes.</p>
+            </div>
           </div>
 
           <!-- 2. SELEÇÃO DE PERÍODO & PACOTE -->
@@ -3650,7 +3656,7 @@
                 <span class="ad-live-tag-pill" id="ad-preview-banner-badge"><i class="fa-solid fa-bolt"></i> Destaque Panorâmico</span>
               </div>
               <div class="ad-preview-banner-footer-hint">
-                <i class="fa-solid fa-hand-pointer"></i> O banner inteiro é clicável e direciona para o seu WhatsApp/link
+                <i class="fa-solid fa-hand-pointer"></i> <span id="ad-preview-banner-hint-text">O banner inteiro é clicável e direciona para o seu WhatsApp/link</span>
               </div>
             </div>
 
@@ -3731,7 +3737,7 @@
                   <label class="ad-field-label" id="ad-label-phone">WhatsApp de Destino <span class="req">*</span></label>
                   <div class="ad-field-input-wrap">
                     <i class="fa-brands fa-whatsapp ad-field-icon" style="color: #10B981;"></i>
-                    <input type="tel" id="ad-input-phone" placeholder="(94) 99123-4567" required>
+                    <input type="tel" id="ad-input-phone" placeholder="(94) 99123-4567" oninput="updateLiveAdPreview()" required>
                   </div>
                 </div>
 
@@ -3950,6 +3956,6 @@
     </div>
   </aside>
 
-  <script src="app.js?v=41"></script>
+  <script src="app.js?v=42"></script>
 </body>
 </html>

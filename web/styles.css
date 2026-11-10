@@ -14251,20 +14251,6 @@ body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
 
-.ad-live-media-wrap {
-  position: relative;
-  width: 100%;
-  height: 120px;
-  background: #F1F5F9;
-}
-
-.ad-live-media-wrap img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
 .ad-live-tag-pill {
   position: absolute;
   top: 8px;
@@ -14931,6 +14917,43 @@ body {
 /* =========================================================
    TRAMPOU ADS: PRÉVIA DUAL (BANNER PURO VS CARD NATIVO)
    ========================================================= */
+.ad-format-info-box {
+  margin-top: 12px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  transition: all 0.2s ease;
+}
+
+.ad-format-info-box .ad-format-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+.ad-format-info-box .ad-format-pill.banner {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.ad-format-info-box .ad-format-pill.card {
+  background: #EDE9FE;
+  color: #6D28D9;
+}
+
+.ad-format-info-box p {
+  margin: 0;
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.45;
+}
+
 .ad-preview-banner-box {
   width: 100%;
   border-radius: 14px;
@@ -14943,21 +14966,24 @@ body {
 .ad-preview-banner-frame {
   position: relative;
   width: 100%;
+  min-height: 120px;
+  max-height: 220px;
   background: #0F172A;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   border-radius: 14px 14px 0 0;
+  padding: 4px;
 }
 
 .ad-preview-banner-frame img {
   width: 100%;
   height: auto;
-  max-height: 180px;
-  object-fit: contain;
+  max-height: 210px;
+  object-fit: contain !important;
   display: block;
-  background: #0F172A;
+  border-radius: 8px;
 }
 
 .ad-preview-banner-footer-hint {
@@ -14976,32 +15002,38 @@ body {
   color: #7C3AED;
 }
 
-/* Card nativo ajustado para não cortar a imagem */
+/* Card nativo ajustado para não cortar a imagem em nenhuma hipótese */
 .ad-live-media-wrap {
   position: relative;
   width: 100%;
+  min-height: 120px;
+  max-height: 220px;
   background: #0F172A;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  padding: 4px;
 }
 
 .ad-live-media-wrap img {
   width: 100%;
   height: auto;
-  max-height: 180px;
-  object-fit: contain;
+  max-height: 210px;
+  object-fit: contain !important;
   display: block;
+  border-radius: 8px;
 }
 
 /* Upload tile image sem corte */
 .ad-uploaded-image {
   width: 100%;
   height: auto;
-  max-height: 180px;
-  object-fit: contain;
+  max-height: 200px;
+  object-fit: contain !important;
   background: #0F172A;
   border-radius: 10px;
   display: block;
+  padding: 4px;
+  margin: 0 auto;
 }

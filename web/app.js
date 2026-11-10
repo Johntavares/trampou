@@ -10523,14 +10523,16 @@ function updateLiveAdPreview() {
     const titleInput = document.getElementById('ad-input-title');
     const descInput = document.getElementById('ad-input-desc');
     const ctaInput = document.getElementById('ad-input-cta-text');
+    const phoneInput = document.getElementById('ad-input-phone');
 
     const adv = (advInput && advInput.value ? advInput.value.trim() : '') || 'Sua Empresa ou Negócio';
     const title = (titleInput && titleInput.value ? titleInput.value.trim() : '') || 'Título do seu anúncio em destaque no app';
     const desc = (descInput && descInput.value ? descInput.value.trim() : '') || 'Apresente sua oferta, diferencial ou serviços para clientes locais.';
     const cta = (ctaInput && ctaInput.value ? ctaInput.value : '') || 'Chamar no WhatsApp';
+    const phone = (phoneInput && phoneInput.value ? phoneInput.value.trim() : '') || '(94) 99123-4567';
     const loc = (typeof currentActiveLocation !== 'undefined' && currentActiveLocation) ? currentActiveLocation : { city: 'Parauapebas', state: 'PA' };
 
-    // Atualiza Card Nativo
+    // 1. Atualiza Card Nativo (Feed / Busca)
     const prevAdv = document.getElementById('ad-live-preview-advertiser');
     const prevTitle = document.getElementById('ad-live-preview-title');
     const prevDesc = document.getElementById('ad-live-preview-desc');
@@ -10552,14 +10554,19 @@ function updateLiveAdPreview() {
 
     if (prevImg) prevImg.src = activeImgSrc;
 
-    // Atualiza Banner Puro
+    // 2. Atualiza Banner Puro (Carrossel / Rodapé)
     const bannerImg = document.getElementById('ad-preview-banner-img');
     const bannerBadge = document.getElementById('ad-preview-banner-badge');
+    const bannerHint = document.getElementById('ad-preview-banner-hint-text');
+
     if (bannerImg) bannerImg.src = activeImgSrc;
     if (bannerBadge) {
       bannerBadge.innerHTML = (selectedAdPlacement === 'home_carousel') 
         ? '<i class="fa-solid fa-bolt"></i> Destaque Carrossel Topo'
         : '<i class="fa-solid fa-handshake"></i> Rodapé dos Prestadores';
+    }
+    if (bannerHint) {
+      bannerHint.innerText = `O banner inteiro é clicável e direciona para o seu WhatsApp: ${phone}`;
     }
   } catch (err) {
     console.warn('updateLiveAdPreview avisou:', err);
@@ -10894,67 +10901,36 @@ window.closeAdvertiseModalAndShowAd = closeAdvertiseModalAndShowAd;
 
 
 // ==============================================================================
-// TRAMPOU ADS: ATUALIZAÇÕES VISUAIS E PRÉVIA EM TEMPO REAL
+// TRAMPOU ADS: ESPECIFICAÇÕES DE MEDIDAS E GUIA DINÂMICO
 // ==============================================================================
-function updateLiveAdPreview() {
-  const adv = document.getElementById('ad-input-advertiser')?.value.trim() || 'Sua Empresa ou Negócio';
-  const title = document.getElementById('ad-input-title')?.value.trim() || 'Título do seu anúncio em destaque no app';
-  const desc = document.getElementById('ad-input-desc')?.value.trim() || 'Apresente sua oferta, diferencial ou serviços para clientes locais.';
-  const cta = document.getElementById('ad-input-cta-text')?.value || 'Chamar no WhatsApp';
-  const loc = currentActiveLocation || { city: 'Parauapebas', state: 'PA' };
-
-  const prevAdv = document.getElementById('ad-live-preview-advertiser');
-  const prevTitle = document.getElementById('ad-live-preview-title');
-  const prevDesc = document.getElementById('ad-live-preview-desc');
-  const prevCta = document.getElementById('ad-live-preview-cta');
-  const prevCity = document.getElementById('ad-live-preview-city');
-  const prevImg = document.getElementById('ad-live-preview-img');
-
-  if (prevAdv) prevAdv.innerText = adv;
-  if (prevTitle) prevTitle.innerText = title;
-  if (prevDesc) prevDesc.innerText = desc;
-  if (prevCity) prevCity.innerText = `${loc.city}, ${loc.state}`;
-  if (prevCta) prevCta.innerHTML = `${cta} <i class="fa-brands fa-whatsapp"></i>`;
-
-  if (prevImg) {
-    if (currentAdUploadedImage) {
-      prevImg.src = currentAdUploadedImage;
-    } else {
-      prevImg.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&auto=format&fit=crop&q=80';
-    }
-  }
-}
-window.updateLiveAdPreview = updateLiveAdPreview;
-
-
 const AD_PLACEMENT_SPECS = {
   home_feed: {
     title: 'Feed da Página Inicial',
-    badge: '16:9',
+    badge: '16:9 Retangular',
     dimensions: 'Resolução ideal: 1080 × 608 px (Horizontal)',
-    tip: 'Formato padrão de post/card. Textos e logos ficam perfeitamente centralizados sem cortes.',
+    tip: 'Card patrocinado no feed principal. Textos, logos e fotos ficam perfeitamente alinhados com o título e botão de WhatsApp.',
     previewAspect: '16 / 9'
   },
   home_carousel: {
     title: 'Carrossel de Destaques Topo',
-    badge: '2:1 Panorâmico',
+    badge: '2.4:1 Panorâmico',
     dimensions: 'Resolução ideal: 1200 × 500 px (Widescreen)',
-    tip: 'Banner horizontal largo no topo. Mantenha os textos na faixa central para visualização em todos os celulares.',
-    previewAspect: '21 / 9'
+    tip: 'Banner horizontal de topo. Sua imagem é o próprio banner e direciona diretamente ao WhatsApp ao ser tocado.',
+    previewAspect: '2.4 / 1'
   },
   search_sponsored: {
     title: 'Busca & Categorias',
     badge: '16:9 ou 1:1',
     dimensions: 'Resolução ideal: 800 × 450 px (ou 600 × 600 px)',
-    tip: 'Aparece no topo dos resultados de pesquisa de profissionais. Imagens com chamada curta convertem melhor.',
+    tip: 'Aparece no topo dos resultados de pesquisa. Card nativo com foto da oferta, chamada curta e botão de contato.',
     previewAspect: '16 / 9'
   },
   profile_footer: {
     title: 'Rodapé dos Prestadores',
-    badge: '16:9',
-    dimensions: 'Resolução ideal: 1080 × 450 px (Faixa Horizontal)',
-    tip: 'Banner rodapé que acompanha o perfil dos prestadores. Ideal para ofertas de fornecedores e serviços complementares.',
-    previewAspect: '16 / 9'
+    badge: '2.4:1 Horizontal',
+    dimensions: 'Resolução ideal: 1080 × 450 px (Faixa Panorâmica)',
+    tip: 'Banner limpo no final dos perfis dos profissionais. Sua arte é o banner completo e abre seu WhatsApp ao tocar.',
+    previewAspect: '2.4 / 1'
   }
 };
 
@@ -10962,16 +10938,31 @@ function updateCreativeRatioGuide(placement) {
   const spec = AD_PLACEMENT_SPECS[placement] || AD_PLACEMENT_SPECS.home_feed;
   const isBannerType = (placement === 'home_carousel' || placement === 'profile_footer');
 
-  // 1. Atualiza guia de proporções
+  // 1. Atualiza guia de proporções e alerta dinâmico
   const targetTitle = document.getElementById('ad-ratio-target-title');
   const targetBadge = document.getElementById('ad-ratio-badge');
   const targetDims = document.getElementById('ad-ratio-target-dims');
   const targetTip = document.getElementById('ad-ratio-target-tip');
+  const formatAlert = document.getElementById('ad-format-explanation-alert');
 
   if (targetTitle) targetTitle.innerText = `Formato recomendado: ${spec.title}`;
   if (targetBadge) targetBadge.innerText = spec.badge;
   if (targetDims) targetDims.innerText = spec.dimensions;
   if (targetTip) targetTip.innerText = spec.tip;
+
+  if (formatAlert) {
+    if (isBannerType) {
+      formatAlert.innerHTML = `
+        <div class="ad-format-pill banner"><i class="fa-solid fa-images"></i> Formato: Banner Panorâmico Puro</div>
+        <p><strong>Neste espaço você só precisa enviar a arte do seu banner e seu WhatsApp de destino.</strong> Não há título ou texto adicional em caixas — a sua arte é o próprio anúncio completo e qualquer toque no banner leva o cliente direto para o seu WhatsApp!</p>
+      `;
+    } else {
+      formatAlert.innerHTML = `
+        <div class="ad-format-pill card"><i class="fa-solid fa-newspaper"></i> Formato: Card Patrocinado Nativo</div>
+        <p><strong>Neste espaço o anúncio é exibido como um card completo no fluxo.</strong> Preencha o título em destaque, a descrição da sua oferta e adicione uma foto ou flyer para chamar a atenção dos clientes.</p>
+      `;
+    }
+  }
 
   // 2. Alterna entre modo Banner Puro vs Card Nativo
   const bannerPreviewBox = document.getElementById('ad-preview-mode-banner');
@@ -10986,9 +10977,9 @@ function updateCreativeRatioGuide(placement) {
     if (bannerPreviewBox) bannerPreviewBox.style.display = 'block';
     if (cardPreviewBox) cardPreviewBox.style.display = 'none';
     if (textFieldsBox) textFieldsBox.style.display = 'none';
-    if (uploadLabel) uploadLabel.innerHTML = 'Arte do Banner (Obrigatório para este formato) <span class="req">*</span>';
+    if (uploadLabel) uploadLabel.innerHTML = 'Arte do Banner Panorâmico (Obrigatório) <span class="req">*</span>';
     if (stepTitle) stepTitle.innerText = 'Envie a arte do seu banner';
-    if (stepSubtitle) stepSubtitle.innerText = 'Sua imagem é o próprio banner e direciona diretamente ao tocar';
+    if (stepSubtitle) stepSubtitle.innerText = 'Sua imagem é o próprio anúncio e direciona ao WhatsApp ao tocar';
   } else {
     // MODO CARD NATIVO COM TEXTOS (Feed e Busca)
     if (bannerPreviewBox) bannerPreviewBox.style.display = 'none';
@@ -10996,7 +10987,7 @@ function updateCreativeRatioGuide(placement) {
     if (textFieldsBox) textFieldsBox.style.display = 'block';
     if (uploadLabel) uploadLabel.innerHTML = 'Foto ou Flyer da Oferta (Opcional)';
     if (stepTitle) stepTitle.innerText = 'Preencha os dados do anúncio';
-    if (stepSubtitle) stepSubtitle.innerText = 'Título, descrição e botão exibidos no card do feed/busca';
+    if (stepSubtitle) stepSubtitle.innerText = 'Título, descrição e botão exibidos no card patrocinado';
   }
 
   updateLiveAdPreview();
