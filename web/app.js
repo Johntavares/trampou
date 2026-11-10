@@ -10429,3 +10429,338 @@ window.copyAskReviewMessage = copyAskReviewMessage;
 
 
 // WhatsApp removido do chat - fluxo 100% nativo no aplicativo
+
+
+// ==============================================================================
+// TRAMPOU ADS: FLUXO DE CONTRATAÇÃO AVULSA COM PIX MERCADO PAGO
+// ==============================================================================
+
+let selectedAdPlacement = 'home_feed';
+let selectedAdDurationDays = 15;
+let selectedAdPrice = 49.90;
+let currentAdUploadedImage = null;
+let activePixPollingTimer = null;
+let currentActivePixOrder = null;
+
+function openAdvertiseModal(preselectedPlacement = null) {
+  if (preselectedPlacement) {
+    selectAdPlacementOption(preselectedPlacement);
+  } else {
+    selectAdPlacementOption('home_feed');
+  }
+  selectAdDurationOption(15, 49.90);
+
+  // Preenche dados do usuário se estiver logado
+  const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+  const advInput = document.getElementById('ad-input-advertiser');
+  const phoneInput = document.getElementById('ad-input-phone');
+  const emailInput = document.getElementById('ad-input-email');
+  const cityInput = document.getElementById('ad-input-city');
+
+  if (advInput && user && user.name && !advInput.value) {
+    advInput.value = user.name;
+  }
+  if (phoneInput && user && user.phone && !phoneInput.value) {
+    phoneInput.value = user.phone;
+  }
+  if (emailInput && user && user.email && !emailInput.value) {
+    emailInput.value = user.email;
+  }
+  if (cityInput) {
+    const loc = currentActiveLocation || { city: 'Parauapebas', state: 'PA' };
+    cityInput.value = `${loc.city}, ${loc.state}`;
+  }
+
+  // Reseta etapas
+  document.getElementById('ad-step-form').style.display = 'block';
+  document.getElementById('ad-step-pix').style.display = 'none';
+  document.getElementById('ad-step-success').style.display = 'none';
+
+  const modal = document.getElementById('modal-advertise-checkout');
+  if (modal) modal.style.display = 'flex';
+}
+window.openAdvertiseModal = openAdvertiseModal;
+
+function closeAdvertiseModal() {
+  if (activePixPollingTimer) {
+    clearInterval(activePixPollingTimer);
+    activePixPollingTimer = null;
+  }
+  const modal = document.getElementById('modal-advertise-checkout');
+  if (modal) modal.style.display = 'none';
+}
+window.closeAdvertiseModal = closeAdvertiseModal;
+
+function selectAdPlacementOption(placement) {
+  selectedAdPlacement = placement;
+  document.querySelectorAll('.ad-placement-option').forEach(el => {
+    const isMatch = el.getAttribute('data-placement') === placement;
+    el.classList.toggle('active', isMatch);
+    const radio = el.querySelector('input[type="radio"]');
+    if (radio) radio.checked = isMatch;
+  });
+}
+window.selectAdPlacementOption = selectAdPlacementOption;
+
+function selectAdDurationOption(days, price) {
+  selectedAdDurationDays = days;
+  selectedAdPrice = price;
+
+  document.querySelectorAll('.ad-duration-pill').forEach(el => {
+    const elDays = parseInt(el.getAttribute('data-days'), 10);
+    el.classList.toggle('active', elDays === days);
+  });
+
+  const label = document.getElementById('btn-submit-pix-label');
+  if (label) {
+    label.innerText = `Gerar Pagamento PIX (R$ ${price.toFixed(2).replace('.', ',')})`;
+  }
+}
+window.selectAdDurationOption = selectAdDurationOption;
+
+async function handleAdImageFile(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  try {
+    const compressed = (typeof compressImageFile === 'function') 
+      ? await compressImageFile(file, 800, 500, 0.78)
+      : await new Promise((resolve) => {
+          const r = new FileReader();
+          r.onload = e => resolve(e.target.result);
+          r.readAsDataURL(file);
+        });
+
+    currentAdUploadedImage = compressed;
+    const preview = document.getElementById('ad-upload-preview');
+    const previewWrap = document.getElementById('ad-upload-preview-wrap');
+    const placeholder = document.getElementById('ad-upload-placeholder');
+
+    if (preview && previewWrap && placeholder) {
+      preview.src = compressed;
+      previewWrap.style.display = 'block';
+      placeholder.style.display = 'none';
+    }
+  } catch (err) {
+    showToast('Não foi possível processar a imagem.');
+  }
+}
+window.handleAdImageFile = handleAdImageFile;
+
+function removeAdImagePreview() {
+  currentAdUploadedImage = null;
+  const fileInput = document.getElementById('ad-file-input');
+  if (fileInput) fileInput.value = '';
+  const previewWrap = document.getElementById('ad-upload-preview-wrap');
+  const placeholder = document.getElementById('ad-upload-placeholder');
+  if (previewWrap) previewWrap.style.display = 'none';
+  if (placeholder) placeholder.style.display = 'block';
+}
+window.removeAdImagePreview = removeAdImagePreview;
+
+async function submitAdAndGeneratePix() {
+  const advertiser = (document.getElementById('ad-input-advertiser')?.value || '').trim();
+  const title = (document.getElementById('ad-input-title')?.value || '').trim();
+  const desc = (document.getElementById('ad-input-desc')?.value || '').trim();
+  const phone = (document.getElementById('ad-input-phone')?.value || '').trim();
+  const email = (document.getElementById('ad-input-email')?.value || '').trim();
+  const ctaText = (document.getElementById('ad-input-cta-text')?.value || '').trim() || 'Chamar no WhatsApp';
+
+  if (!advertiser) {
+    showToast('Informe o nome da sua empresa ou negócio.');
+    return;
+  }
+  if (!title) {
+    showToast('Informe o título principal do seu anúncio.');
+    return;
+  }
+  if (!phone) {
+    showToast('Informe o seu número de WhatsApp de atendimento.');
+    return;
+  }
+  if (!email || !email.includes('@')) {
+    showToast('Informe um e-mail válido para o comprovante.');
+    return;
+  }
+
+  const cleanPhone = phone.replace(/\D/g, '');
+  const ctaLink = `https://wa.me/55${cleanPhone}?text=${encodeURIComponent('Olá! Vi seu anúncio no Trampou e gostaria de informações.')}`;
+
+  const btn = document.getElementById('btn-submit-ad-pix');
+  const label = document.getElementById('btn-submit-pix-label');
+  if (btn) btn.disabled = true;
+  if (label) label.innerText = 'Gerando PIX no Mercado Pago...';
+
+  try {
+    const loc = currentActiveLocation || { city: 'Parauapebas', state: 'PA' };
+    const res = await fetch('/api/mercadopago/create-pix', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        placement: selectedAdPlacement,
+        duration_days: selectedAdDurationDays,
+        title: title,
+        description: desc,
+        advertiser_name: advertiser,
+        advertiser_phone: phone,
+        cta_text: ctaText,
+        cta_link: ctaLink,
+        image_url: currentAdUploadedImage || '',
+        target_city: loc.city || 'Parauapebas',
+        target_state: loc.state || 'PA',
+        payer_email: email
+      })
+    });
+
+    const data = await res.json();
+    if (!data.success) {
+      throw new Error(data.error || 'Erro ao gerar cobrança PIX');
+    }
+
+    currentActivePixOrder = {
+      orderId: data.orderId,
+      bannerId: data.bannerId,
+      durationDays: selectedAdDurationDays,
+      advertiser: advertiser,
+      placement: selectedAdPlacement,
+      price: selectedAdPrice
+    };
+
+    // Preenche tela de PIX
+    const qrImg = document.getElementById('pix-qr-img');
+    const copiaColaInput = document.getElementById('pix-copia-cola-input');
+    const summaryText = document.getElementById('pix-summary-text');
+
+    if (qrImg && data.qrCodeBase64) {
+      qrImg.src = `data:image/png;base64,${data.qrCodeBase64}`;
+    }
+    if (copiaColaInput && data.qrCode) {
+      copiaColaInput.value = data.qrCode;
+    }
+
+    const placementLabels = {
+      home_feed: 'Feed da Home',
+      search_sponsored: 'Busca & Categorias',
+      profile_footer: 'Rodapé do Perfil',
+      home_carousel: 'Carrossel Topo'
+    };
+    if (summaryText) {
+      summaryText.innerText = `${placementLabels[selectedAdPlacement] || 'Anúncio'} • ${selectedAdDurationDays} dias • R$ ${selectedAdPrice.toFixed(2).replace('.', ',')}`;
+    }
+
+    document.getElementById('ad-step-form').style.display = 'none';
+    document.getElementById('ad-step-pix').style.display = 'block';
+
+    // Inicia polling a cada 3.5 segundos para detectar o pagamento do banco
+    if (activePixPollingTimer) clearInterval(activePixPollingTimer);
+    activePixPollingTimer = setInterval(() => checkCurrentPixPaymentStatus(false), 3500);
+
+  } catch (err) {
+    showToast(err.message || 'Falha ao conectar com o Mercado Pago.');
+  } finally {
+    if (btn) btn.disabled = false;
+    if (label) label.innerText = `Gerar Pagamento PIX (R$ ${selectedAdPrice.toFixed(2).replace('.', ',')})`;
+  }
+}
+window.submitAdAndGeneratePix = submitAdAndGeneratePix;
+
+function copyPixCodeToClipboard() {
+  const input = document.getElementById('pix-copia-cola-input');
+  if (!input || !input.value) return;
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(input.value).then(() => {
+      showToast('📋 Código PIX copiado! Cole no aplicativo do seu banco.');
+    }).catch(() => {
+      input.select();
+      document.execCommand('copy');
+      showToast('📋 Código PIX copiado!');
+    });
+  } else {
+    input.select();
+    document.execCommand('copy');
+    showToast('📋 Código PIX copiado!');
+  }
+}
+window.copyPixCodeToClipboard = copyPixCodeToClipboard;
+
+async function checkCurrentPixPaymentStatus(manualTrigger = false) {
+  if (!currentActivePixOrder || !currentActivePixOrder.orderId) return;
+
+  const statusLabel = document.getElementById('pix-status-label');
+  if (manualTrigger && statusLabel) {
+    statusLabel.innerText = 'Consultando Mercado Pago...';
+  }
+
+  try {
+    const url = `/api/mercadopago/check-status?order_id=${encodeURIComponent(currentActivePixOrder.orderId)}&banner_id=${encodeURIComponent(currentActivePixOrder.bannerId || '')}&duration_days=${currentActivePixOrder.durationDays}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (data.isPaid) {
+      // PAGAMENTO CONFIRMADO COM SUCESSO!
+      if (activePixPollingTimer) {
+        clearInterval(activePixPollingTimer);
+        activePixPollingTimer = null;
+      }
+
+      document.getElementById('ad-step-pix').style.display = 'none';
+      document.getElementById('ad-step-success').style.display = 'block';
+
+      const placementLabels = {
+        home_feed: 'Feed da Página Inicial',
+        search_sponsored: 'Busca & Categorias',
+        profile_footer: 'Rodapé do Perfil',
+        home_carousel: 'Carrossel Superior'
+      };
+
+      document.getElementById('success-advertiser-name').innerText = currentActivePixOrder.advertiser;
+      document.getElementById('success-placement-name').innerText = placementLabels[currentActivePixOrder.placement] || currentActivePixOrder.placement;
+      document.getElementById('success-duration-days').innerText = `${currentActivePixOrder.durationDays} dias (Ativo)`;
+
+      showToast('🎉 Pagamento Aprovado! Seu anúncio já está no ar!');
+      try {
+        if ('vibrate' in navigator) navigator.vibrate([150, 80, 150]);
+      } catch (_) {}
+
+      // Atualiza o motor de anúncios imediatamente para o novo anúncio aparecer na tela
+      if (typeof renderAdBannerCarousel === 'function') {
+        renderAdBannerCarousel(true);
+      }
+    } else if (manualTrigger) {
+      showToast('Pagamento ainda não identificado. Se você já transferiu, aguarde alguns segundos.');
+      if (statusLabel) {
+        statusLabel.innerText = 'Aguardando transferência no seu banco...';
+      }
+    }
+  } catch (err) {
+    if (manualTrigger) showToast('Erro ao consultar status. Tente novamente.');
+  }
+}
+window.checkCurrentPixPaymentStatus = checkCurrentPixPaymentStatus;
+
+function backToAdForm() {
+  if (activePixPollingTimer) {
+    clearInterval(activePixPollingTimer);
+    activePixPollingTimer = null;
+  }
+  document.getElementById('ad-step-pix').style.display = 'none';
+  document.getElementById('ad-step-form').style.display = 'block';
+}
+window.backToAdForm = backToAdForm;
+
+function closeAdvertiseModalAndShowAd() {
+  closeAdvertiseModal();
+  if (currentActivePixOrder) {
+    if (currentActivePixOrder.placement === 'home_feed' || currentActivePixOrder.placement === 'home_carousel') {
+      switchTab('home');
+      window.scrollTo({ top: 350, behavior: 'smooth' });
+    } else if (currentActivePixOrder.placement === 'search_sponsored') {
+      switchTab('search');
+    }
+  }
+  if (typeof renderAdBannerCarousel === 'function') {
+    renderAdBannerCarousel(true);
+  }
+}
+window.closeAdvertiseModalAndShowAd = closeAdvertiseModalAndShowAd;

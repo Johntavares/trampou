@@ -375,6 +375,14 @@
                 </div>
                 <i class="fa-solid fa-chevron-right"></i>
               </div>
+              <div class="menu-item advertise-menu-highlight" onclick="openAdvertiseModal()" style="background: linear-gradient(135deg, #FAF5FF, #F5F3FF); border-left: 3.5px solid #7C3AED; cursor: pointer;">
+                <i class="fa-solid fa-rectangle-ad" style="color: #7C3AED; font-size: 18px;"></i>
+                <div class="menu-text">
+                  <span style="font-weight: 700; color: #6D28D9;">Anunciar no Trampou</span>
+                  <small>Divulgue sua empresa e receba contatos no WhatsApp</small>
+                </div>
+                <span class="badge-pill-novo" style="font-size: 10px; background: #7C3AED; color: #FFF; padding: 2px 7px; border-radius: 10px; font-weight: 700;">PIX</span>
+              </div>
               <div class="menu-item" onclick="openShareAppModal()">
                 <i class="fa-solid fa-share-nodes icon-purple"></i>
                 <div class="menu-text">
@@ -3496,7 +3504,259 @@
       </div>
 
       <!-- BARRA DE NAVEGAÇÃO INFERIOR ÚNICA (Início, Buscar, Pedidos, Conversas, Perfil) -->
-      <nav class="app-bottom-nav">
+      
+  <!-- ==============================================================================
+       MODAL DE CONTRATAÇÃO DE ANÚNCIOS TRAMPOU ADS (PAGAMENTO PIX MERCADO PAGO)
+       ============================================================================== -->
+  <div id="modal-advertise-checkout" class="modal-overlay" style="z-index: 1060; display: none;">
+    <div class="modal-content ad-checkout-content" style="max-width: 480px; width: 95%; max-height: 90vh; border-radius: 18px; padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+      
+      <!-- Cabeçalho do Modal -->
+      <div class="ad-checkout-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="ad-checkout-icon-badge">
+            <i class="fa-solid fa-bullhorn"></i>
+          </div>
+          <div>
+            <h4 style="margin: 0; font-size: 16px; font-weight: 800; color: #1E1B4B;">Anunciar no Trampou</h4>
+            <span style="font-size: 11.5px; color: #64748B;">Divulgue seu negócio para milhares de clientes</span>
+          </div>
+        </div>
+        <button type="button" class="ad-checkout-close" onclick="closeAdvertiseModal()" title="Fechar">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Corpo do Modal com Scroll -->
+      <div class="ad-checkout-body" id="ad-checkout-body-content" style="overflow-y: auto; padding: 16px; flex: 1;">
+        
+        <!-- ETAPA 1: FORMULÁRIO DO ANÚNCIO & SELEÇÃO DE PACOTE -->
+        <div id="ad-step-form">
+          
+          <!-- Escolha do Posicionamento -->
+          <div class="ad-form-section">
+            <label class="ad-form-label"><i class="fa-solid fa-layer-group"></i> 1. Onde você quer anunciar?</label>
+            <div class="ad-placements-grid">
+              <label class="ad-placement-option active" data-placement="home_feed" onclick="selectAdPlacementOption('home_feed')">
+                <input type="radio" name="ad_placement_input" value="home_feed" checked style="display: none;">
+                <div class="ad-placement-top">
+                  <i class="fa-solid fa-newspaper" style="color: #7C3AED;"></i>
+                  <span class="ad-placement-badge">Popular</span>
+                </div>
+                <strong>Feed da Home</strong>
+                <small>Card integrado entre os destaques</small>
+              </label>
+
+              <label class="ad-placement-option" data-placement="search_sponsored" onclick="selectAdPlacementOption('search_sponsored')">
+                <input type="radio" name="ad_placement_input" value="search_sponsored" style="display: none;">
+                <div class="ad-placement-top">
+                  <i class="fa-solid fa-magnifying-glass" style="color: #2563EB;"></i>
+                  <span class="ad-placement-badge" style="background: #EFF6FF; color: #1D4ED8;">Alta Conversão</span>
+                </div>
+                <strong>Busca & Categorias</strong>
+                <small>Topo da lista de pesquisa</small>
+              </label>
+
+              <label class="ad-placement-option" data-placement="profile_footer" onclick="selectAdPlacementOption('profile_footer')">
+                <input type="radio" name="ad_placement_input" value="profile_footer" style="display: none;">
+                <div class="ad-placement-top">
+                  <i class="fa-solid fa-handshake" style="color: #059669;"></i>
+                  <span class="ad-placement-badge" style="background: #ECFDF5; color: #047857;">Parceiro</span>
+                </div>
+                <strong>Rodapé do Perfil</strong>
+                <small>Aparece em todos os prestadores</small>
+              </label>
+
+              <label class="ad-placement-option" data-placement="home_carousel" onclick="selectAdPlacementOption('home_carousel')">
+                <input type="radio" name="ad_placement_input" value="home_carousel" style="display: none;">
+                <div class="ad-placement-top">
+                  <i class="fa-solid fa-images" style="color: #D97706;"></i>
+                  <span class="ad-placement-badge" style="background: #FFFBEB; color: #B45309;">Nobre</span>
+                </div>
+                <strong>Carrossel Topo</strong>
+                <small>Banner deslizante no topo</small>
+              </label>
+            </div>
+          </div>
+
+          <!-- Escolha do Período Avulso -->
+          <div class="ad-form-section" style="margin-top: 16px;">
+            <label class="ad-form-label"><i class="fa-solid fa-calendar-days"></i> 2. Escolha o período (Sem mensalidade):</label>
+            <div class="ad-durations-row">
+              <div class="ad-duration-pill" data-days="7" data-price="29.90" onclick="selectAdDurationOption(7, 29.90)">
+                <span>7 dias</span>
+                <strong>R$ 29,90</strong>
+              </div>
+              <div class="ad-duration-pill active" data-days="15" data-price="49.90" onclick="selectAdDurationOption(15, 49.90)">
+                <span class="ad-duration-tag">Recomendado</span>
+                <span>15 dias</span>
+                <strong>R$ 49,90</strong>
+              </div>
+              <div class="ad-duration-pill" data-days="30" data-price="89.90" onclick="selectAdDurationOption(30, 89.90)">
+                <span>30 dias</span>
+                <strong>R$ 89,90</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dados do Anúncio -->
+          <div class="ad-form-section" style="margin-top: 16px;">
+            <label class="ad-form-label"><i class="fa-solid fa-pen-to-square"></i> 3. Dados do Anúncio:</label>
+            
+            <div class="ad-input-group">
+              <label>Nome da Empresa / Anunciante *</label>
+              <input type="text" id="ad-input-advertiser" placeholder="Ex: Disk Caçambas Carajás, Tintas & Cores" required>
+            </div>
+
+            <div class="ad-input-group">
+              <label>Título do Anúncio (Destaque Principal) *</label>
+              <input type="text" id="ad-input-title" placeholder="Ex: Locação de Caçambas 24h com 15% OFF" required>
+            </div>
+
+            <div class="ad-input-group">
+              <label>Descrição ou Oferta (opcional)</label>
+              <textarea id="ad-input-desc" rows="2" placeholder="Ex: Entulho, poda e reformas com descarte legalizado em toda a cidade."></textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div class="ad-input-group">
+                <label>WhatsApp / Telefone *</label>
+                <input type="tel" id="ad-input-phone" placeholder="(94) 99123-4567" required>
+              </div>
+              <div class="ad-input-group">
+                <label>Seu E-mail (Comprovante) *</label>
+                <input type="email" id="ad-input-email" placeholder="financeiro@empresa.com" required>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div class="ad-input-group">
+                <label>Texto do Botão</label>
+                <input type="text" id="ad-input-cta-text" value="Chamar no WhatsApp">
+              </div>
+              <div class="ad-input-group">
+                <label>Cidade de Veiculação</label>
+                <input type="text" id="ad-input-city" value="Parauapebas, PA" readonly style="background: #F1F5F9; color: #64748B;">
+              </div>
+            </div>
+
+            <!-- Upload de Foto do Anúncio / Banner -->
+            <div class="ad-input-group" style="margin-top: 6px;">
+              <label>Foto, Flyer ou Logomarca do Anúncio (Opcional)</label>
+              <div class="ad-upload-box" onclick="document.getElementById('ad-file-input').click()">
+                <input type="file" id="ad-file-input" accept="image/*" style="display: none;" onchange="handleAdImageFile(event)">
+                <div id="ad-upload-placeholder" style="text-align: center; padding: 14px;">
+                  <i class="fa-solid fa-cloud-arrow-up" style="font-size: 24px; color: #7C3AED; margin-bottom: 6px;"></i>
+                  <p style="margin: 0; font-size: 12.5px; font-weight: 600; color: #1E293B;">Toque para enviar uma imagem da sua galeria</p>
+                  <span style="font-size: 11px; color: #94A3B8;">JPG, PNG ou WEBP (Otimizado automaticamente)</span>
+                </div>
+                <div id="ad-upload-preview-wrap" style="display: none; position: relative;">
+                  <img id="ad-upload-preview" src="" alt="Prévia do Anúncio" style="width: 100%; height: 140px; object-fit: cover; border-radius: 10px; display: block;">
+                  <button type="button" class="btn-remove-ad-img" onclick="event.stopPropagation(); removeAdImagePreview();" title="Trocar imagem">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Botão Gerar PIX -->
+          <div class="ad-checkout-actions" style="margin-top: 20px;">
+            <button type="button" class="btn-generate-pix" id="btn-submit-ad-pix" onclick="submitAdAndGeneratePix()">
+              <i class="fa-brands fa-pix" style="font-size: 18px;"></i>
+              <span id="btn-submit-pix-label">Gerar Pagamento PIX (R$ 49,90)</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- ETAPA 2: TELA DE PAGAMENTO PIX MERCADO PAGO -->
+        <div id="ad-step-pix" style="display: none; padding: 10px 0; text-align: center;">
+          <div class="pix-success-header">
+            <span class="pix-badge-pulse"><i class="fa-brands fa-pix"></i> PIX Dinâmico Mercado Pago</span>
+            <h4 style="margin: 8px 0 2px; font-size: 17px; font-weight: 800; color: #0F172A;">Pague com PIX para ativar na hora</h4>
+            <p style="margin: 0; font-size: 12.5px; color: #64748B;" id="pix-summary-text">Espaço Feed • 15 dias • R$ 49,90</p>
+          </div>
+
+          <!-- QR Code Imagem -->
+          <div class="pix-qr-container" style="margin: 16px auto; width: 220px; height: 220px; background: #FFFFFF; padding: 10px; border-radius: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); border: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: center;">
+            <img id="pix-qr-img" src="" alt="QR Code PIX" style="width: 100%; height: 100%; display: block; border-radius: 8px; object-fit: contain;">
+          </div>
+
+          <!-- Status de Verificação em Tempo Real -->
+          <div class="pix-status-badge" id="pix-status-box">
+            <span class="pix-spinner-dot"></span>
+            <span id="pix-status-label">Aguardando pagamento no seu banco...</span>
+          </div>
+
+          <!-- Código Copia e Cola -->
+          <div style="margin-top: 16px; text-align: left;">
+            <label style="font-size: 11.5px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">Código PIX (Copia e Cola):</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="pix-copia-cola-input" readonly style="flex: 1; padding: 10px; font-size: 11.5px; border: 1px solid #CBD5E1; border-radius: 8px; background: #F8FAFC; color: #334155; font-family: monospace;">
+              <button type="button" class="btn-copy-pix" onclick="copyPixCodeToClipboard()">
+                <i class="fa-solid fa-copy"></i>
+                <span>Copiar</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Instruções Rápidas -->
+          <div class="pix-instructions-card" style="margin-top: 16px; text-align: left; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 12px; font-size: 12px; color: #475569;">
+            <strong style="color: #1E293B; display: block; margin-bottom: 6px;"><i class="fa-solid fa-mobile-screen"></i> Como pagar:</strong>
+            <ol style="margin: 0; padding-left: 18px; line-height: 1.5;">
+              <li>Abra o aplicativo do seu banco (Nubank, Inter, Caixa, Itaú, etc.).</li>
+              <li>Escolha pagar com <strong>PIX</strong> e selecione <strong>PIX Copia e Cola</strong> (ou escaneie o QR Code).</li>
+              <li>Cole o código copiado e confirme o pagamento.</li>
+              <li>Em segundos, a confirmação aparece aqui e seu anúncio entra no ar!</li>
+            </ol>
+          </div>
+
+          <div style="margin-top: 16px; display: flex; gap: 8px;">
+            <button type="button" class="btn-check-manual-pix" onclick="checkCurrentPixPaymentStatus(true)">
+              <i class="fa-solid fa-arrows-rotate"></i> Verificar Pagamento Agora
+            </button>
+            <button type="button" class="btn-back-ad-form" onclick="backToAdForm()">
+              Voltar / Editar
+            </button>
+          </div>
+        </div>
+
+        <!-- ETAPA 3: SUCESSO E ATIVAÇÃO -->
+        <div id="ad-step-success" style="display: none; padding: 32px 20px; text-align: center;">
+          <div style="width: 70px; height: 70px; border-radius: 50%; background: #ECFDF5; color: #10B981; display: inline-flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 14px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2);">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <h3 style="margin: 0 0 6px; font-size: 20px; font-weight: 800; color: #065F46;">Pagamento Confirmado!</h3>
+          <p style="margin: 0 0 16px; font-size: 13.5px; color: #047857; line-height: 1.4;">
+            Seu anúncio foi ativado com sucesso e já está no ar para todos os usuários de Parauapebas!
+          </p>
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px; margin-bottom: 20px; text-align: left; font-size: 12.5px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span style="color: #64748B;">Anunciante:</span>
+              <strong id="success-advertiser-name" style="color: #1E293B;">-</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span style="color: #64748B;">Espaço:</span>
+              <strong id="success-placement-name" style="color: #1E293B;">-</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: #64748B;">Duração:</span>
+              <strong id="success-duration-days" style="color: #10B981;">-</strong>
+            </div>
+          </div>
+          <button type="button" class="btn-generate-pix" onclick="closeAdvertiseModalAndShowAd()" style="background: #059669; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);">
+            <i class="fa-solid fa-eye"></i>
+            <span>Ver Meu Anúncio no App</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+<nav class="app-bottom-nav">
         <button class="nav-btn active" data-tab="home" onclick="switchTab('home')">
           <i class="fa-solid fa-house"></i>
           <span>Início</span>

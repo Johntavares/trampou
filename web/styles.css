@@ -13757,3 +13757,313 @@ body {
   background: linear-gradient(to right, #FFFDF5, #FFFFFF);
   box-shadow: 0 4px 14px rgba(245, 158, 11, 0.1);
 }
+
+
+/* =========================================================
+   TRAMPOU ADS: MODAL DE CONTRATAÇÃO & PIX MERCADO PAGO
+   ========================================================= */
+.ad-checkout-header {
+  padding: 14px 18px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ad-checkout-icon-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #7C3AED, #6D28D9);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  box-shadow: 0 3px 10px rgba(124, 58, 237, 0.25);
+}
+
+.ad-checkout-close {
+  background: #F1F5F9;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.ad-form-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1E293B;
+  margin-bottom: 10px;
+}
+
+.ad-placements-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.ad-placement-option {
+  border: 1.5px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  background: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease;
+}
+
+.ad-placement-option.active {
+  border-color: #7C3AED;
+  background: #FAF5FF;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.12);
+}
+
+.ad-placement-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.ad-placement-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  background: #F3E8FF;
+  color: #7E22CE;
+  padding: 1px 6px;
+  border-radius: 6px;
+}
+
+.ad-placement-option strong {
+  font-size: 13px;
+  color: #0F172A;
+  margin-bottom: 2px;
+}
+
+.ad-placement-option small {
+  font-size: 10.5px;
+  color: #64748B;
+  line-height: 1.25;
+}
+
+.ad-durations-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.ad-duration-pill {
+  border: 1.5px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 10px 6px;
+  text-align: center;
+  cursor: pointer;
+  background: #FFFFFF;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  transition: all 0.2s ease;
+}
+
+.ad-duration-pill.active {
+  border-color: #7C3AED;
+  background: #FAF5FF;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.12);
+}
+
+.ad-duration-pill span {
+  font-size: 11.5px;
+  color: #475569;
+  font-weight: 600;
+}
+
+.ad-duration-pill strong {
+  font-size: 13.5px;
+  color: #7C3AED;
+  font-weight: 800;
+}
+
+.ad-duration-tag {
+  position: absolute;
+  top: -8px;
+  background: #7C3AED;
+  color: #FFFFFF !important;
+  font-size: 8.5px !important;
+  font-weight: 800 !important;
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+
+.ad-input-group {
+  margin-bottom: 12px;
+}
+
+.ad-input-group label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 4px;
+}
+
+.ad-input-group input,
+.ad-input-group textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #0F172A;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.ad-input-group input:focus,
+.ad-input-group textarea:focus {
+  outline: none;
+  border-color: #7C3AED;
+}
+
+.ad-upload-box {
+  border: 2px dashed #CBD5E1;
+  border-radius: 12px;
+  background: #F8FAFC;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ad-upload-box:hover {
+  border-color: #7C3AED;
+  background: #FAF5FF;
+}
+
+.btn-remove-ad-img {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(239, 68, 68, 0.9);
+  color: #FFF;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.btn-generate-pix {
+  width: 100%;
+  padding: 13px 18px;
+  background: linear-gradient(135deg, #7C3AED, #6D28D9);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 12px;
+  font-size: 14.5px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
+  transition: all 0.2s;
+}
+
+.btn-generate-pix:hover {
+  filter: brightness(1.08);
+}
+
+.btn-copy-pix {
+  background: #7C3AED;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 0 16px;
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pix-badge-pulse {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ECFDF5;
+  color: #047857;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid #A7F3D0;
+}
+
+.pix-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pix-spinner-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2563EB;
+  animation: pulseDot 1.2s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.btn-check-manual-pix {
+  flex: 1;
+  padding: 10px 12px;
+  background: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  color: #334155;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.btn-back-ad-form {
+  padding: 10px 16px;
+  background: #F1F5F9;
+  border: none;
+  color: #64748B;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+}
