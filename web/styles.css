@@ -13765,6 +13765,7 @@ body {
    TRAMPOU ADS: NOVA UI PREMIUM DE ANÚNCIOS & CHECKOUT PIX
    ============================================================================== */
 .ad-modal-backdrop {
+  display: none;
   position: fixed;
   inset: 0;
   width: 100%;
@@ -14819,4 +14820,10 @@ body {
   gap: 8px;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+}
+
+
+.ad-modal-backdrop.active,
+.ad-modal-backdrop[style*="display: flex"] {
+  display: flex !important;
 }
