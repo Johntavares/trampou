@@ -10841,6 +10841,9 @@ async function submitAdAndGeneratePix() {
     const stickyFooter = document.getElementById('ad-checkout-sticky-footer');
     if (stickyFooter) stickyFooter.style.display = 'none';
 
+    const modalBody = document.getElementById('ad-checkout-body-content');
+    if (modalBody) modalBody.scrollTo({ top: 0, behavior: 'smooth' });
+
     // Inicia polling a cada 3.5 segundos para detectar o pagamento do banco
     if (activePixPollingTimer) clearInterval(activePixPollingTimer);
     activePixPollingTimer = setInterval(() => checkCurrentPixPaymentStatus(false), 3500);
