@@ -4474,7 +4474,8 @@ function openShareProModal(proOrId, mode) {
   const qrImage = document.getElementById('share-qrcode-image');
 
   let handle = p ? (p.handle || (p.name ? p.name.toLowerCase().replace(/\s+/g, '.') : 'pro')) : 'trampou';
-  let targetUrl = `${OFFICIAL_APP_URL}/#pro/${p ? (p.id || handle) : handle}`;
+  let proTargetId = p ? (p.id || handle) : handle;
+  let targetUrl = `${OFFICIAL_APP_URL}/api/share?id=${encodeURIComponent(proTargetId)}`;
   let shareTitle = '';
   let shareMsg = '';
 
@@ -4697,7 +4698,7 @@ function openPostReviewShare(proName, specialty, proId, comment, rating) {
   const targetProName = proName || 'o profissional';
   const targetSpec = specialty || 'Serviços';
   const handle = targetProName.toLowerCase().replace(/\s+/g, '.');
-  const proUrl = `${OFFICIAL_APP_URL}/#pro/${proId || handle}`;
+  const proUrl = `${OFFICIAL_APP_URL}/api/share?id=${encodeURIComponent(proId || handle)}`;
 
   const quoteElem = document.getElementById('celeb-quote-text');
   if (quoteElem) {

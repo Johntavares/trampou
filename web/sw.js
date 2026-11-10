@@ -23,6 +23,7 @@ const STATIC_SHELL = [
   './banner-share-trampou.png',
   './banner-home-2.webp',
   './banner-home-2.jpg',
+  './banner-share-og.jpg',
   './favicon.png'
 ];
 
